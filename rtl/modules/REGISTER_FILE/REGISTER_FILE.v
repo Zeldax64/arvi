@@ -19,15 +19,7 @@ module REGISTER_FILE(
     input i_clk
     );
 
-	reg [31:0] x [31:0];//Registers [x0-x31]
-`ifdef SIMULATION
-	integer i;
-	initial begin
-		for(i = 0; i < 32; i = i+1) begin
-			x[i] = 0;
-		end
-	end
-`endif
+	reg [31:0] x [31:0]; //Registers [x0-x31]
 
 	//Reading is combinational
 	assign o_Rd1 = |i_Rnum1 ? x[i_Rnum1] : 0;
