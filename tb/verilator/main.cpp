@@ -1,0 +1,63 @@
+// Verilator includes
+#include "VRISC_V.h"
+#include "verilated.h"
+#include "verilated_vcd_c.h"
+
+// C includes
+#include <stdint.h>
+#include <string>
+#include <vector>
+#include <iostream>
+
+// Internals
+#include "elfloader.h"
+#include "riscv.h"
+
+int main(int argc, char** argv) {
+	bool fail;
+	uint64_t mtick = 0;
+	uint64_t cycles = 0;
+	uint64_t MAX_CYCLES = 1000000;
+	bool trace= false;
+
+	Verilated::commandArgs(argc, argv);
+	Verilated::traceEverOn(true);
+	char *mem_path;
+	for(int i = 1; i < argc; i++) {
+		std::string arg = argv[i];
+		if(arg.substr(0,12) == "+max-cycles=")
+			MAX_CYCLES = atoll(argv[i]+12);
+		else if(arg.substr(0,9) == "+loadmem=")
+			mem_path = argv[i]+9;
+		else if(arg.substr(0, 2) == "-v")
+			trace = true;
+	}
+	
+	std::string path(mem_path);
+
+	// Reset
+    RISCV* dut = new RISCV();
+    if(trace)
+    	dut->open_trace((path+".vcd").c_str());
+    dut->load_mem(path.c_str());
+    dut->reset();
+
+	// Simulation cycle
+	while(cycles < MAX_CYCLES && !Verilated::gotFinish() && !dut->done()) {
+		dut->tick();
+		cycles++;
+	}
+
+	if(dut->success()) {
+		//std::cout << "*** PASSED ***" << std::endl;
+		fail = false;
+	}
+	else {
+		//std::cout << "*** FAILED ***" << std::endl;
+		fail = true;
+	}
+
+	delete dut;
+	
+	return fail;
+}
