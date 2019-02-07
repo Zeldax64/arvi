@@ -4,13 +4,10 @@
 `include "modules/CSR/csr_defines.vh"
 
 // TODO:
-// Implement ECALL support according to 3.2.1 from privileged ISA pdf.
-// It should write to mepc;
-// Implement return to trap handler support;
-// Implement CSRxx instructions using f3
+// I think it is possible to optimize exception handling in this file
 module CSR(
 	input i_clk,
-	//input i_rst, // If necessary
+	input i_rst, // If necessary
 	input i_CSR_en, // CSR enable
 	input [`XLEN-1:0] i_Wd,
 	input [11:0] i_addr,
@@ -32,11 +29,14 @@ module CSR(
 	input i_Ex_st_addr	  // Store misaligned
 	);
 	
-	reg [`XLEN-1:0] write_data;
+	reg  [`XLEN-1:0] write_data;
 	wire [`XLEN-1:0] o_cause = mcause;
 	wire [`XLEN-1:0] o_tvec = mtvec;
 
 	// Machine Trap Setup
+	// mstatus
+	reg mie, mpie;
+
 	reg [`XLEN-1:0] medeleg;
 	reg [`XLEN-1:0] mtvec;
 
@@ -59,6 +59,12 @@ module CSR(
 	// NFI => Not Fully Implemented
 	// Write
 	always@(posedge i_clk) begin
+		// Reset logic
+		if(!i_rst) begin
+			mie <= 0;
+			mcause <= {`XLEN{1'b0}};
+		end
+		else 
 		if(i_CSR_en) begin
 			// Implementing ECALL here. Please notice that i_Ex comes from
 			// Main Control
@@ -74,6 +80,11 @@ module CSR(
 			end
 			else begin
 				case(i_addr)
+					// Machine Status - Since only M-mode and RV32I is implemented, it is necessary to implement 
+					// only mpie and mie bits from mstatus register in a write
+					`mstatus : begin
+						{mpie, mie} <= {write_data[7], write_data[3]};
+					end
 					// Machine Trap Setup
 					`medeleg : begin // NFI - Just Storing values. Its real function is not implemented yet
 						medeleg <= write_data;
@@ -102,24 +113,23 @@ module CSR(
 
 		// Exceptions without enable
 		else begin
-			if(i_Ex) begin
+			if(o_ex) begin
 				mepc <= i_PC;
-				mcause <= 2; // Illegal Instruction
-			end
-			if(i_Ex_inst_addr) begin
-				mepc <= i_PC;
-				mtval <= i_badaddr;
-				mcause <= 0; // Instruction address misaligned
-			end
-			if(i_Ex_ld_addr) begin
-				mepc <= i_PC;
-				mtval <= i_badaddr;
-				mcause <= 4; // Load address misaligned
-			end
-			if(i_Ex_st_addr) begin
-				mepc <= i_PC;
-				mtval <= i_badaddr;
-				mcause <= 6; // Store address misaligned
+				if(i_Ex) begin
+					mcause <= 2; // Illegal Instruction
+				end
+				if(i_Ex_inst_addr) begin
+					mtval <= i_badaddr;
+					mcause <= 0; // Instruction address misaligned
+				end
+				if(i_Ex_ld_addr) begin
+					mtval <= i_badaddr;
+					mcause <= 4; // Load address misaligned
+				end
+				if(i_Ex_st_addr) begin
+					mtval <= i_badaddr;
+					mcause <= 6; // Store address misaligned
+				end
 			end
 		end
 
@@ -134,7 +144,7 @@ module CSR(
 		ex_ebreak = 0;
 		if(i_Funct3 == `PRIV && i_CSR_en) begin // Checking if there is a MRET instruction
 			case(i_addr)
-				12'h000: ex_ecall = 1; // ECALL
+				12'h000: ex_ecall  = 1; // ECALL
 				12'h001: ex_ebreak = 1; // EBREAK
 				`MRET : begin
 					o_epc = mepc;
@@ -146,6 +156,7 @@ module CSR(
 	// Read
 		else begin
 			case(i_addr)
+				`mstatus : o_Rd = {{19{1'b0}}, 2'b11, 3'b0, mpie, 3'b0, mie, 3'b0};
 				`medeleg : o_Rd = medeleg; // NFI - Just Storing values
 				`mtvec : o_Rd = mtvec;
 				`mscratch : o_Rd = mscratch;

@@ -235,6 +235,7 @@ module DATAPATH_SC(
 	// CSR
 	CSR csr (
 		.i_clk 		(i_clk),
+		.i_rst      (i_rst),
 		.i_CSR_en 	(MC_CSR_en),
 		.i_Wd    	(CSR_Wd),
 		.i_addr  	(instr[31:20]),
@@ -273,6 +274,7 @@ module DATAPATH_SC(
 			PC_next = PC_jump;
 	end
 	
+	// Calculate PC without CSRs interference
 	reg[`XLEN-1:0] PC_jump;
 	always@(*) begin
 		if(MC_Jump == 2'b10) begin // JALR
