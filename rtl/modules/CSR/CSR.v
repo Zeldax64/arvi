@@ -30,7 +30,7 @@ module CSR(
 	// Instruction slicing
 	wire [2:0] f3 = i_inst[14:12];
 	wire [11:0] addr = i_inst[31:20];
-	
+
 	reg  [`XLEN-1:0] write_data;
 	wire [`XLEN-1:0] o_cause = mcause;
 	wire [`XLEN-1:0] o_tvec = mtvec;
@@ -79,7 +79,11 @@ module CSR(
 					if(addr == 12'h001) begin // Ebreak exception
 						mcause <= 3;
 						mepc <= i_PC;
-					end 
+					end
+					if(addr == `MRET) begin
+						mie  <= mpie;
+						mpie <= 1;
+					end
 			end
 			else begin
 				case(addr)
