@@ -237,9 +237,8 @@ module DATAPATH_SC(
 		.i_clk 		(i_clk),
 		.i_rst      (i_rst),
 		.i_CSR_en 	(MC_CSR_en),
+		.i_inst     (instr),
 		.i_Wd    	(CSR_Wd),
-		.i_addr  	(instr[31:20]),
-		.i_Funct3	(f3),
 		.i_PC		(PC),
 		.i_badaddr  (badaddr),
 

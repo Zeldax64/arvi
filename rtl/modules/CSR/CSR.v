@@ -10,8 +10,7 @@ module CSR(
 	input i_rst, // If necessary
 	input i_CSR_en, // CSR enable
 	input [`XLEN-1:0] i_Wd,
-	input [11:0] i_addr,
-	input [2:0] i_Funct3,
+	input [31:0] i_inst,
 	input [`XLEN-1:0] i_PC,
 	input [`XLEN-1:0] i_badaddr,
 	output [`XLEN-1:0] o_Rd,
@@ -28,6 +27,9 @@ module CSR(
 	input i_Ex_ld_addr,	  // Load misaligned
 	input i_Ex_st_addr	  // Store misaligned
 	);
+	// Instruction slicing
+	wire [2:0] f3 = i_inst[14:12];
+	wire [11:0] addr = i_inst[31:20];
 	
 	reg  [`XLEN-1:0] write_data;
 	wire [`XLEN-1:0] o_cause = mcause;
@@ -48,7 +50,7 @@ module CSR(
 
 	// Getting value to write according to instruction's f3
 	always@(*) begin
-		case(i_Funct3[1:0])
+		case(f3[1:0])
 			2'b01: write_data =  i_Wd;
 			2'b10: write_data =  i_Wd | o_Rd;
 			2'b11: write_data = ~i_Wd & o_Rd; 
@@ -68,25 +70,26 @@ module CSR(
 		if(i_CSR_en) begin
 			// Implementing ECALL here. Please notice that i_Ex comes from
 			// Main Control
-			if(i_Funct3 == `PRIV) begin
-					if(i_addr == 12'b0) begin 
+			if(f3 == `PRIV) begin
+					if(addr == 12'b0) begin 
 						mcause <= 11; // Environment call from M-mode
 						mepc <= i_PC;
+						mtval <= 0;
 					end
-					if(i_addr == 12'h001) begin // Ebreak exception
+					if(addr == 12'h001) begin // Ebreak exception
 						mcause <= 3;
 						mepc <= i_PC;
 					end 
 			end
 			else begin
-				case(i_addr)
+				case(addr)
 					// Machine Status - Since only M-mode and RV32I is implemented, it is necessary to implement 
 					// only mpie and mie bits from mstatus register in a write
 					`mstatus : begin
 						{mpie, mie} <= {write_data[7], write_data[3]};
 					end
 					// Machine Trap Setup
-					`medeleg : begin // NFI - Just Storing values. Its real function is not implemented yet
+					`medeleg : begin // NFI - Just Storing values. Its real function is not implemented
 						medeleg <= write_data;
 					end
 					`mtvec : begin // NFI - Ignoring "mode" field in mtvec
@@ -117,17 +120,18 @@ module CSR(
 				mepc <= i_PC;
 				if(i_Ex) begin
 					mcause <= 2; // Illegal Instruction
+					mtval  <= i_inst;
 				end
 				if(i_Ex_inst_addr) begin
-					mtval <= i_badaddr;
+					mtval  <= i_badaddr;
 					mcause <= 0; // Instruction address misaligned
 				end
 				if(i_Ex_ld_addr) begin
-					mtval <= i_badaddr;
+					mtval  <= i_badaddr;
 					mcause <= 4; // Load address misaligned
 				end
 				if(i_Ex_st_addr) begin
-					mtval <= i_badaddr;
+					mtval  <= i_badaddr;
 					mcause <= 6; // Store address misaligned
 				end
 			end
@@ -142,8 +146,8 @@ module CSR(
 		o_eret = 0;
 		ex_ecall = 0;
 		ex_ebreak = 0;
-		if(i_Funct3 == `PRIV && i_CSR_en) begin // Checking if there is a MRET instruction
-			case(i_addr)
+		if(f3 == `PRIV && i_CSR_en) begin // Checking if there is a MRET instruction
+			case(addr)
 				12'h000: ex_ecall  = 1; // ECALL
 				12'h001: ex_ebreak = 1; // EBREAK
 				`MRET : begin
@@ -155,7 +159,7 @@ module CSR(
 		end
 	// Read
 		else begin
-			case(i_addr)
+			case(addr)
 				`mstatus : o_Rd = {{19{1'b0}}, 2'b11, 3'b0, mpie, 3'b0, mie, 3'b0};
 				`medeleg : o_Rd = medeleg; // NFI - Just Storing values
 				`mtvec : o_Rd = mtvec;
