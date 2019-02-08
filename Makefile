@@ -12,14 +12,15 @@ rfind = $(wildcard $1$2) $(foreach d,$(call subdirs,$1),$(call rfind,$d,$2))
 ######################################
 SRC_DIR := ./rtl/modules
 SOURCES := $(call rfind,$(SRC_DIR)/,*.v)
-SOURCES += rtl/top/RISC_V_DB.v
+#SOURCES += rtl/top/RISC_V_DB.v
+SOURCES += $(wildcard rtl/top/*.v)
 HEADERS := $(call rfind,$(SRC_DIR)/,*.vh)
 
 SCRIPTS_DIR := ./tb/scripts
 
 run: all
 	@echo "--- Running ---"
-	obj_dir/VRISC_V "+loadmem=I-MISALIGN_LDST-01.elf"
+	obj_dir/VRISC_V "+loadmem=towers.riscv"
 
 all: $(SOURCES) $(HEADERS)
 	$(VL) $(VLFLAGS) $(SOURCES) $(VL_SRCS) 

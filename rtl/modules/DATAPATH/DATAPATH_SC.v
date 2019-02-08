@@ -21,6 +21,9 @@ module DATAPATH_SC(
 	output o_DM_Wen,
 	output o_DM_MemRead,
 
+	// Interrupt connnections
+	input i_tip,
+
 	// General connections
 	input i_clk,
 	input i_rst
@@ -253,7 +256,10 @@ module DATAPATH_SC(
 		.i_Ex    	(MC_Ex),
 		.i_Ex_inst_addr (ex_inst_addr),
 		.i_Ex_ld_addr  (ex_ld_addr),
-		.i_Ex_st_addr  (ex_st_addr)
+		.i_Ex_st_addr  (ex_st_addr),
+
+		// Interrupts
+		.i_Int_tip (i_tip)
 	);
 	/* verilator lint_on UNUSED */
 	

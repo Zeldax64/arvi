@@ -5,7 +5,6 @@
 /* verilator lint_off DECLFILENAME */
 module RISC_V(
 /* verilator lint_on DECLFILENAME */
-
 	input i_clk,
 	input i_rst,
 
@@ -26,16 +25,14 @@ module RISC_V(
 	
 	// PC initial value
 	parameter PC_RESET = `PC_RESET;
-	// Instruction Memory height
-	parameter IMEM_HEIGHT = `INSTRUCTION_MEMORY_SIZE; 
-	// Data Memory Memory height
-	parameter DMEM_HEIGHT = `DATA_MEMORY_SIZE; 
-	// ROM - Instruction Memory
-	parameter FILE = `PROGRAM_DATA; 
 
-	DATAPATH_SC #(
+	// Read data wires
+	wire [`XLEN-1:0] DM_rd,CLINT_rd;
+	wire tip;
+
+	HART #(
 			.PC_RESET(PC_RESET)
-		) datapath (
+		) hart0(
 		.i_clk(i_clk),
 		.i_rst(i_rst),
 		
@@ -46,12 +43,30 @@ module RISC_V(
 		.o_IC_DataReq (o_IC_DataReq),
 
 		// Data Memory connections
-		.i_DM_ReadData(i_DM_ReadData),
-		.o_DM_Wd(o_DM_WriteData),
+		.i_DM_ReadData(DM_rd),
+		.o_DM_WriteData(o_DM_WriteData),
 		.o_DM_Addr(o_DM_Addr),
 		.o_DM_Wen(o_DM_Wen),
 		.o_DM_MemRead(o_DM_MemRead),
-		.o_DM_f3(o_DM_f3)
+		.o_DM_f3(o_DM_f3),
+
+		// Interrupt connections
+		.i_tip(tip)
 	);
+
+	CLINT #(
+			.BASE_ADDR(32'h2000_0000)
+		) clint (
+		.i_clk		(i_clk),
+		.i_rst		(i_rst),
+		.i_wen  	(o_DM_Wen),
+		.i_ren  	(o_DM_MemRead),
+		.i_addr 	(o_DM_Addr),
+		.i_wrdata	(o_DM_WriteData),
+		.o_rddata 	(CLINT_rd),
+		.o_tip   	(tip)
+		);
+
+	assign DM_rd = (o_DM_Addr[`XLEN-1:`XLEN-4] == 4'h2) ? CLINT_rd : i_DM_ReadData;
 
 endmodule

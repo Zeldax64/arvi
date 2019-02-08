@@ -25,21 +25,26 @@ module CSR(
 	input i_Ex,
 	input i_Ex_inst_addr, // Instruction misaligned
 	input i_Ex_ld_addr,	  // Load misaligned
-	input i_Ex_st_addr	  // Store misaligned
+	input i_Ex_st_addr,	  // Store misaligned
+
+	// Interrupts
+	input i_Int_tip
 	);
 	// Instruction slicing
 	wire [2:0] f3 = i_inst[14:12];
 	wire [11:0] addr = i_inst[31:20];
 
-	reg  [`XLEN-1:0] write_data;
+	// Assigning output
 	wire [`XLEN-1:0] o_cause = mcause;
 	wire [`XLEN-1:0] o_tvec = mtvec;
 
 	// Machine Trap Setup
 	// mstatus
 	reg mie, mpie;
-
 	reg [`XLEN-1:0] medeleg;
+	// mie
+	reg mtie;
+
 	reg [`XLEN-1:0] mtvec;
 
 	// Machine Trap Handling
@@ -47,8 +52,10 @@ module CSR(
 	reg [`XLEN-1:0] mepc;
 	reg [`XLEN-1:0] mcause;
 	reg [`XLEN-1:0] mtval;
+	wire mtip = i_Int_tip;
 
 	// Getting value to write according to instruction's f3
+	reg  [`XLEN-1:0] write_data;
 	always@(*) begin
 		case(f3[1:0])
 			2'b01: write_data =  i_Wd;
@@ -89,29 +96,22 @@ module CSR(
 				case(addr)
 					// Machine Status - Since only M-mode and RV32I is implemented, it is necessary to implement 
 					// only mpie and mie bits from mstatus register in a write
-					`mstatus : begin
-						{mpie, mie} <= {write_data[7], write_data[3]};
-					end
+					`mstatus : {mpie, mie} <= {write_data[7], write_data[3]};
 					// Machine Trap Setup
 					`medeleg : begin // NFI - Just Storing values. Its real function is not implemented
 						medeleg <= write_data;
 					end
+					`mie : mtie <= write_data[7];
 					`mtvec : begin // NFI - Ignoring "mode" field in mtvec
 						mtvec <= {write_data[`XLEN-1:2], 2'b00};
 					end
 					// Machine Trap Handling
-					`mscratch : begin
-						mscratch <= write_data;
-					end
-					`mepc : begin
-						mepc <= {write_data[`XLEN-1:2], 2'b00}; // NFI - Not saving PC when exception occurs
-					end
+					`mscratch : mscratch <= write_data;
+					`mepc : mepc <= {write_data[`XLEN-1:2], 2'b00};
 					`mcause : begin // NFI - Missing exception when illegal value is written
 						mcause <= write_data; 
 					end
-					`mtval : begin
-						mtval <= write_data;
-					end
+					`mtval : mtval <= write_data;
 					default : begin
 					end
 				endcase
@@ -141,6 +141,15 @@ module CSR(
 			end
 		end
 
+		// Interrupts
+		if(interrupts) begin
+			mepc <= i_PC+4; // TODO: Check this!
+			mcause[`XLEN-1] <= 1'b1;
+			if(int_ti) begin // Machine timer interrupt
+				mcause <= mcause | 7;
+			end
+		end
+
 	end
 
 	reg ex_ecall, ex_ebreak;
@@ -166,11 +175,13 @@ module CSR(
 			case(addr)
 				`mstatus : o_Rd = {{19{1'b0}}, 2'b11, 3'b0, mpie, 3'b0, mie, 3'b0};
 				`medeleg : o_Rd = medeleg; // NFI - Just Storing values
+				`mie : o_Rd = {{`XLEN-9{1'b0}}, mtie, 8'b0};
 				`mtvec : o_Rd = mtvec;
 				`mscratch : o_Rd = mscratch;
 				`mepc : o_Rd = mepc;
 				`mcause : o_Rd = mcause;
 				`mtval : o_Rd = mtval;
+				`mip : o_Rd = {{`XLEN-9{1'b0}}, mtip, 8'b0};
 				default : o_Rd = 0;
 			endcase	
 		end	
@@ -178,6 +189,12 @@ module CSR(
 
 	// Exceptions
 	wire ex_ldst_addr = i_Ex_ld_addr || i_Ex_st_addr;
-	assign o_ex = i_Ex || i_Ex_inst_addr || ex_ldst_addr || ex_ebreak || ex_ecall;
+	wire exceptions = i_Ex || i_Ex_inst_addr || ex_ldst_addr || ex_ebreak || ex_ecall;
+
+	// Interrupts
+	wire int_ti = mtie && mtip && mie; // Timer interrupt
+	wire interrupts = int_ti;
+
+	assign o_ex = exceptions || interrupts;
 
 endmodule
