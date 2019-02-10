@@ -32,7 +32,8 @@ def isa():
 
 def compliance():
 	# Getting programs list
-	test_folder = "tb/tests/compliance/rv32i"
+	#test_folder = "tb/tests/compliance/rv32i"
+	test_folder = "tb/tests/compliance/rv32mi"
 	progs = glob.glob(test_folder+'/*.elf')
 
 	# Testing
@@ -40,7 +41,7 @@ def compliance():
 	print("--- Compliance Tests ---")
 	for test_prog in progs:
 		test_prog = "+loadmem="+test_prog
-		failure = subprocess.call([sim_path, test_prog])
+		failure = subprocess.call([sim_path, test_prog, "-v"])
 		failed = failure or failed
 		if failure:
 			print("Testing: "+test_prog+ " FAILED")
@@ -77,8 +78,8 @@ def benchmark():
 		print("--- Benchmark tests failed! ---")
 
 def main():
-	isa()
+	#isa()
 	compliance()
-	benchmark()
+	#benchmark()
 
 main()
