@@ -209,7 +209,7 @@ module MAIN_CONTROL(
 	    			o_Jump 	   = 0;
 	    			o_PCplus4  = 0;
 	    			o_CSR_en   = 1;
-	    			o_Ex	   = (f3 == 0 && f12 == 0 && rs1 == 0 && rd == 0) ? 1 : 0; // Checking if it was an ECALL or not
+	    			o_Ex	   = (f3 == 0 && (f12 == 0 || f12 == 1) && rs1 == 0 && rd == 0) ? 1 : 0; // Checking if it was an ECALL or not
 
 				end
 

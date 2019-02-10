@@ -145,12 +145,13 @@ module DATAPATH_SC(
 		.i_Stall   (IC_Stall)
 	);
 
+	wire wr_to_rf = MC_RegWrite && !CSR_ex;
 	REGISTER_FILE reg_file (
     	.o_Rd1(Rd1),
     	.o_Rd2(Rd2),
     	.i_Rnum1(instr[19:15]),
     	.i_Rnum2(instr[24:20]),
-    	.i_Wen(MC_RegWrite),
+    	.i_Wen(wr_to_rf),
     	.i_Wnum(instr[11:7]),
     	.i_Wd(i_Wd),
     	.i_clk(i_clk)

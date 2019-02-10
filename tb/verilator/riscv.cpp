@@ -162,6 +162,9 @@ void RISCV::d_read() {
 }
 
 void RISCV::to_host(uint32_t val) {
+	if(val == 0)
+		std::cout << "TOHOST VAL == 0!" << std::endl;
+	
 	if(val == 1) { // Test passed
 		this->io_success = true;
 		this->sim_done = true;
