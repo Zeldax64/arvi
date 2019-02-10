@@ -5,6 +5,16 @@ import os
 
 sim_path = "./obj_dir/VRISC_V"
 
+def test_loop(progs):
+	failed = 0
+	for test_prog in progs:
+		test_prog = "+loadmem="+test_prog
+		failure = subprocess.call([sim_path, test_prog])
+		failed = failure or failed
+		if failure:
+			print("Testing: "+test_prog+ " FAILED")
+	return failed
+
 def isa():
 	# Getting programs list
 	test_folder = "tb/tests/isa/rv32ui"
@@ -15,14 +25,8 @@ def isa():
 			progs.append(file)
 
 	# Testing
-	failed = 0
 	print("--- ISA Tests ---")
-	for test_prog in progs:
-		test_prog = "+loadmem="+test_prog
-		failure = subprocess.call([sim_path, test_prog])
-		failed = failure or failed
-		if failure:
-			print("Testing: "+test_prog+ " FAILED")
+	failed = test_loop(progs)
 
 	# Result
 	if not failed: 
@@ -31,28 +35,37 @@ def isa():
 		print("--- ISA tests failed! ---")
 
 def compliance():
+	print("--- Compliance Tests ---")
+
+	# Testing rv32i programs
+	print("*** rv32i tests ***")
 	# Getting programs list
-	#test_folder = "tb/tests/compliance/rv32i"
-	test_folder = "tb/tests/compliance/rv32mi"
+	test_folder = "tb/tests/compliance/rv32i"
 	progs = glob.glob(test_folder+'/*.elf')
 
 	# Testing
-	failed = 0
-	print("--- Compliance Tests ---")
-	for test_prog in progs:
-		test_prog = "+loadmem="+test_prog
-		failure = subprocess.call([sim_path, test_prog, "-v"])
-		failed = failure or failed
-		if failure:
-			print("Testing: "+test_prog+ " FAILED")
+	failed = test_loop(progs)
 
 	# Compairing references
 	os.environ["SUITEDIR"] = test_folder
 	compair = subprocess.call(["tb/scripts/verify.sh"])
-	failed = compair or failed
+	compliant = compair or failed
+
+	# Testing rv32mi programs
+	print("*** rv32mi tests ***")
+	# Getting programs list
+	test_folder = "tb/tests/compliance/rv32mi"
+	progs = glob.glob(test_folder+'/*.elf')
+	failed = test_loop(progs)
+
+	# Compairing references
+	os.environ["SUITEDIR"] = test_folder
+	compair = subprocess.call(["tb/scripts/verify.sh"])
+
+	compliant = compair or failed or compliant
 
 	# Result
-	if not failed: 
+	if not compliant: 
 		print("--- Compliance tests passed! ---")
 	else:
 		print("--- Compliance tests failed! ---")
@@ -62,14 +75,8 @@ def benchmark():
 	progs = glob.glob(test_folder+'/*.riscv')
 
 	# Testing
-	failed = 0
 	print("--- Benchmark tests ---")
-	for test_prog in progs:
-		test_prog = "+loadmem="+test_prog
-		failure = subprocess.call([sim_path, test_prog])
-		failed = failure or failed
-		if failure:
-			print("Testing: "+test_prog+ " FAILED")
+	failed = test_loop(progs)
 
 	# Result
 	if not failed: 
@@ -78,8 +85,8 @@ def benchmark():
 		print("--- Benchmark tests failed! ---")
 
 def main():
-	#isa()
+	isa()
 	compliance()
-	#benchmark()
+	benchmark()
 
 main()

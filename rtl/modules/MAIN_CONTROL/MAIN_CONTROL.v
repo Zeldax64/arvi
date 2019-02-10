@@ -225,9 +225,6 @@ module MAIN_CONTROL(
 	    			o_Jump 	   = 2'b00; 
 	    			o_PCplus4  = 1'b0;
 	    			o_Ex	   = 1'b1; // Go to mtvec
-	    			$display("MAIN_CONTROL: Invalid opcode %b!", OPCode);
-	    			$display("MAIN_CONTROL: Instruction: %h!", i_Instr);
-	    			//$finish;
 				end
 			endcase
 		end
