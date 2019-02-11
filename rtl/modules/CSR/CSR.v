@@ -14,10 +14,10 @@ module CSR(
 	input [31:0] i_inst,
 	input [`XLEN-1:0] i_PC,
 	input [`XLEN-1:0] i_badaddr,
-	output [`XLEN-1:0] o_Rd,
+	output reg [`XLEN-1:0] o_Rd,
 
-	output o_eret,
-	wire o_ex,
+	output reg o_eret,
+	output o_ex,
 	output [`XLEN-1:0] o_tvec, // Trap-Vector Base Address Register
 	output [`XLEN-1:0] o_cause,
 	output reg [`XLEN-1:0] o_epc, // Exception Program Counter
@@ -36,8 +36,8 @@ module CSR(
 	wire [11:0] addr = i_inst[31:20];
 
 	// Assigning output
-	wire [`XLEN-1:0] o_cause = mcause;
-	wire [`XLEN-1:0] o_tvec = mtvec;
+	assign o_cause = mcause;
+	assign o_tvec = mtvec;
 
 	// Machine Trap Setup
 	// mstatus

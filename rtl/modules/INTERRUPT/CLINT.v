@@ -17,7 +17,7 @@ module CLINT #(
 	input i_ren,
 	input  [`XLEN-1:0] i_addr,
 	input  [`XLEN-1:0] i_wrdata,
-	output [`XLEN-1:0] o_rddata,
+	output reg [`XLEN-1:0] o_rddata,
 
 	// Interrupts
 	output o_tip

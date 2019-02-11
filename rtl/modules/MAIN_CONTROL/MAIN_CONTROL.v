@@ -224,6 +224,7 @@ module MAIN_CONTROL(
 					o_ALUOp    = 3'b0;
 	    			o_Jump 	   = 2'b00; 
 	    			o_PCplus4  = 1'b0;
+	    			o_CSR_en   = 0;
 	    			o_Ex	   = 1'b1; // Go to mtvec
 				end
 			endcase

@@ -80,7 +80,7 @@ module DATAPATH_SC(
 	wire [`XLEN-1:0] DM_ReadData;
 
 	// Exceptions
-	reg ex_inst_addr;
+	wire ex_inst_addr;
 	reg ex_ld_addr;
 	reg ex_st_addr;
 
@@ -89,9 +89,6 @@ module DATAPATH_SC(
 		if(!i_rst) PC <= PC_RESET;
 		else if(IC_Stall) PC <= PC;
 		else 			  PC <= PC_next;
-
-		if(PC[1:0] !== 2'b00)
-			$display("ERROR PC!");
 	end
 
 	// Assigning instruction to be fetched
@@ -203,6 +200,7 @@ module DATAPATH_SC(
 	always@(*) begin
 		ex_ld_addr = 0;
 		ex_st_addr = 0;
+		read_data  = i_DM_ReadData;
 		if(MC_MemRead) begin
 			case(f3) 
 				3'b000 : read_data = {{`XLEN-8{i_DM_ReadData[7]}}, i_DM_ReadData[7:0]}; 
@@ -268,7 +266,6 @@ module DATAPATH_SC(
 	// PC Mux - Chooses PC's next value
 	// NOTA: this code and jump/branch signals must be improved
 	always@(*) begin
-		ex_inst_addr = 0;
 		if(CSR_ex) begin // Illegal instruction or MC_Ex(ECALL)
 			PC_next = {CSR_tvec[`XLEN-1:2], 2'b00};
 		end
@@ -282,6 +279,7 @@ module DATAPATH_SC(
 	
 	// Calculate PC without CSRs interference
 	reg[`XLEN-1:0] PC_jump;
+	assign ex_inst_addr = |PC_jump[1:0];
 	always@(*) begin
 		if(MC_Jump == 2'b10) begin // JALR
 				PC_jump = Alu_Res & 32'hFFFF_FFFE;
@@ -293,7 +291,6 @@ module DATAPATH_SC(
 			else begin // PC increment
 				PC_jump = PC + 4;
 			end		
-		ex_inst_addr = |PC_jump[1:0];
 	end
 
 	// ALU input A Mux

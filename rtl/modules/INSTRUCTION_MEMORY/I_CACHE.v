@@ -52,9 +52,9 @@ module I_CACHE
 	wire save_block = (state == ALLOCATE && next_state == COMPARE_TAG);
 	
 	// Outputs
-	wire o_DataReq = (state == ALLOCATE); // Maybe it is possible to request Data when hit == 0 is known
-	wire o_Stall = (state == ALLOCATE) || !hit;
-	wire o_MemAddr = {i_Addr[`XLEN-1:2], 2'b00}; 
+	assign o_DataReq = (state == ALLOCATE); // Maybe it is possible to request Data when hit == 0 is known
+	assign o_Stall = (state == ALLOCATE) || !hit;
+	assign o_MemAddr = {i_Addr[`XLEN-1:2], 2'b00}; 
 
 	generate
 		if(BLOCK_SIZE == 1)
@@ -95,7 +95,8 @@ module I_CACHE
 			end
 		end
 		
-		if(state == ALLOCATE) begin
+		//if(state == ALLOCATE) begin
+		else begin // State == ALLOCATE
 			if(i_MemReady) begin
 				next_state = COMPARE_TAG;
 			end
