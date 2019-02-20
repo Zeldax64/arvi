@@ -13,7 +13,7 @@ module DATA_MEMORY(
 	parameter HEIGHT = 4;//Memory height
 	parameter FILE = "test.r32i";
 
-	reg [7:0] mem [HEIGHT-1:0];//Memory: Word: 4byte
+	reg [7:0] mem [HEIGHT-1:0]; //Memory: Word: 4byte
 
 	//Just one signal must be enabled (Wen or Ren) in one clock period(That's my solution),
 	//So, when the two signals are active, just the 'i_Wen' is considered.

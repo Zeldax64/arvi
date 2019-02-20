@@ -38,8 +38,8 @@ module DATAPATH_SC(
 	//wire [`XLEN-1:0] instr = i_IM_Instr;
 	wire [`XLEN-1:0] instr;
 	//wire [6:0] opcode = instr[6:0];
-	wire [2:0] f3     = instr[14:12];
-	wire [6:0] f7     = instr[31:25];
+	wire [2:0] f3 = instr[14:12];
+	wire [6:0] f7 = instr[31:25];
 
 	// Main Control signals
 	wire MC_Branch;
@@ -81,8 +81,8 @@ module DATAPATH_SC(
 
 	// Exceptions
 	wire ex_inst_addr;
-	reg ex_ld_addr;
-	reg ex_st_addr;
+	wire ex_ld_addr;
+	wire ex_st_addr;
 
 	// Assigning PC
 	always@(posedge i_clk) begin
@@ -182,48 +182,30 @@ module DATAPATH_SC(
 		.o_DoBranch (DoBranch)
 	);
 
-	assign DM_Addr = Alu_Res[`XLEN-1:0];
+	assign DM_Addr = Alu_Res;
 
-/*
-	Data Memory signals
-	Using a virtual memory for simulation purposes.
-	This will be a real module when D-Cache is implemented.
-*/
-	assign DM_ReadData  = read_data;
-	assign o_DM_Wd      = Rd2;
-	assign o_DM_Addr    = DM_Addr;
-	assign o_DM_Wen     = MC_MemWrite && !ex_st_addr;
-	assign o_DM_MemRead = MC_MemRead  && !ex_ld_addr;
-	assign o_DM_f3	    = f3;
+	DATA_MEMORY_V2 d_mem
+		(
+			//.i_clk         (i_clk),
+			.i_wr_data     (Rd2),
+			.i_addr        (DM_Addr),
+			.i_f3          (f3),
+			.i_wr_en       (MC_MemWrite),
+			.i_rd_en       (MC_MemRead),
+			.o_Rd          (DM_ReadData),
+			//.o_stall       (o_stall),
+			.o_ex_ld       (ex_ld_addr),
+			.o_ex_st       (ex_st_addr),
 
-	reg [`XLEN-1:0] read_data;
-	always@(*) begin
-		ex_ld_addr = 0;
-		ex_st_addr = 0;
-		read_data  = i_DM_ReadData;
-		if(MC_MemRead) begin
-			case(f3) 
-				3'b000 : read_data = {{`XLEN-8{i_DM_ReadData[7]}}, i_DM_ReadData[7:0]}; 
-				3'b001 : read_data = {{`XLEN-16{i_DM_ReadData[15]}}, i_DM_ReadData[15:0]}; 
-				3'b010 : read_data = i_DM_ReadData;
-				3'b100 : read_data = {{`XLEN-8 {1'b0}}, i_DM_ReadData[7:0]};
-				3'b101 : read_data = {{`XLEN-16{1'b0}}, i_DM_ReadData[15:0]};
-				default: read_data = i_DM_ReadData;
-			endcase 
-			case(f3[1:0])
-				2'b01 :	ex_ld_addr = (DM_Addr[0]) 	? 1'b1 : 1'b0;
-				2'b10 : ex_ld_addr = (|DM_Addr[1:0]) ? 1'b1 : 1'b0;
-				default : ex_ld_addr = 0;
-			endcase
-		end
-		if(MC_MemWrite) begin
-			case(f3[1:0])
-				2'b01 : ex_st_addr = (DM_Addr[0]) ? 1'b1 : 1'b0;
-				2'b10 : ex_st_addr = (|DM_Addr[1:0]) ? 1'b1 : 1'b0;
-				default : ex_st_addr = 0;
-			endcase
-		end
-	end
+			// CPU <-> Memory
+			.i_DM_ReadData (i_DM_ReadData),
+			.o_DM_Wd       (o_DM_Wd),
+			.o_DM_Addr     (o_DM_Addr),
+			.o_DM_f3       (o_DM_f3),
+			.o_DM_Wen      (o_DM_Wen),
+			.o_DM_MemRead  (o_DM_MemRead)
+		);
+
 
 	/* verilator lint_off UNUSED */
 	wire [`XLEN-1:0] CSR_Rd; // temporary
@@ -234,6 +216,7 @@ module DATAPATH_SC(
 	wire CSR_ex;
 	wire [`XLEN-1:0] CSR_Wd = (f3[2] == 1'b1) ? Imm : Rd1;
 	wire [`XLEN-1:0] badaddr = (ex_ld_addr || ex_st_addr) ? DM_Addr : PC_jump;
+	
 	// CSR
 	CSR csr (
 		.i_clk 		(i_clk),
