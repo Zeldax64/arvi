@@ -10,10 +10,9 @@ VL_SRCS := $(wildcard tb/verilator/*.cpp)
 subdirs = $(filter-out $1,$(sort $(dir $(wildcard $1*/))))
 rfind = $(wildcard $1$2) $(foreach d,$(call subdirs,$1),$(call rfind,$d,$2))
 ######################################
-SRC_DIR := ./rtl/modules
+SRC_DIR := ./rtl
 SOURCES := $(call rfind,$(SRC_DIR)/,*.v)
-#SOURCES += rtl/top/RISC_V_DB.v
-SOURCES += $(wildcard rtl/top/*.v)
+#SOURCES += $(wildcard rtl/top/*.v)
 HEADERS := $(call rfind,$(SRC_DIR)/,*.vh)
 
 SCRIPTS_DIR := ./tb/scripts

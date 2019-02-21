@@ -38,22 +38,23 @@ bool RISCV::load_mem(const char* path) {
 void RISCV::tick() {
 	mtick++;
 	this->mem_access();
-	this->d_access();
+	//this->d_access();
 	dut->i_clk = 0;
 	dut->eval();
 	if(tfp) tfp->dump(mtick);
 
 	mtick++;
 	dut->i_clk = 1;
-	this->d_access();
+	//this->d_access();
 	// Cache
-	dut->i_IC_MemReady = 0;
+	//dut->i_IC_MemReady = 0;
+	dut->i_ack = 0;
 	dut->eval();
 	if(tfp) tfp->dump(mtick);
 }
 
 void RISCV::reset() {
-	this->i_fetch();
+	//this->i_fetch();
     for(uint32_t i = 0; i < 2; i++) {
 		mtick++;
 		dut->i_clk = 0;
@@ -102,21 +103,41 @@ void RISCV::wait(uint32_t cycles) {
 }
 
 void RISCV::mem_access() {
-	uint32_t base_addr = dut->o_IM_Addr & this->MEM_SIZE;
-	 
-	if(dut->o_IC_DataReq) {
-		dut->i_IM_Instr = this->mem[base_addr] 		   |
-					      this->mem[base_addr+1] << 8  |
-					  	  this->mem[base_addr+2] << 16 |
-					      this->mem[base_addr+3] << 24;		
-		this->wait(0);
-		dut->i_IC_MemReady = 1;
+	uint32_t base_addr = dut->o_addr & this->MEM_SIZE;
+
+	if(dut->o_bus_en) {
+		uint32_t size = dut->o_size;
+		
+		if(dut->o_wr_rd) { // Write
+			uint32_t wr_val = dut->o_wr_data;
+			if(dut->o_addr == tohost_addr) {
+				to_host(wr_val);
+			}
+			else {
+				this->mem[base_addr]   =  wr_val & 0xFF;
+				this->mem[base_addr+1] = (size > 0) ? (wr_val & 0xFF00) >> 8 		: this->mem[base_addr+1]; 		
+				this->mem[base_addr+2] = (size > 1) ? (wr_val & 0xFF0000) >> 16 	: this->mem[base_addr+2];
+				this->mem[base_addr+3] = (size > 1) ? (wr_val & 0xFF000000) >> 24 : this->mem[base_addr+3];
+			}
+		}
+		else { // Read
+			uint32_t val;
+
+			val  = this->mem[base_addr];
+			val |= (size > 0) ? this->mem[base_addr+1] << 8  : 0;
+			val |= (size > 1) ? this->mem[base_addr+2] << 16 : 0;
+			val |= (size > 1) ? this->mem[base_addr+3] << 24 : 0;
+
+			dut->i_rd_data = val;
+		}
+		
+		dut->i_ack = 1;
 	}
+
 }
 
+/*
 void RISCV::i_fetch() {
-	// Instruction memory max size must be 0x1000 
-	// according to elf scripts in riscv-tests
 	uint32_t base_addr = dut->o_IM_Addr & this->MEM_SIZE; 
 	dut->i_IM_Instr = this->mem[base_addr] 		   |
 					  this->mem[base_addr+1] << 8  |
@@ -160,7 +181,7 @@ void RISCV::d_read() {
 
 	dut->i_DM_ReadData = val;
 }
-
+*/
 void RISCV::to_host(uint32_t val) {
 	if(val == 0)
 		std::cout << "TOHOST VAL == 0!" << std::endl;

@@ -14,6 +14,7 @@ module DATAPATH_SC(
 	output [`XLEN-1:0] o_IM_Addr,
 
 	// Data Memory connections
+	input  i_DM_data_ready,
 	input  [`XLEN-1:0] i_DM_ReadData,
 	output [`XLEN-1:0] o_DM_Wd,
 	output [`XLEN-1:0] o_DM_Addr,
@@ -84,23 +85,22 @@ module DATAPATH_SC(
 	wire ex_ld_addr;
 	wire ex_st_addr;
 
+	// Stalls
+	//wire IF_stall;
+	wire MEM_stall;
+	//assign IF_stall = IC_stall;
+	assign MEM_stall = DM_stall;
+
 	// Assigning PC
 	always@(posedge i_clk) begin
 		if(!i_rst) PC <= PC_RESET;
-		else if(IC_Stall) PC <= PC;
-		else 			  PC <= PC_next;
+		else if(IC_Stall || MEM_stall) PC <= PC;
+		else PC <= PC_next;
 	end
 
-	// Assigning instruction to be fetched
-	//assign o_IM_Addr = PC;
-
 	// IM wires
-	/* verilator lint_off UNUSED */
 	wire [`XLEN-1:0] i_DataBlock = i_IM_Instr;
-	//wire i_MemReady;
-
 	wire IC_Stall;
-	/* verilator lint_on UNUSED */
 	
 	// Instruction Memory
 	I_CACHE #(.BLOCK_SIZE(1),
@@ -142,7 +142,7 @@ module DATAPATH_SC(
 		.i_Stall   (IC_Stall)
 	);
 
-	wire wr_to_rf = MC_RegWrite && !CSR_ex;
+	wire wr_to_rf = MC_RegWrite && !CSR_ex && !MEM_stall;
 	REGISTER_FILE reg_file (
     	.o_Rd1(Rd1),
     	.o_Rd2(Rd2),
@@ -183,27 +183,31 @@ module DATAPATH_SC(
 	);
 
 	assign DM_Addr = Alu_Res;
-
+	/* verilator lint_off UNUSED */
+	wire DM_stall;
+	/* verilator lint_on UNUSED */
 	DATA_MEMORY_V2 d_mem
 		(
-			//.i_clk         (i_clk),
-			.i_wr_data     (Rd2),
-			.i_addr        (DM_Addr),
-			.i_f3          (f3),
-			.i_wr_en       (MC_MemWrite),
-			.i_rd_en       (MC_MemRead),
-			.o_Rd          (DM_ReadData),
-			//.o_stall       (o_stall),
-			.o_ex_ld       (ex_ld_addr),
-			.o_ex_st       (ex_st_addr),
+			.i_clk           (i_clk),
+			.i_rst           (i_rst),
+			.i_wr_data       (Rd2),
+			.i_addr          (DM_Addr),
+			.i_f3            (f3),
+			.i_wr_en         (MC_MemWrite),
+			.i_rd_en         (MC_MemRead),
+			.o_Rd            (DM_ReadData),
+			.o_stall       	 (DM_stall),
+			.o_ex_ld       	 (ex_ld_addr),
+			.o_ex_st       	 (ex_st_addr),
 
 			// CPU <-> Memory
-			.i_DM_ReadData (i_DM_ReadData),
-			.o_DM_Wd       (o_DM_Wd),
-			.o_DM_Addr     (o_DM_Addr),
-			.o_DM_f3       (o_DM_f3),
-			.o_DM_Wen      (o_DM_Wen),
-			.o_DM_MemRead  (o_DM_MemRead)
+			.i_DM_data_ready (i_DM_data_ready),
+			.i_DM_ReadData   (i_DM_ReadData),
+			.o_DM_Wd         (o_DM_Wd),
+			.o_DM_Addr       (o_DM_Addr),
+			.o_DM_f3       	 (o_DM_f3),
+			.o_DM_Wen      	 (o_DM_Wen),
+			.o_DM_MemRead  	 (o_DM_MemRead)
 		);
 
 
