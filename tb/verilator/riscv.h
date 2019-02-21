@@ -44,16 +44,7 @@ public:
 
 private:
 	void wait(uint32_t cycles);
-
 	void mem_access();
-	void i_fetch(); // Instruction fetch
-	void d_access();
-	void d_write(); // Write data
-	void d_read();
-	
-	uint32_t getF3();
-
 	void to_host(uint32_t val);
-
 	void dump_sig();
 };
