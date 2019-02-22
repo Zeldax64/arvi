@@ -80,7 +80,12 @@ module RISC_V(
 
 	assign DM_rd = (o_DM_Addr[`XLEN-1:`XLEN-4] == 4'h2) ? CLINT_rd : i_DM_ReadData;
 	*/
-	BUS bus_if
+	// Bus 1 signals
+	wire ack1, wr_rd1, bus_en1;
+	wire [2:0] size1;
+	wire [`XLEN-1:0] rd_data1, wr_data1, addr1;
+
+	BUS bus_1
 		(
 			.i_clk          (i_clk),
 			.i_rst          (i_rst),
@@ -101,13 +106,57 @@ module RISC_V(
 			.i_DM_MemRead   (DM_ren),
 			
 			// Bus signals
-			.i_ack          (i_ack),
-			.i_rd_data      (i_rd_data),
-			.o_bus_en       (o_bus_en),
-			.o_wr_rd        (o_wr_rd),
-			.o_wr_data      (o_wr_data),
-			.o_addr         (o_addr),
-			.o_size         (o_size)
+			.i_ack          (ack1),
+			.i_rd_data      (rd_data1),
+			.o_bus_en       (bus_en1),
+			.o_wr_rd        (wr_rd1),
+			.o_wr_data      (wr_data1),
+			.o_addr         (addr1),
+			.o_size         (size1)
 		);
+
+	ARBITER_2X1 inst_ARBITER_2X1
+		(
+			.i_clk      (i_clk),
+			.i_rst      (i_rst),
+			
+			// Bus 1
+			.i_bus_en1  (bus_en1),
+			.i_wr_rd1   (wr_rd1),
+			.i_wr_data1 (wr_data1),
+			.i_addr1    (addr1),
+			.i_size1    (size1),
+			.o_ack1     (ack1),
+			.o_rd_data1 (rd_data1),
+			
+			// Bus 2
+			/*
+			.i_bus_en2  (bus_en2),
+			.i_wr_rd2   (wr_rd2),
+			.i_wr_data2 (wr_data2),
+			.i_addr2    (addr2),
+			.i_size2    (size2),
+			.o_ack2     (ack2),
+			.o_rd_data2 (rd_data2),
+			*/
+			.i_bus_en2  (0),
+			.i_wr_rd2   (0),
+			.i_wr_data2 (0),
+			.i_addr2    (0),
+			.i_size2    (0),
+			/* verilator lint_off PINCONNECTEMPTY */
+			.o_ack2     ( ),
+			.o_rd_data2 ( ),
+			/* verilator lint_on PINCONNECTEMPTY */
+			// To Bus
+			.i_ack      (i_ack),
+			.i_rd_data  (i_rd_data),
+			.o_bus_en   (o_bus_en),
+			.o_wr_rd    (o_wr_rd),
+			.o_wr_data  (o_wr_data),
+			.o_addr     (o_addr),
+			.o_size     (o_size)
+		);
+
 
 endmodule
