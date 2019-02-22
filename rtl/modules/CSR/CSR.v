@@ -31,6 +31,8 @@ module CSR(
 	// Interrupts
 	input i_Int_tip
 	);
+	parameter HART_ID = 0;
+
 	// Instruction slicing
 	wire [2:0] f3 = i_inst[14:12];
 	wire [11:0] addr = i_inst[31:20];
@@ -185,6 +187,7 @@ module CSR(
 	// Read
 		else begin
 			case(addr)
+				`mhartid : o_Rd = HART_ID;
 				`mstatus : o_Rd = {{19{1'b0}}, 2'b11, 3'b0, mpie, 3'b0, mie, 3'b0};
 				`misa : o_Rd = {2'b01, 5'b0, 25'b00000_00010_00000_00000_00000_0}; // Read only RV32I
 				`medeleg : o_Rd = medeleg; // NFI - Just Storing values

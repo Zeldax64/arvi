@@ -30,9 +30,12 @@ module HART(
 	
 	// PC initial value
 	parameter PC_RESET = `PC_RESET;
+	parameter HART = 0;
 
 	DATAPATH_SC #(
-			.PC_RESET(PC_RESET)
+			.PC_RESET(PC_RESET),
+			.HART(HART)
+			
 		) datapath (
 		.i_clk(i_clk),
 		.i_rst(i_rst),

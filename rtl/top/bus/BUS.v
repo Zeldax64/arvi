@@ -16,12 +16,12 @@ module BUS (
 	// I-Cache 
 	input i_IM_data_req,
 	input [`XLEN-1:0]i_IM_addr,
-	output o_IM_mem_ready,
-	output [31:0] o_IM_Instr,
+	output reg o_IM_mem_ready,
+	output reg [31:0] o_IM_Instr,
 	
 	// Data Memory
-	output o_DM_mem_ready,
-	output [`XLEN-1:0] o_DM_ReadData,
+	output reg o_DM_mem_ready,
+	output reg [`XLEN-1:0] o_DM_ReadData,
 	input  [`XLEN-1:0] i_DM_Wd,
 	input  [`XLEN-1:0] i_DM_Addr,
 	input  [2:0] i_DM_f3,
@@ -31,11 +31,11 @@ module BUS (
 	// Bus 
 	input  i_ack,
 	input  [31:0] i_rd_data,
-	output o_bus_en,
-	output o_wr_rd,
-	output [31:0] o_wr_data,
-	output [31:0] o_addr,
-	output [2:0] o_size
+	output reg o_bus_en,
+	output reg o_wr_rd,
+	output reg [31:0] o_wr_data,
+	output reg [31:0] o_addr,
+	output reg [2:0] o_size
 );
 	localparam READ  = 1'b0;
 	localparam WRITE = 1'b1;

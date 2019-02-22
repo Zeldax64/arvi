@@ -31,6 +31,7 @@ module DATAPATH_SC(
 	);
 
 	parameter PC_RESET = `PC_RESET;	
+	parameter HART = 0;
 
 	reg [`XLEN-1:0] PC;
 	reg [`XLEN-1:0] PC_next;
@@ -222,7 +223,8 @@ module DATAPATH_SC(
 	wire [`XLEN-1:0] badaddr = (ex_ld_addr || ex_st_addr) ? DM_Addr : PC_jump;
 	
 	// CSR
-	CSR csr (
+	CSR #(.HART_ID(HART)
+		) csr (
 		.i_clk 		(i_clk),
 		.i_rst      (i_rst),
 		.i_CSR_en 	(MC_CSR_en),
