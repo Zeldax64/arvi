@@ -82,7 +82,7 @@ module BUS (
 			BUSY : begin
 				if(i_IM_data_req) begin
 					o_IM_Instr = i_rd_data;
-					o_IM_mem_ready = 1;
+					if(i_ack) o_IM_mem_ready = 1;
 				end
 				else begin
 					if(i_DM_MemRead) begin

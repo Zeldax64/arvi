@@ -1,5 +1,6 @@
 // Verilator includes
 #include "VRISC_V.h"
+
 #include "verilated.h"
 #include "verilated_vcd_c.h"
 
@@ -17,7 +18,7 @@ int main(int argc, char** argv) {
 	bool fail;
 	uint64_t mtick = 0;
 	uint64_t cycles = 0;
-	uint64_t MAX_CYCLES = 10000;
+	uint64_t MAX_CYCLES = 1000000;
 	bool trace= false;
 
 	Verilated::commandArgs(argc, argv);
