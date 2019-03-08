@@ -1,5 +1,7 @@
 `timescale 1ns / 1ps
 
+`include "defines.vh"
+
 //OPCodes
 `define OP_R_TYPE 		7'b0110011
 `define OP_I_TYPE 		7'b0010011

@@ -106,5 +106,5 @@ module DATA_MEMORY_V2(
 	end
 
 	wire data_req = i_wr_en || i_rd_en;
-	wire o_stall = (state != IDLE || data_req) && !i_DM_data_ready && !ex;
+	assign o_stall = (state != IDLE || data_req) && !i_DM_data_ready && !ex;
 endmodule

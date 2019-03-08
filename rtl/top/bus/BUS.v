@@ -31,7 +31,7 @@ module BUS (
 	// Bus 
 	input  i_ack,
 	input  [31:0] i_rd_data,
-	output reg o_bus_en,
+	output o_bus_en,
 	output reg o_wr_rd,
 	output reg [31:0] o_wr_data,
 	output reg [31:0] o_addr,
@@ -56,19 +56,31 @@ module BUS (
 	always@(*) begin
 		next_state = state;
 		o_IM_mem_ready = 0;
+		o_IM_Instr = 0;
 		o_DM_mem_ready = 0;
+		o_DM_ReadData = 0;
+		
+		// Bus default
+		//o_wr_rd = 0;
+		//o_wr_data = 0;
+		//o_addr = 0;
+		//o_size = 0;
 		case(state)
 			IDLE : begin
 				if(i_IM_data_req) begin
 					o_addr = i_IM_addr;
 					o_size = 2;
 					o_wr_rd = READ;
+					// Default
+					o_wr_data = 0;
 				end
 				else begin
 					if(i_DM_MemRead) begin
 						o_addr = i_DM_Addr;
 						o_wr_rd = READ;
 						o_size = i_DM_f3;
+						// Default
+						o_wr_data = 0;
 					end
 					if(i_DM_Wen) begin
 						o_addr = i_DM_Addr;
