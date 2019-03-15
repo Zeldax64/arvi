@@ -176,3 +176,25 @@ std::map<std::string, uint64_t> load_elf(const char* path, std::vector<uint8_t> 
     */
     return symbols;
 }
+
+int dump_elf(const char* elf_file, const char* dump_file) {
+    std::map<std::string, uint64_t> symbols;
+    std::vector<uint8_t> mem;
+    
+    symbols = load_elf(elf_file, &mem);
+
+    std::ofstream sigs(dump_file);
+
+    const uint32_t incr = 4;
+    sigs << std::setfill('0') << std::hex;
+    for(uint64_t i = 0; i < mem.size(); i=i+incr) {
+      for(uint64_t j = incr; j > 0; j--) {
+        sigs << std::setw(2) << (uint16_t) mem[i+j-1];
+      }
+    
+      sigs << std::endl;
+    }
+
+    sigs.close();    
+    return 0;
+}
