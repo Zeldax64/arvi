@@ -31,12 +31,17 @@ module BUS (
 	// Bus 
 	input  i_ack,
 	input  [31:0] i_rd_data,
-	output o_bus_en,
-	output reg o_wr_rd,
+	//output o_bus_en,
+	output reg o_wr_en,
 	output reg [31:0] o_wr_data,
 	output reg [31:0] o_addr,
-	output reg [2:0] o_size
+	output reg [3:0] o_byte_en
 );
+	
+	reg wr_en;
+	reg [31:0] wr_data, addr;
+	reg [3:0] byte_en;
+
 	localparam READ  = 1'b0;
 	localparam WRITE = 1'b1;
 
@@ -46,11 +51,17 @@ module BUS (
 
 	wire bus_req = i_IM_data_req || i_DM_MemRead || i_DM_Wen;
 	
-	assign o_bus_en = state != IDLE;
+	//assign o_bus_en = state != IDLE;
 
 	always@(posedge i_clk) begin
 		if(!i_rst) state <= IDLE;
-		else state <= next_state;
+		else begin
+			state     <= next_state;
+			o_wr_en   <= wr_en;
+			o_wr_data <= wr_data;
+			o_addr    <= addr;
+			o_byte_en <= byte_en;
+		end
 	end
 	
 	always@(*) begin
@@ -61,32 +72,22 @@ module BUS (
 		o_DM_ReadData = 0;
 		
 		// Bus default
-		//o_wr_rd = 0;
-		//o_wr_data = 0;
-		//o_addr = 0;
-		//o_size = 0;
+		wr_en = 0;
+		addr = 0;
 		case(state)
 			IDLE : begin
 				if(i_IM_data_req) begin
-					o_addr = i_IM_addr;
-					o_size = 2;
-					o_wr_rd = READ;
-					// Default
-					o_wr_data = 0;
+					addr = i_IM_addr;
+					wr_en = READ;
 				end
 				else begin
 					if(i_DM_MemRead) begin
-						o_addr = i_DM_Addr;
-						o_wr_rd = READ;
-						o_size = i_DM_f3;
-						// Default
-						o_wr_data = 0;
+						addr = i_DM_Addr;
+						wr_en = READ;
 					end
 					if(i_DM_Wen) begin
-						o_addr = i_DM_Addr;
-						o_wr_rd = WRITE;
-						o_size = i_DM_f3;
-						o_wr_data = i_DM_Wd;
+						addr = {i_DM_Addr[31:2], 2'b00};
+						wr_en = WRITE;
 					end
 				end
 				if(bus_req) next_state = BUSY;
@@ -111,4 +112,31 @@ module BUS (
 		endcase
 	end
 
+	// Defining byte enable output
+	always@(*) begin
+		case(i_DM_f3)
+			3'b000 : begin
+				byte_en[0] = i_DM_Addr[1:0] == 2'b00;  
+				byte_en[1] = i_DM_Addr[1:0] == 2'b01;  
+				byte_en[2] = i_DM_Addr[1:0] == 2'b10;  
+				byte_en[3] = i_DM_Addr[1:0] == 2'b11;  
+			end
+			3'b001 : begin
+				byte_en[1:0] = (i_DM_Addr[1] == 1'b0) ? 2'b11 : 2'b00;
+				byte_en[3:2] = (i_DM_Addr[1] == 1'b1) ? 2'b11 : 2'b00;
+			end
+			3'b010 : begin
+				byte_en = 4'b1111;
+			end
+			default: byte_en = 4'b0000;
+		endcase
+
+		case(byte_en)
+			4'b0010 : wr_data = i_DM_Wd << 8;
+			4'b0100 : wr_data = i_DM_Wd << 16;
+			4'b1100 : wr_data = i_DM_Wd << 16;
+			4'b1000 : wr_data = i_DM_Wd << 24;
+			default : wr_data = i_DM_Wd;
+		endcase
+	end
 endmodule

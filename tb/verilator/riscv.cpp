@@ -32,6 +32,10 @@ bool RISCV::load_mem(const char* path) {
   		sig_addr = symbols["begin_signature"];
   		sig_len = symbols["end_signature"] - sig_addr;
   	}
+
+  	//std::string dump_path(path);
+  	//dump_elf(path, (dump_path+".elf_dump").c_str());
+
   	return true;
 }
 
@@ -101,34 +105,30 @@ void RISCV::wait(uint32_t cycles) {
 void RISCV::mem_access() {
 	uint32_t base_addr = dut->o_addr & this->MEM_SIZE;
 
-	if(dut->o_bus_en) {
-		uint32_t size = dut->o_size;
+		if(dut->o_wr_en) {
+			uint32_t byte_en = dut->o_byte_en;
 		
-		if(dut->o_wr_rd) { // Write
 			uint32_t wr_val = dut->o_wr_data;
 			if(dut->o_addr == tohost_addr) {
 				to_host(wr_val);
 			}
 			else {
-				this->mem[base_addr]   =  wr_val & 0xFF;
-				this->mem[base_addr+1] = (size > 0) ? (wr_val & 0xFF00) >> 8 		: this->mem[base_addr+1]; 		
-				this->mem[base_addr+2] = (size > 1) ? (wr_val & 0xFF0000) >> 16 	: this->mem[base_addr+2];
-				this->mem[base_addr+3] = (size > 1) ? (wr_val & 0xFF000000) >> 24 : this->mem[base_addr+3];
+				if(byte_en & 0x1) this->mem[base_addr]   = (wr_val & 0xFF);
+				if(byte_en & 0x2) this->mem[base_addr+1] = (wr_val & 0xFF00) >> 8; 				
+				if(byte_en & 0x4) this->mem[base_addr+2] = (wr_val & 0xFF0000) >> 16; 	
+				if(byte_en & 0x8) this->mem[base_addr+3] = (wr_val & 0xFF000000) >> 24;
 			}
 		}
-		else { // Read
-			uint32_t val;
+		// Read
+		uint32_t val;
+		val  = this->mem[base_addr];
+		val |= this->mem[base_addr+1] << 8;
+		val |= this->mem[base_addr+2] << 16;
+		val |= this->mem[base_addr+3] << 24;
 
-			val  = this->mem[base_addr];
-			val |= (size > 0) ? this->mem[base_addr+1] << 8  : 0;
-			val |= (size > 1) ? this->mem[base_addr+2] << 16 : 0;
-			val |= (size > 1) ? this->mem[base_addr+3] << 24 : 0;
-
-			dut->i_rd_data = val;
-		}
+		dut->i_rd_data = val;
 
 		dut->i_ack = 1;
-	}
 
 }
 

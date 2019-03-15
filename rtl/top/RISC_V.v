@@ -11,11 +11,10 @@ module RISC_V(
 	// Bus 
 	input  i_ack,
 	input  [31:0] i_rd_data,
-	output o_bus_en,
-	output o_wr_rd,
+	output o_wr_en,
 	output [31:0] o_wr_data,
 	output [31:0] o_addr,
-	output [2:0]  o_size
+	output [3:0]  o_byte_en
 	);
 	
 	// PC initial value
@@ -103,11 +102,10 @@ module RISC_V(
 			// Bus signals
 			.i_ack          (i_ack),
 			.i_rd_data      (i_rd_data),
-			.o_bus_en       (o_bus_en),
-			.o_wr_rd        (o_wr_rd),
+			.o_wr_en        (o_wr_en),
 			.o_wr_data      (o_wr_data),
 			.o_addr         (o_addr),
-			.o_size         (o_size)
+			.o_byte_en      (o_byte_en)
 		);
 
 endmodule

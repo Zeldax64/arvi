@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 
 `include "defines.vh"
-
+/* verilator lint_off PINMISSING */
 /* verilator lint_off DECLFILENAME */
 module RISC_V_DUAL(
 /* verilator lint_on DECLFILENAME */
@@ -230,3 +230,5 @@ module RISC_V_DUAL(
 
 
 endmodule
+/* verilator lint_on PINMISSING */
+
