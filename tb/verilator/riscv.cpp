@@ -105,6 +105,7 @@ void RISCV::wait(uint32_t cycles) {
 void RISCV::mem_access() {
 	uint32_t base_addr = dut->o_addr & this->MEM_SIZE;
 
+	if(dut->o_bus_en) {
 		if(dut->o_wr_en) {
 			uint32_t byte_en = dut->o_byte_en;
 		
@@ -129,6 +130,7 @@ void RISCV::mem_access() {
 		dut->i_rd_data = val;
 
 		dut->i_ack = 1;
+	}
 
 }
 

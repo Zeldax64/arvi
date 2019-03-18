@@ -11,6 +11,7 @@ module RISC_V(
 	// Bus 
 	input  i_ack,
 	input  [31:0] i_rd_data,
+	output o_bus_en,
 	output o_wr_en,
 	output [31:0] o_wr_data,
 	output [31:0] o_addr,
@@ -102,6 +103,7 @@ module RISC_V(
 			// Bus signals
 			.i_ack          (i_ack),
 			.i_rd_data      (i_rd_data),
+			.o_bus_en      	(o_bus_en),
 			.o_wr_en        (o_wr_en),
 			.o_wr_data      (o_wr_data),
 			.o_addr         (o_addr),
