@@ -1,37 +1,57 @@
 module basys(
 	input i_clk,
-	input i_rst
+	input i_rst,
+	output [15:0] led
 	);
-
+	
 	localparam PC_RESET = 32'h8000_0000;
+	
+	wire rst = ~i_rst;
+	reg [31:0] to_host;
+
+	wire ack, wr_en, bus_en;
+	wire [3:0] byte_en;
+	wire [31:0] rd_data, wr_data, addr;
+
 	RISC_V #(
 			.PC_RESET(PC_RESET)
 		) inst_RISC_V (
 			.i_clk     (i_clk),
-			.i_rst     (i_rst),
-			.i_ack     (i_ack),
-			.i_rd_data (i_rd_data),
-			.o_bus_en  (o_bus_en),
-			.o_wr_rd   (o_wr_rd),
-			.o_wr_data (o_wr_data),
-			.o_addr    (o_addr),
-			.o_size    (o_size)
+			.i_rst     (rst),
+			.i_ack     (ack),
+			.i_rd_data (rd_data),
+			.o_bus_en  (bus_en),
+			.o_wr_en   (wr_en),
+			.o_wr_data (wr_data),
+			.o_addr    (addr),
+			.o_byte_en (byte_en)
 		);
-	
+
 	sp_ram #(
 			.MEM_DEPTH(4096),
 			.BYTES(4),
-			.OUT_REGS(1)
+			.OUT_REGS(0)
 		) inst_sp_ram (
 			.i_clk     (i_clk),
-			.i_rst     (i_rst),
-			.i_cs      (i_cs),
-			.i_wr_en   (i_wr_en),
-			.i_b_en    (i_b_en),
-			.i_wr_data (i_wr_data),
-			.i_addr    (i_addr),
-			.o_rd_data (o_rd_data)
+			.i_rst     (rst),
+			.i_cs      (bus_en),
+			.i_wr_en   (wr_en),
+			.i_b_en    (byte_en),
+			.i_wr_data (wr_data),
+			.i_addr    (addr),
+			.o_ack     (ack),
+			.o_rd_data (rd_data)
 		);
 
+	always@(posedge i_clk) begin
+		if(!rst) begin
+			to_host <= 0;
+		end
+		else if(bus_en && wr_en && addr == 32'h8000_1000) begin
+			to_host <= wr_data;
+		end
+	end 
+
+	assign led = to_host[15:0];
 
 endmodule // basys

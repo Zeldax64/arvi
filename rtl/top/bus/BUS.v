@@ -31,7 +31,7 @@ module BUS (
 	// Bus 
 	input  i_ack,
 	input  [31:0] i_rd_data,
-	output o_bus_en,
+	output reg o_bus_en,
 	output reg o_wr_en,
 	output reg [31:0] o_wr_data,
 	output reg [31:0] o_addr,

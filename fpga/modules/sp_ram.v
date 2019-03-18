@@ -11,7 +11,8 @@ module sp_ram
   input  i_wr_en,
   input  [BYTES-1:0] i_b_en,
   input  [BYTES*8-1:0] i_wr_data,
-  input  [$clog2(MEM_DEPTH)-1:0] i_addr,
+  input  [$clog2(MEM_DEPTH*4)-1:0] i_addr,
+  output reg o_ack,
   output [BYTES*8-1:0] o_rd_data
 );
 
@@ -20,15 +21,22 @@ module sp_ram
 
   reg [BYTES*8-1:0] mem[MEM_DEPTH-1:0];
 
+  wire [$clog2(MEM_DEPTH)-1:0] addr;
+  assign addr = i_addr[$clog2(MEM_DEPTH*4)-1:2];
+
   always@(posedge i_clk) begin
     if(i_cs) begin
       if(i_wr_en) begin
-        if(i_b_en[0]) mem[i_addr][7:0]   <= i_wr_data[7:0];
-        if(i_b_en[1]) mem[i_addr][15:8]  <= i_wr_data[15:8];
-        if(i_b_en[2]) mem[i_addr][23:16] <= i_wr_data[23:16];
-        if(i_b_en[3]) mem[i_addr][31:24] <= i_wr_data[31:24];
+        if(i_b_en[0]) mem[addr][7:0]   <= i_wr_data[7:0];
+        if(i_b_en[1]) mem[addr][15:8]  <= i_wr_data[15:8];
+        if(i_b_en[2]) mem[addr][23:16] <= i_wr_data[23:16];
+        if(i_b_en[3]) mem[addr][31:24] <= i_wr_data[31:24];
       end
-      RdData_DN <= mem[i_addr];
+      RdData_DN <= mem[addr];
+      o_ack <= 1;
+    end
+    else begin
+      o_ack <= 0;
     end
   end
 
@@ -54,7 +62,7 @@ module sp_ram
     end
   endgenerate// g_oureg_byp
   */
-  assign o_rd_data = RdData_DP;
+  assign o_rd_data = RdData_DN;
 
   initial begin
     $readmemh("program.mem",mem);
