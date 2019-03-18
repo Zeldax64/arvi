@@ -58,7 +58,7 @@ module I_CACHE
 
 	generate
 		if(BLOCK_SIZE == 1)
-			assign o_Data = data[index];
+			assign o_Data = (valid[index]) ? data[index] : 32'b0;
 		else begin
 			// Stopped here! BLOCK_SIZE > 1 is not allowed
 			wire [M-1:0]block = i_Addr[2 +: M];

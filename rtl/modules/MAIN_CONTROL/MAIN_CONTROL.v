@@ -104,7 +104,7 @@ module MAIN_CONTROL(
 					o_Branch   = 0;
 					o_MemRead  = 0;
 					o_MemWrite = 1;
-					o_MemToReg = 1'bx; //Don't Care
+					o_MemToReg = 1'b0; //Don't Care
 					o_ALUSrcA  = 0;
 					o_ALUSrcB  = 1;
 					o_RegWrite = 0;
@@ -118,7 +118,7 @@ module MAIN_CONTROL(
 					o_Branch   = 1;
 					o_MemRead  = 0;
 					o_MemWrite = 0;
-					o_MemToReg = 1'bx; //Don't Care
+					o_MemToReg = 1'b0; //Don't Care
 					o_ALUSrcA  = 0;
 					o_ALUSrcB  = 0;
 					o_RegWrite = 0;
@@ -160,11 +160,11 @@ module MAIN_CONTROL(
 					o_Branch   = 0;
 					o_MemRead  = 0;
 					o_MemWrite = 0;
-					o_MemToReg = 1'bx;
-					o_ALUSrcA  = 2'bx;
-					o_ALUSrcB  = 1'bx;
+					o_MemToReg = 1'b0;
+					o_ALUSrcA  = 2'b0;
+					o_ALUSrcB  = 1'b0;
 					o_RegWrite = 1;
-					o_ALUOp    = 3'bxxx; // Don't use ALU
+					o_ALUOp    = 3'b00; // Don't use ALU
 	    			o_Jump 	   = 1;
 	    			o_PCplus4  = 1;
 	    			o_CSR_en   = 0;
@@ -174,7 +174,7 @@ module MAIN_CONTROL(
 					o_Branch   = 0;
 					o_MemRead  = 0;
 					o_MemWrite = 0;
-					o_MemToReg = 1'bx;
+					o_MemToReg = 1'b0;
 					o_ALUSrcA  = 0;
 					o_ALUSrcB  = 1;
 					o_RegWrite = 1;
@@ -204,10 +204,10 @@ module MAIN_CONTROL(
 					o_MemRead  = 0;
 					o_MemWrite = 0;
 					o_MemToReg = 0;
-					o_ALUSrcA  = 2'bx;
-					o_ALUSrcB  = 1'bx;
+					o_ALUSrcA  = 2'b0;
+					o_ALUSrcB  = 1'b0;
 					o_RegWrite = 1;
-					o_ALUOp    = 3'bxxx;
+					o_ALUOp    = 3'b00;
 	    			o_Jump 	   = 0;
 	    			o_PCplus4  = 0;
 	    			o_CSR_en   = 1;

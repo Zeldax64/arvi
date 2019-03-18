@@ -64,7 +64,7 @@ module IMM_GEN(
 			`J_TYPE_JAL:  extend_J({i_Instr[31], i_Instr[19:12], i_Instr[20], i_Instr[30:21]});
 			`J_TYPE_JALR: extend_I(i_Instr[31:20]);
 			`SYSTEM_TYPE: o_Ext = {{`XLEN-5{1'b0}}, i_Instr[19:15]};
-			default: extend_I(12'bx);
+			default: extend_I(12'b0);
 		endcase
 	end
 
