@@ -65,21 +65,6 @@ module RISC_V(
 		.i_tip(1'b0)
 	);
 
-		/*
-	CLINT #(
-			.BASE_ADDR(32'h2000_0000)
-		) clint (
-		.i_clk		(i_clk),
-		.i_rst		(i_rst),
-		.i_wen  	(o_DM_Wen),
-		.i_ren  	(o_DM_MemRead),
-		.i_addr 	(o_DM_Addr),
-		.i_wrdata	(o_DM_WriteData),
-		.o_rddata 	(CLINT_rd),
-		.o_tip   	(tip)
-		);
-	assign DM_rd = (o_DM_Addr[`XLEN-1:`XLEN-4] == 4'h2) ? CLINT_rd : i_DM_ReadData;
-	*/
 	BUS bus_if
 		(
 			.i_clk          (i_clk),
@@ -109,5 +94,7 @@ module RISC_V(
 			.o_addr         (o_addr),
 			.o_byte_en      (o_byte_en)
 		);
+
+
 
 endmodule

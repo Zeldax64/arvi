@@ -1,8 +1,5 @@
 /*
 	Draft - Data Memory module
-	This module assumes a asynchronous memory which can return any requested value
-	in any address and in any size (according to f3) immediately. This should be 
-	used for simulation purpose.
 */
 
 `timescale 1ns / 1ps
