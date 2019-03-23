@@ -1,7 +1,10 @@
+/*
+	Broken file! Work in progress...
+*/
+
 `timescale 1ns / 1ps
 
 `include "defines.vh"
-/* verilator lint_off PINMISSING */
 /* verilator lint_off DECLFILENAME */
 module RISC_V_DUAL(
 /* verilator lint_on DECLFILENAME */
@@ -12,188 +15,108 @@ module RISC_V_DUAL(
 	input  i_ack,
 	input  [31:0] i_rd_data,
 	output o_bus_en,
-	output o_wr_rd,
+	output o_wr_en,
 	output [31:0] o_wr_data,
 	output [31:0] o_addr,
-	output [2:0]  o_size
+	output [3:0]  o_byte_en
 	);
 	
 	// PC initial value
 	parameter PC_RESET = `PC_RESET;
 
-	// Read data wires
-	//wire [`XLEN-1:0] DM_rd,CLINT_rd;
-	//wire tip;
+	localparam HARTS = 2;
 
 	/* Connections */
 	// Instruction Memory
-	wire IM_data_req_0;
-	wire IM_mem_ready_0;
-	wire [31:0] IM_instr_0;
-	wire [`XLEN-1:0] IM_addr_0;
+	wire [HARTS-1:0] IM_data_req;
+	wire [HARTS-1:0] IM_mem_ready;
+	wire [31:0] IM_instr [HARTS-1:0];
+	wire [`XLEN-1:0] IM_addr [HARTS-1:0];
 	
 	// Data Memory
-	wire DM_mem_ready_0;
-	wire DM_ren_0, DM_wen_0;
-	wire [2:0] DM_f3_0; 
-	wire [`XLEN-1:0] DM_rd_0, DM_wd_0, DM_addr_0;
+	wire [HARTS-1:0] DM_mem_ready;
+	wire [HARTS-1:0] DM_ren, DM_wen;
+	wire [2:0] DM_f3 [HARTS-1:0]; 
+	wire [`XLEN-1:0] DM_rd [HARTS-1:0];
+	wire [`XLEN-1:0] DM_wd [HARTS-1:0]; 
+	wire [`XLEN-1:0] DM_addr[HARTS-1:0];
 
-	HART #(
-			.PC_RESET(PC_RESET),
-			.HART(0)
-		) hart0(
-		.i_clk(i_clk),
-		.i_rst(i_rst),
-		
-		// Instruction Memory connections
-		.i_IM_Instr(IM_instr_0),
-		.i_IC_MemReady(IM_mem_ready_0),
-		.o_IM_Addr(IM_addr_0),
-		.o_IC_DataReq (IM_data_req_0),
 
-		// Data Memory connections
-		.i_DM_data_ready(DM_mem_ready_0),
-		.i_DM_ReadData(DM_rd_0),
-		.o_DM_WriteData(DM_wd_0),
-		.o_DM_Addr(DM_addr_0),
-		.o_DM_Wen(DM_wen_0),
-		.o_DM_MemRead(DM_ren_0),
-		.o_DM_f3(DM_f3_0),
+	// Bus signals
+	wire [HARTS-1:0] ack, wr_en, bus_en;
+	wire [3:0] byte_en [HARTS-1:0];
+	wire [`XLEN-1:0] rd_data [HARTS-1:0];
+	wire [`XLEN-1:0] wr_data[HARTS-1:0]; 
+	wire [`XLEN-1:0] addr [HARTS-1:0];
 
-		// Interrupt connections
-		//.i_tip(tip)
-		.i_tip(1'b0)
-	);
+`ifdef __ATOMIC 
+	wire [HARTS-1:0]MEM_atomic;		
+`endif
 
-		/*
-	CLINT #(
-			.BASE_ADDR(32'h2000_0000)
-		) clint (
-		.i_clk		(i_clk),
-		.i_rst		(i_rst),
-		.i_wen  	(o_DM_Wen),
-		.i_ren  	(o_DM_MemRead),
-		.i_addr 	(o_DM_Addr),
-		.i_wrdata	(o_DM_WriteData),
-		.o_rddata 	(CLINT_rd),
-		.o_tip   	(tip)
-		);
+	genvar i;
+	generate
+		for(i = 0; i < HARTS; i = i+1) begin
+			HART #(
+					.PC_RESET(PC_RESET),
+					.HART(i)
+				) hart(
+				.i_clk(i_clk),
+				.i_rst(i_rst),
+				
+				// Instruction Memory connections
+				.i_IM_Instr(IM_instr[i]),
+				.i_IC_MemReady(IM_mem_ready[i]),
+				.o_IM_Addr(IM_addr[i]),
+				.o_IC_DataReq (IM_data_req[i]),
 
-	assign DM_rd = (o_DM_Addr[`XLEN-1:`XLEN-4] == 4'h2) ? CLINT_rd : i_DM_ReadData;
-	*/
-	// Bus 1 signals
-	wire ack1, wr_rd1, bus_en1;
-	wire [2:0] size1;
-	wire [`XLEN-1:0] rd_data1, wr_data1, addr1;
+				// Data Memory connections
+				.i_DM_data_ready(DM_mem_ready[i]),
+				.i_DM_ReadData(DM_rd[i]),
+				.o_DM_WriteData(DM_wd[i]),
+				.o_DM_Addr(DM_addr[i]),
+				.o_DM_Wen(DM_wen[i]),
+				.o_DM_MemRead(DM_ren[i]),
+				.o_DM_f3(DM_f3[i]),
 
-	BUS bus_1
-		(
-			.i_clk          (i_clk),
-			.i_rst          (i_rst),
+`ifdef __ATOMIC 
+				.o_MEM_atomic   (MEM_atomic[i]),		
+`endif
+				// Interrupt connections
+				//.i_tip(tip)
+				.i_tip(1'b0)
+			);
 
-			// Instruction Memory
-			.i_IM_data_req  (IM_data_req_0),
-			.i_IM_addr      (IM_addr_0),
-			.o_IM_mem_ready (IM_mem_ready_0),
-			.o_IM_Instr     (IM_instr_0),
-			
-			// Data Memory
-			.o_DM_mem_ready (DM_mem_ready_0),
-			.o_DM_ReadData  (DM_rd_0),
-			.i_DM_Wd        (DM_wd_0),
-			.i_DM_Addr      (DM_addr_0),
-			.i_DM_f3        (DM_f3_0),
-			.i_DM_Wen       (DM_wen_0),
-			.i_DM_MemRead   (DM_ren_0),
-			
-			// Bus signals
-			.i_ack          (ack1),
-			.i_rd_data      (rd_data1),
-			.o_bus_en       (bus_en1),
-			.o_wr_rd        (wr_rd1),
-			.o_wr_data      (wr_data1),
-			.o_addr         (addr1),
-			.o_size         (size1)
-		);
+			BUS bus
+				(
+					.i_clk          (i_clk),
+					.i_rst          (i_rst),
 
-	/* Connections */
-
-	// Instruction Memory
-	wire IM_data_req_1;
-	wire IM_mem_ready_1;
-	wire [31:0] IM_instr_1;
-	wire [`XLEN-1:0] IM_addr_1;
-	
-	// Data Memory
-	wire DM_mem_ready_1;
-	wire DM_ren_1, DM_wen_1;
-	wire [2:0] DM_f3_1; 
-	wire [`XLEN-1:0] DM_rd_1, DM_wd_1, DM_addr_1;
-
-	HART #(
-			.PC_RESET(PC_RESET),
-			.HART(1)
-		) hart1(
-		.i_clk(i_clk),
-		.i_rst(i_rst),
-		
-		// Instruction Memory connections
-		.i_IM_Instr(IM_instr_1),
-		.i_IC_MemReady(IM_mem_ready_1),
-		.o_IM_Addr(IM_addr_1),
-		.o_IC_DataReq (IM_data_req_1),
-
-		// Data Memory connections
-		.i_DM_data_ready(DM_mem_ready_1),
-		.i_DM_ReadData(DM_rd_1),
-		.o_DM_WriteData(DM_wd_1),
-		.o_DM_Addr(DM_addr_1),
-		.o_DM_Wen(DM_wen_1),
-		.o_DM_MemRead(DM_ren_1),
-		.o_DM_f3(DM_f3_1),
-
-		// Interrupt connections
-		//.i_tip(tip)
-		.i_tip(1'b0)
-	);	
-	// Bus 2 signals
-/* verilator lint_off UNUSED */
-/* verilator lint_off UNDRIVEN */
-	wire ack2, wr_rd2, bus_en2;
-	wire [2:0] size2;
-	wire [`XLEN-1:0] rd_data2, wr_data2, addr2;
-/* verilator lint_on UNDRIVEN */
-/* verilator lint_on UNUSED */
-	BUS bus_2
-		(
-			.i_clk          (i_clk),
-			.i_rst          (i_rst),
-
-			// Instruction Memory
-			.i_IM_data_req  (IM_data_req_1),
-			.i_IM_addr      (IM_addr_1),
-			.o_IM_mem_ready (IM_mem_ready_1),
-			.o_IM_Instr     (IM_instr_1),
-			
-			// Data Memory
-			.o_DM_mem_ready (DM_mem_ready_1),
-			.o_DM_ReadData  (DM_rd_1),
-			.i_DM_Wd        (DM_wd_1),
-			.i_DM_Addr      (DM_addr_1),
-			.i_DM_f3        (DM_f3_1),
-			.i_DM_Wen       (DM_wen_1),
-			.i_DM_MemRead   (DM_ren_1),
-			
-			// Bus signals
-			.i_ack          (ack2),
-			.i_rd_data      (rd_data2),
-			.o_bus_en       (bus_en2),
-			.o_wr_rd        (wr_rd2),
-			.o_wr_data      (wr_data2),
-			.o_addr         (addr2),
-			.o_size         (size2)
-		);
-
+					// Instruction Memory
+					.i_IM_data_req  (IM_data_req[i]),
+					.i_IM_addr      (IM_addr[i]),
+					.o_IM_mem_ready (IM_mem_ready[i]),
+					.o_IM_Instr     (IM_instr[i]),
+					
+					// Data Memory
+					.o_DM_mem_ready (DM_mem_ready[i]),
+					.o_DM_ReadData  (DM_rd[i]),
+					.i_DM_Wd        (DM_wd[i]),
+					.i_DM_Addr      (DM_addr[i]),
+					.i_DM_f3        (DM_f3[i]),
+					.i_DM_Wen       (DM_wen[i]),
+					.i_DM_MemRead   (DM_ren[i]),
+					
+					// Bus signals
+					.i_ack          (ack[i]),
+					.i_rd_data      (rd_data[i]),
+					.o_bus_en       (bus_en[i]),
+					.o_wr_en        (wr_en[i]),
+					.o_wr_data      (wr_data[i]),
+					.o_addr         (addr[i]),
+					.o_byte_en      (byte_en[i])
+				);
+		end
+	endgenerate
 
 	ARBITER_2X1 inst_ARBITER_2X1
 		(
@@ -201,34 +124,49 @@ module RISC_V_DUAL(
 			.i_rst      (i_rst),
 			
 			// Bus 1
-			.i_bus_en1  (bus_en1),
-			.i_wr_rd1   (wr_rd1),
-			.i_wr_data1 (wr_data1),
-			.i_addr1    (addr1),
-			.i_size1    (size1),
-			.o_ack1     (ack1),
-			.o_rd_data1 (rd_data1),
+			.i_bus_en1  (bus_en[0]),
+			.i_wr_rd1   (wr_en[0]),
+			.i_wr_data1 (wr_data[0]),
+			.i_addr1    (addr[0]),
+			.i_byte_en1 (byte_en[0]),
+			.o_ack1     (ack[0]),
+			.o_rd_data1 (rd_data[0]),
 			
 			// Bus 2
-			.i_bus_en2  (bus_en2),
-			.i_wr_rd2   (wr_rd2),
-			.i_wr_data2 (wr_data2),
-			.i_addr2    (addr2),
-			.i_size2    (size2),
-			.o_ack2     (ack2),
-			.o_rd_data2 (rd_data2),
+			.i_bus_en2  (bus_en[1]),
+			.i_wr_rd2   (wr_en[1]),
+			.i_wr_data2 (wr_data[1]),
+			.i_addr2    (addr[1]),
+			.i_byte_en2 (byte_en[1]),
+			.o_ack2     (ack[1]),
+			.o_rd_data2 (rd_data[1]),
 			
 			// To Bus
 			.i_ack      (i_ack),
 			.i_rd_data  (i_rd_data),
 			.o_bus_en   (o_bus_en),
-			.o_wr_rd    (o_wr_rd),
+			.o_wr_en    (o_wr_en),
 			.o_wr_data  (o_wr_data),
 			.o_addr     (o_addr),
-			.o_size     (o_size)
+			.o_byte_en  (o_byte_en)
 		);
 
+`ifdef __ATOMIC // Atomic extension signal for atomic operations
+	wire set_res = MEM_atomic & o_wr_en;
+	wire check_res = MEM_atomic & !o_wr;
+	lr_sc_tbl #(
+			.ADDR_WIDTH(XLEN),
+			.N_IDS(1)
+		) inst_lr_sc_tbl (
+			.i_clk       (i_clk),
+			.i_rst       (i_rst),
+			.i_wr_en     (o_wr_en),
+			.i_set_res   (set_res),
+			.i_check_res (check_res),
+			.i_id        (0),
+			.i_addr      (o_addr),
+			.o_gnt       (o_gnt)
+		);
+`endif
 
 endmodule
-/* verilator lint_on PINMISSING */
-
