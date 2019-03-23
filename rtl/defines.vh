@@ -8,8 +8,9 @@
 // Start address
 `define PC_RESET 32'h80000000
 
-`define INSTRUCTION_MEMORY_SIZE 256
-`define DATA_MEMORY_SIZE 256
-
 `define PROGRAM_DATA "./test/asm/addi.bin"
+
+// Extensions
+//`define __ATOMIC
+
 `endif

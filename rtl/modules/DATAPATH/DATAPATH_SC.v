@@ -22,6 +22,10 @@ module DATAPATH_SC(
 	output o_DM_Wen,
 	output o_DM_MemRead,
 
+`ifdef __ATOMIC // Atomic extension signal for atomic operations
+	output o_MEM_atomic,
+`endif
+
 	// Interrupt connnections
 	input i_tip,
 
@@ -141,6 +145,11 @@ module DATAPATH_SC(
 
 		.i_Instr   (instr),
 		.i_Stall   (IC_Stall)
+
+`ifdef __ATOMIC
+		.o_atomic  (o_MEM_atomic),
+`endif
+
 	);
 
 	wire wr_to_rf = MC_RegWrite && !CSR_ex && !MEM_stall;

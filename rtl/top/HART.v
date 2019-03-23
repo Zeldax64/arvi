@@ -24,6 +24,10 @@ module HART(
 	output o_DM_MemRead,
 	output o_DM_Wen,
 
+`ifdef __ATOMIC // Atomic extension signal for atomic operations
+	output o_MEM_atomic,
+`endif
+
 	// Interrupt connections
 	input i_tip
 	);
@@ -54,6 +58,10 @@ module HART(
 		.o_DM_Wen(o_DM_Wen),
 		.o_DM_MemRead(o_DM_MemRead),
 		.o_DM_f3(o_DM_f3),
+
+`ifdef __ATOMIC
+		.o_MEM_atomic(o_MEM_atomic),
+`endif
 
 		// Interrupt connections
 		.i_tip (i_tip)

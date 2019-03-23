@@ -3,6 +3,7 @@
 `include "defines.vh"
 
 //OPCodes
+// RV-I
 `define OP_R_TYPE 		7'b0110011
 `define OP_I_TYPE 		7'b0010011
 `define OP_I_L_TYPE		7'b0000011
@@ -14,6 +15,11 @@
 `define OP_J_TYPE_JALR	7'b1100111
 `define OP_SYSTEM_TYPE	7'b1110011
 `define OP_FENCE		7'b0001111
+
+`ifdef __ATOMIC
+// RV-A
+`define OP_ATOMIC 		7'b0101111
+`endif
 
 module MAIN_CONTROL(
     output reg o_Branch,
@@ -29,9 +35,12 @@ module MAIN_CONTROL(
     output reg o_CSR_en,
     output reg o_Ex,
 
-    /* verilator lint_off UNUSED */
     input [`INSTRUCTION_SIZE:0] i_Instr,
-    /* verilator lint_on UNUSED */
+
+`ifdef __ATOMIC
+	output o_atomic,
+`endif
+
     input i_Stall
     );
 	
@@ -43,6 +52,11 @@ module MAIN_CONTROL(
 
 	always @(*) begin
     	o_Ex = 0; // No exception
+    	
+
+`ifdef __ATOMIC
+		o_atomic = 0
+`endif
     	if(i_Stall) begin
 			o_Branch   = 0;
 			o_MemRead  = 0;
@@ -207,13 +221,36 @@ module MAIN_CONTROL(
 					o_ALUSrcA  = 2'b0;
 					o_ALUSrcB  = 1'b0;
 					o_RegWrite = 1;
-					o_ALUOp    = 3'b00;
+					o_ALUOp    = 3'b000;
 	    			o_Jump 	   = 0;
 	    			o_PCplus4  = 0;
 	    			o_CSR_en   = 1;
 	    			o_Ex	   = (f3 == 0 && (f12 == 0 || f12 == 1) && rs1 == 0 && rd == 0) ? 1 : 0; // Checking if it was an ECALL or not
-
 				end
+
+`ifdef __ATOMIC
+				`OP_ATOMIC : begin
+					o_Branch   = 0;
+					o_ALUSrcA  = 2'b0;
+					o_ALUSrcB  = 1'b0;
+					o_ALUOp    = 3'b000;
+	    			o_Jump 	   = 0;
+	    			o_PCplus4  = 0;
+	    			o_CSR_en   = 0;
+					o_RegWrite = 1;
+					o_atomic   = 1;
+					if(f7[2]) begin // SC
+						o_MemRead  = 1; //
+						o_MemWrite = 0; //
+						o_MemToReg = 0; //
+					end
+					else begin // LR
+						o_MemRead  = 0; //
+						o_MemWrite = 1; //
+						o_MemToReg = 1; //
+					end
+				end
+`endif
 
 				default : begin // Invalid instruction!
 					o_Branch   = 1'b0;
