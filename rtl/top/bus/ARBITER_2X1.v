@@ -32,12 +32,22 @@ module ARBITER_2X1(
 	output reg [3:0] o_byte_en
 	);
 
+	reg bus_en;
+	reg wr_en;
+	reg [31:0] wr_data;
+	reg [31:0] addr;
+	reg [3:0] byte_en;
+	reg ack1;
+	reg [31:0] rd_data1;
+	reg ack2;
+	reg [31:0] rd_data2;
+
 	wire bus1_req, bus2_req;
-	wire bus_req;
+	//wire bus_req;
 
 	assign bus1_req = i_bus_en1;
 	assign bus2_req = i_bus_en2;
-	assign bus_req = bus1_req || bus2_req;
+	//assign bus_req = bus1_req || bus2_req;
 
 	localparam IDLE = 2'b00;
 	localparam BUS1 = 2'b01;
@@ -50,7 +60,16 @@ module ARBITER_2X1(
 			state 	 <= IDLE;
 		end
 		else begin
-			state <= next_state;
+			state      <= next_state;
+			o_bus_en   <= bus_en;
+			o_wr_en    <= wr_en;
+			o_wr_data  <= wr_data;
+			o_addr     <= addr;
+			o_byte_en  <= byte_en;
+			o_ack1     <= ack1;
+			o_rd_data1 <= rd_data1;
+			o_ack2     <= ack2;
+			o_rd_data2 <= rd_data2;        
 		end
 	end
 
@@ -64,14 +83,14 @@ module ARBITER_2X1(
 		end
 
 		if(state == BUS1) begin
-			if(!bus_req && i_ack)
+			if(i_ack)
 				next_state = IDLE;
 			if(bus2_req && i_ack)
 				next_state = BUS2;
 		end
 
 		if(state == BUS2) begin
-			if(!bus_req && i_ack)
+			if(i_ack)
 				next_state = IDLE;
 			if(bus1_req && i_ack);
 				next_state = BUS1;
@@ -79,34 +98,34 @@ module ARBITER_2X1(
 	end
 
 	always@(*) begin
-		o_bus_en   = 0;
-		o_wr_en    = 0;
-		o_wr_data  = 0;
-		o_addr     = 0;
-		o_byte_en     = 0;
+		bus_en   = 0;
+		wr_en    = 0;
+		wr_data  = 0;
+		addr     = 0;
+		byte_en  = 0;
 
-		o_ack1     = 0;
-		o_rd_data1 = 0;
-		o_ack2     = 0; 
-		o_rd_data2 = 0;
+		ack1     = 0;
+		rd_data1 = 0;
+		ack2     = 0; 
+		rd_data2 = 0;
 
 		if(state == BUS1) begin
-			o_bus_en   = i_bus_en1;
-			o_wr_en    = i_wr_rd1;
-			o_wr_data  = i_wr_data1;
-			o_addr     = i_addr1;
-			o_byte_en  = i_byte_en1;
-			o_ack1     = i_ack;
-			o_rd_data1 = i_rd_data;
+			bus_en   = i_bus_en1;
+			wr_en    = i_wr_rd1;
+			wr_data  = i_wr_data1;
+			addr     = i_addr1;
+			byte_en  = i_byte_en1;
+			ack1     = i_ack;
+			rd_data1 = i_rd_data;
 		end
 		if(state == BUS2) begin
-			o_bus_en   = i_bus_en2;
-			o_wr_en    = i_wr_rd2;
-			o_wr_data  = i_wr_data2;
-			o_addr     = i_addr2;
-			o_byte_en  = i_byte_en2;
-			o_ack2     = i_ack;
-			o_rd_data2 = i_rd_data;
+			bus_en   = i_bus_en2;
+			wr_en    = i_wr_rd2;
+			wr_data  = i_wr_data2;
+			addr     = i_addr2;
+			byte_en  = i_byte_en2;
+			ack2     = i_ack;
+			rd_data2 = i_rd_data;
 		end
 	end
 

@@ -49,9 +49,8 @@ module BUS (
 	localparam IDLE = 1'b0;
 	localparam BUSY = 1'b1;
 
-	wire bus_req = i_IM_data_req || i_DM_MemRead || i_DM_Wen;
-	
-	//assign o_bus_en = state != IDLE;
+	//wire bus_req = i_IM_data_req || i_DM_MemRead || i_DM_Wen;
+	reg bus_req;
 
 	always@(posedge i_clk) begin
 		if(!i_rst) state <= IDLE;
@@ -71,12 +70,14 @@ module BUS (
 		o_IM_Instr = 0;
 		o_DM_mem_ready = 0;
 		o_DM_ReadData = 0;
-		
+
 		// Bus default
+		bus_req = 0;
 		wr_en = 0;
 		addr = 0;
 		case(state)
 			IDLE : begin
+				bus_req = i_IM_data_req || i_DM_MemRead || i_DM_Wen;
 				if(i_IM_data_req) begin
 					addr = i_IM_addr;
 					wr_en = 1'b0;
@@ -94,6 +95,9 @@ module BUS (
 				if(bus_req) next_state = BUSY;
 			end
 			BUSY : begin
+				addr    = o_addr;
+				wr_en   = o_wr_en;
+				bus_req = o_bus_en;
 				if(i_IM_data_req) begin
 					o_IM_Instr = i_rd_data;
 					if(i_ack) o_IM_mem_ready = 1;
@@ -104,11 +108,17 @@ module BUS (
 						if(i_ack) o_DM_mem_ready = 1;
 					end
 					if(i_DM_Wen) begin
-						if(i_ack) o_DM_mem_ready = 1;
+						if(i_ack) begin
+							o_DM_mem_ready = 1;
+							wr_en = 0;
+						end
 					end
 				end				
 
-				if(i_ack) next_state = IDLE;
+				if(i_ack) begin 
+					next_state = IDLE;
+					bus_req = 0;
+				end
 			end
 		endcase
 	end

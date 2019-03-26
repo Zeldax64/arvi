@@ -21,10 +21,6 @@ module RISC_V(
 	// PC initial value
 	parameter PC_RESET = `PC_RESET;
 
-	// Read data wires
-	//wire [`XLEN-1:0] DM_rd,CLINT_rd;
-	//wire tip;
-
 	/* Connections */
 	// Instruction Memory
 	wire IM_data_req;
@@ -61,7 +57,6 @@ module RISC_V(
 		.o_DM_f3(DM_f3),
 
 		// Interrupt connections
-		//.i_tip(tip)
 		.i_tip(1'b0)
 	);
 
