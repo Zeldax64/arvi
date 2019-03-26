@@ -29,7 +29,7 @@ module lr_sc_tbl
 		end
 	endgenerate
 
-	assign o_gnt = (i_check_res) ? hit[i] : 1'b0;
+	assign o_gnt = (i_check_res) ? hit[i_id] : 1'b0;
 
 	integer j;
 	always@(posedge i_clk) begin
@@ -39,7 +39,7 @@ module lr_sc_tbl
 
 		// Reset logic
 		for(j = 0; j < N_IDS; j = j+1) begin
-			tbl[i] <= (reset[i] || ~i_rst) ? {ADDR_WIDTH{1'b0}} : tbl[j];
+			tbl[j] <= (rst[j] || ~i_rst) ? {ADDR_WIDTH{1'b0}} : tbl[j];
 		end
 		if(i_check_res && !hit[i_id]) // If any SC occurs after an LR
 			tbl[i_id] <= {ADDR_WIDTH{1'b0}}; 
