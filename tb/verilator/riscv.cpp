@@ -62,6 +62,7 @@ void RISCV::reset() {
 		dut->eval();
 		if(tfp) tfp->dump(mtick);
 
+		mtick++;
 		dut->i_clk = 1;
     	dut->i_rst = 0;
 		dut->eval();
