@@ -50,7 +50,8 @@ module RISC_V_DUAL(
 	wire [`XLEN-1:0] addr [HARTS-1:0];
 
 `ifdef __ATOMIC 
-	wire [HARTS-1:0]MEM_atomic;		
+	wire [HARTS-1:0] MEM_atomic;	
+	wire [$clog2(HARTS)-1:0] id;	
 `endif
 
 	genvar i;
@@ -118,7 +119,7 @@ module RISC_V_DUAL(
 		end
 	endgenerate
 
-	ARBITER_2X1 inst_ARBITER_2X1
+	ARBITER_2X1 arbiter_2x1
 		(
 			.i_clk      (i_clk),
 			.i_rst      (i_rst),
@@ -131,7 +132,8 @@ module RISC_V_DUAL(
 			.i_byte_en1 (byte_en[0]),
 			.o_ack1     (ack[0]),
 			.o_rd_data1 (rd_data[0]),
-			
+			.i_atomic1  (MEM_atomic[0]),
+
 			// Bus 2
 			.i_bus_en2  (bus_en[1]),
 			.i_wr_rd2   (wr_en[1]),
@@ -140,33 +142,42 @@ module RISC_V_DUAL(
 			.i_byte_en2 (byte_en[1]),
 			.o_ack2     (ack[1]),
 			.o_rd_data2 (rd_data[1]),
+			.i_atomic2  (MEM_atomic[1]),			
 			
 			// To Bus
 			.i_ack      (i_ack),
-			.i_rd_data  (i_rd_data),
+			.i_rd_data  (from_mem_rd),
+			.o_id       (id),
 			.o_bus_en   (o_bus_en),
 			.o_wr_en    (o_wr_en),
 			.o_wr_data  (o_wr_data),
 			.o_addr     (o_addr),
-			.o_byte_en  (o_byte_en)
+			.o_byte_en  (o_byte_en),
+			.o_atomic   (atomic)
 		);
 
 `ifdef __ATOMIC // Atomic extension signal for atomic operations
-	wire set_res = MEM_atomic & o_wr_en;
-	wire check_res = MEM_atomic & !o_wr;
+	wire set_res   = atomic & o_wr_en;
+	wire check_res = atomic & !o_wr_en;
+	wire atomic, gnt;
+	wire [`XLEN-1:0] from_mem_rd = (atomic) ? {`XLEN{~gnt}} : i_rd_data;
+
 	lr_sc_tbl #(
-			.ADDR_WIDTH(XLEN),
-			.N_IDS(1)
-		) inst_lr_sc_tbl (
+			.ADDR_WIDTH(`XLEN),
+			.N_IDS(2)
+		) lr_sc_tbl (
 			.i_clk       (i_clk),
 			.i_rst       (i_rst),
 			.i_wr_en     (o_wr_en),
 			.i_set_res   (set_res),
 			.i_check_res (check_res),
-			.i_id        (0),
+			.i_id        (id),
 			.i_addr      (o_addr),
-			.o_gnt       (o_gnt)
+			.o_gnt       (gnt)
 		);
+
+
+
 `endif
 
 endmodule

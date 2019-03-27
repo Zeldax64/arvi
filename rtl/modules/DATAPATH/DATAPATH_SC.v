@@ -143,12 +143,12 @@ module DATAPATH_SC(
 		.o_CSR_en  	(MC_CSR_en),
 		.o_Ex 	    (MC_Ex),
 
-		.i_Instr   (instr),
-		.i_Stall   (IC_Stall)
-
 `ifdef __ATOMIC
 		.o_atomic  (o_MEM_atomic),
 `endif
+
+		.i_Instr   (instr),
+		.i_Stall   (IC_Stall)
 
 	);
 

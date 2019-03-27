@@ -46,6 +46,9 @@ module MAIN_CONTROL(
 	
 	wire [6:0] OPCode = i_Instr[6:0];
 	wire [2:0] f3 = i_Instr[14:12];
+	/* verilator lint_off UNUSED */
+	wire [6:0] f7 = i_Instr[31:25];
+	/* verilator lint_on UNUSED */
 	wire [11:0] f12 = i_Instr[31:20];
 	wire [4:0] rs1 = i_Instr[19:15];
 	wire [4:0] rd = i_Instr[11:7];
@@ -55,7 +58,7 @@ module MAIN_CONTROL(
     	
 
 `ifdef __ATOMIC
-		o_atomic = 0
+		o_atomic = 0;
 `endif
     	if(i_Stall) begin
 			o_Branch   = 0;

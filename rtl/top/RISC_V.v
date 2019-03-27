@@ -56,6 +56,13 @@ module RISC_V(
 		.o_DM_MemRead(DM_ren),
 		.o_DM_f3(DM_f3),
 
+
+`ifdef __ATOMIC
+/* verilator lint_off PINCONNECTEMPTY */
+		.o_MEM_atomic(),
+/* verilator lint_on PINCONNECTEMPTY */
+`endif
+
 		// Interrupt connections
 		.i_tip(1'b0)
 	);
