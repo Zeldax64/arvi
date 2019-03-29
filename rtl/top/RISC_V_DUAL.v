@@ -41,7 +41,6 @@ module RISC_V_DUAL(
 	wire [`XLEN-1:0] DM_wd [HARTS-1:0]; 
 	wire [`XLEN-1:0] DM_addr[HARTS-1:0];
 
-
 	// Bus signals
 	wire [HARTS-1:0] ack, wr_en, bus_en;
 	wire [3:0] byte_en [HARTS-1:0];
@@ -51,7 +50,19 @@ module RISC_V_DUAL(
 
 `ifdef __ATOMIC 
 	wire [HARTS-1:0] MEM_atomic;	
-	wire [$clog2(HARTS)-1:0] id;	
+	//wire [$clog2(HARTS)-1:0] id;	
+`endif
+
+	// Bus <-> Memory Controller
+	wire MC_ack, MC_wr_en, MC_bus_en;
+	wire [3:0] MC_byte_en;
+	wire [`XLEN-1:0] MC_rd_data;
+	wire [`XLEN-1:0] MC_wr_data; 
+	wire [`XLEN-1:0] MC_addr;	
+
+`ifdef __ATOMIC 
+	wire MC_atomic;	
+	wire MC_id;	
 `endif
 
 	genvar i;
@@ -145,37 +156,44 @@ module RISC_V_DUAL(
 			.i_atomic2  (MEM_atomic[1]),			
 			
 			// To Bus
-			.i_ack      (i_ack),
-			.i_rd_data  (from_mem_rd),
-			.o_id       (id),
-			.o_bus_en   (o_bus_en),
-			.o_wr_en    (o_wr_en),
-			.o_wr_data  (o_wr_data),
-			.o_addr     (o_addr),
-			.o_byte_en  (o_byte_en),
-			.o_atomic   (atomic)
+			.i_ack      (MC_ack),
+			.i_rd_data  (MC_rd_data),
+			.o_id       (MC_id),
+			.o_bus_en   (MC_bus_en),
+			.o_wr_en    (MC_wr_en),
+			.o_wr_data  (MC_wr_data),
+			.o_addr     (MC_addr),
+			.o_byte_en  (MC_byte_en),
+			.o_atomic   (MC_atomic)
 		);
 
 `ifdef __ATOMIC // Atomic extension signal for atomic operations
-	wire set_res   = atomic & o_wr_en;
-	wire check_res = atomic & !o_wr_en;
-	wire atomic, gnt;
-	wire [`XLEN-1:0] from_mem_rd = (atomic) ? {`XLEN{~gnt}} : i_rd_data;
-
-	lr_sc_tbl #(
-			.ADDR_WIDTH(`XLEN),
-			.N_IDS(2)
-		) lr_sc_tbl (
-			.i_clk       (i_clk),
-			.i_rst       (i_rst),
-			.i_wr_en     (o_wr_en),
-			.i_set_res   (set_res),
-			.i_check_res (check_res),
-			.i_id        (id),
-			.i_addr      (o_addr),
-			.o_gnt       (gnt)
+	memory_controller #(
+			.N_IDS(HARTS)
+		) memory_controller (
+			.i_clk     (i_clk),
+			.i_rst     (i_rst),
+			
+			.i_bus_en  (MC_bus_en),
+			.i_wr_en   (MC_wr_en),
+			.i_wr_data (MC_wr_data),
+			.i_addr    (MC_addr),
+			.i_byte_en (MC_byte_en),
+			.o_ack     (MC_ack),
+			.o_rd_data (MC_rd_data),
+			
+			.i_atomic  (MC_atomic),
+			.i_id      (MC_id),
+			.i_operation (5'b0),
+			
+			.i_ack     (i_ack),
+			.i_rd_data (i_rd_data),
+			.o_bus_en  (o_bus_en),
+			.o_wr_en   (o_wr_en),
+			.o_wr_data (o_wr_data),
+			.o_addr    (o_addr),
+			.o_byte_en (o_byte_en)
 		);
-
 
 
 `endif

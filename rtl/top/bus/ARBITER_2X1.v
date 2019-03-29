@@ -59,22 +59,26 @@ module ARBITER_2X1(
 
 	always@(posedge i_clk) begin
 		if(!i_rst) begin
-			state 	 <= IDLE;
+			state <= IDLE;
 		end
 		else begin
-			state      <= next_state;
-			o_id 	   <= id;
-			o_bus_en   <= bus_en;
-			o_wr_en    <= wr_en;
-			o_wr_data  <= wr_data;
-			o_addr     <= addr;
-			o_byte_en  <= byte_en;
-			o_ack1     <= ack1;
-			o_rd_data1 <= rd_data1;
-			o_ack2     <= ack2;
-			o_rd_data2 <= rd_data2;
-			o_atomic   <= atomic;        
+			state <= next_state;   
 		end
+	end
+
+	// To output
+	always@(*) begin
+		o_id 	   = id;
+		o_bus_en   = bus_en;
+		o_wr_en    = wr_en;
+		o_wr_data  = wr_data;
+		o_addr     = addr;
+		o_byte_en  = byte_en;
+		o_ack1     = ack1;
+		o_rd_data1 = rd_data1;
+		o_ack2     = ack2;
+		o_rd_data2 = rd_data2;
+		o_atomic   = atomic;     
 	end
 
 	always@(*) begin
@@ -89,15 +93,15 @@ module ARBITER_2X1(
 		if(state == BUS1) begin
 			if(i_ack)
 				next_state = IDLE;
-			if(bus2_req && i_ack)
-				next_state = BUS2;
+			//if(bus2_req && i_ack)
+			//	next_state = BUS2;
 		end
 
 		if(state == BUS2) begin
 			if(i_ack)
 				next_state = IDLE;
-			if(bus1_req && i_ack);
-				next_state = BUS1;
+			//if(bus1_req && i_ack);
+			//	next_state = BUS1;
 		end
 	end
 
