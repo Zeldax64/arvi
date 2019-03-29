@@ -236,7 +236,7 @@ module MAIN_CONTROL(
 					o_Branch   = 0;
 					o_ALUSrcA  = 2'b0;
 					o_ALUSrcB  = 1'b0;
-					o_ALUOp    = 3'b000;
+					o_ALUOp    = 3'b101;
 	    			o_Jump 	   = 0;
 	    			o_PCplus4  = 0;
 	    			o_CSR_en   = 0;

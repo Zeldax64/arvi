@@ -27,6 +27,7 @@ module ALU(
 			`ALU_SRA:  o_Rc = $signed(i_Ra) >>> i_Rb[4:0];
 			`ALU_OR:   o_Rc = i_Ra | i_Rb;
 			`ALU_AND:  o_Rc = i_Ra & i_Rb;
+			`ALU_S1:   o_Rc = i_Ra;
 			default:   o_Rc = `XLEN'b0;
 		endcase
 	end

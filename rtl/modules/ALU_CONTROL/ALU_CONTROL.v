@@ -23,6 +23,7 @@
 `define ALUOP_R   3'b010
 `define ALUOP_I   3'b011
 `define ALUOP_U	  3'b100
+`define ALUOP_S1  3'b101
 
 module ALU_CONTROL(
     output reg [3:0] o_ALUControlLines,
@@ -105,7 +106,7 @@ module ALU_CONTROL(
 				default : o_ALUControlLines = 4'bx;
 			endcase
 			`ALUOP_U: o_ALUControlLines = `ALU_ADD;
-
+			`ALUOP_S1: o_ALUControlLines = `ALU_S1;
 			default : o_ALUControlLines = 4'bx;
 		endcase
 	end

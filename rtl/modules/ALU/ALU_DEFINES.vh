@@ -2,13 +2,7 @@
 `define __ALU_DEFINES
 
 /*----- ALU Operations -----*/
-/*
-	Lista das operações fornecidas pela ALU. Verificar a possibildiade
-	de se adicionar novas operações caso necessário. A codificação da
-	ALU foi baseada nos atributos funct3 das intruções do RISC-V com o
-	bit de desambiguação.
-	Formato adotado: {bit, fucnt3}
-*/
+
 	`define ALU_ADD  4'b0000
 	`define ALU_SUB  4'b1000
 	`define ALU_SLL  4'b0001
@@ -19,7 +13,7 @@
 	`define ALU_SRA  4'b1101
 	`define ALU_OR   4'b0110
 	`define ALU_AND  4'b0111	
-
+	`define ALU_S1   4'b1001
 /*
 	localparam ALU_ADD  = 3'b000
 	localparam ALU_SUB  = 3'b000
