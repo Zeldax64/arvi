@@ -19,7 +19,7 @@ SCRIPTS_DIR := ./tb/scripts
 
 run: all
 	@echo "--- Running ---"
-	obj_dir/VRISC_V +loadmem=I-ADD-01.elf -v
+	obj_dir/VRISC_V +loadmem=rv32ua-p-lrsc -v
 
 all: $(SOURCES) $(HEADERS)
 	$(VL) $(VLFLAGS) $(SOURCES) $(VL_SRCS) 

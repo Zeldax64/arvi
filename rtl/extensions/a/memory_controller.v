@@ -1,6 +1,7 @@
 `timescale 1ns / 1ps
 
 `include "defines.vh"
+`include "rtl/extensions/a/atomic.vh"
 
 module memory_controller
 	#(
@@ -22,8 +23,9 @@ module memory_controller
 	// Bus atomic signals
 	input  i_atomic,
 	input [$clog2(N_IDS)-1:0] i_id,
-	input [4:0] i_operation,
-
+	/* verilator lint_off UNUSED */
+	input [6:0] i_operation,
+	/* verilator lint_on UNUSED */
 	// MEM_CONTROLLER <-> MEM
 	input  i_ack,
 	input  [31:0] i_rd_data,
@@ -36,14 +38,11 @@ module memory_controller
 
 /*
  TODO: 
- 	- instanciar sinais
-	- criar FSM
-	- conectar lr_sc_tbl
-	- criar ALU
+	- Create ALU
 */
 	wire is_lr, is_sc, is_AMO;
-	assign is_lr = (i_operation == 5'b00010);
-	assign is_sc = (i_operation == 5'b00011);
+	assign is_lr = (i_operation[6:2] == `LR);
+	assign is_sc = (i_operation[6:2] == `SC);
 	assign is_AMO = i_atomic && !(is_lr | is_sc); 
 
 	reg ack_d;
@@ -89,10 +88,9 @@ module memory_controller
 			// ALU
 			s1        <= i_wr_data;
 			s2        <= i_rd_data;
-			alu_res   <= s1;
+			alu_res   <= s1 + s2;
 		end
 	end 
-
 	// FSM
 
 	// States
@@ -103,9 +101,9 @@ module memory_controller
 	localparam MEM_ACCESS = 3'b100;
 
 	always@(*) begin
-		ack_d     = o_ack;
+		ack_d     = 0;
 		rd_data_d = o_rd_data;
-		bus_en_d  = o_bus_en;
+		bus_en_d  = 0;
 		wr_en_d   = o_wr_en;
 		wr_data_d = o_wr_data;
 		addr_d    = o_addr;
@@ -122,35 +120,49 @@ module memory_controller
 					byte_en_d = 0;
 				end
 				if(next_state == FETCH) begin
-					bus_en_d = 1;
-					addr_d = i_addr;
+					bus_en_d = 0;
+					addr_d   = i_addr;
 				end
 				if(next_state == MEM_ACCESS) begin
 					ack_d     = 0;
 					rd_data_d = i_rd_data;
-					bus_en_d  = i_bus_en;
+					bus_en_d  = 1;
 					wr_en_d   = i_wr_en;
 					wr_data_d = i_wr_data;
 					addr_d    = i_addr;    
 					byte_en_d = i_byte_en;
+					if(is_sc) begin
+						wr_en_d = i_wr_en && sc_grant;
+					end
 				end
 			end
 			FETCH : begin
-				// Is it really necessary?
 				if(next_state == EX) begin
-
+					bus_en_d  = 0;
+				end
+				else begin
+					bus_en_d = 1;
+					addr_d   = i_addr;
 				end
 			end
 			EX : begin
 				if(next_state == STORE) begin
 					wr_data_d = alu_res;
-					wr_en_d   = 1;
-					bus_en_d  = 1;
+					//wr_en_d   = 1;
+					//bus_en_d  = 1;
 				end
 			end
 			STORE : begin
-				rd_data_d = s2;
-				ack_d = 1;
+				if(next_state == IDLE) begin
+					rd_data_d = s2;
+					ack_d = 1;
+					wr_en_d = 0;
+					bus_en_d = 0;
+				end
+				else begin
+					bus_en_d = 1;
+					wr_en_d  = 1;
+				end
 			end
 			MEM_ACCESS : begin
 				if(next_state == IDLE) begin
@@ -161,6 +173,9 @@ module memory_controller
 					wr_data_d = 0;
 					addr_d    = 0;    
 					byte_en_d = 0;
+					if(is_sc) begin
+						rd_data_d = {{31{1'b0}}, ~sc_grant};
+					end
 				end				
 			end
 			default : begin end
