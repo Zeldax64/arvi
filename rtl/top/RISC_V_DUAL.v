@@ -6,7 +6,7 @@
 
 `include "defines.vh"
 /* verilator lint_off DECLFILENAME */
-module RISC_V_DUAL(
+module RISC_V(
 /* verilator lint_on DECLFILENAME */
 	input i_clk,
 	input i_rst,
@@ -51,6 +51,7 @@ module RISC_V_DUAL(
 `ifdef __ATOMIC 
 	wire [HARTS-1:0] MEM_atomic;	
 	//wire [$clog2(HARTS)-1:0] id;	
+	wire [6:0] MEM_operation [HARTS-1:0];
 `endif
 
 	// Bus <-> Memory Controller
@@ -58,9 +59,10 @@ module RISC_V_DUAL(
 	wire [3:0] MC_byte_en;
 	wire [`XLEN-1:0] MC_rd_data;
 	wire [`XLEN-1:0] MC_wr_data; 
-	wire [`XLEN-1:0] MC_addr;	
+	wire [`XLEN-1:0] MC_addr;
 
 `ifdef __ATOMIC 
+	wire [6:0] MC_operation;
 	wire MC_atomic;	
 	wire MC_id;	
 `endif
@@ -91,7 +93,8 @@ module RISC_V_DUAL(
 				.o_DM_f3(DM_f3[i]),
 
 `ifdef __ATOMIC 
-				.o_MEM_atomic   (MEM_atomic[i]),		
+				.o_MEM_atomic   (MEM_atomic[i]),
+				.o_DM_f7        (MEM_operation[i]),		
 `endif
 				// Interrupt connections
 				//.i_tip(tip)
@@ -144,7 +147,8 @@ module RISC_V_DUAL(
 			.o_ack1     (ack[0]),
 			.o_rd_data1 (rd_data[0]),
 			.i_atomic1  (MEM_atomic[0]),
-
+			.i_operation1 (MEM_operation[0]),
+			
 			// Bus 2
 			.i_bus_en2  (bus_en[1]),
 			.i_wr_rd2   (wr_en[1]),
@@ -154,6 +158,7 @@ module RISC_V_DUAL(
 			.o_ack2     (ack[1]),
 			.o_rd_data2 (rd_data[1]),
 			.i_atomic2  (MEM_atomic[1]),			
+			.i_operation2(MEM_operation[1]),
 			
 			// To Bus
 			.i_ack      (MC_ack),
@@ -164,7 +169,8 @@ module RISC_V_DUAL(
 			.o_wr_data  (MC_wr_data),
 			.o_addr     (MC_addr),
 			.o_byte_en  (MC_byte_en),
-			.o_atomic   (MC_atomic)
+			.o_atomic   (MC_atomic),
+			.o_operation (MC_operation)
 		);
 
 `ifdef __ATOMIC // Atomic extension signal for atomic operations
@@ -184,7 +190,7 @@ module RISC_V_DUAL(
 			
 			.i_atomic  (MC_atomic),
 			.i_id      (MC_id),
-			.i_operation (5'b0),
+			.i_operation (MC_operation),
 			
 			.i_ack     (i_ack),
 			.i_rd_data (i_rd_data),

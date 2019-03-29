@@ -5,7 +5,6 @@
 /* verilator lint_off DECLFILENAME */
 module HART(
 /* verilator lint_on DECLFILENAME */
-
 	input i_clk,
 	input i_rst,
 
@@ -26,6 +25,7 @@ module HART(
 
 `ifdef __ATOMIC // Atomic extension signal for atomic operations
 	output o_MEM_atomic,
+	output [6:0] o_DM_f7,
 `endif
 
 	// Interrupt connections
@@ -61,6 +61,7 @@ module HART(
 
 `ifdef __ATOMIC
 		.o_MEM_atomic(o_MEM_atomic),
+		.o_DM_f7     (o_DM_f7),
 `endif
 
 		// Interrupt connections

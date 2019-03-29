@@ -24,6 +24,7 @@ module DATAPATH_SC(
 
 `ifdef __ATOMIC // Atomic extension signal for atomic operations
 	output o_MEM_atomic,
+	output [6:0] o_DM_f7,
 `endif
 
 	// Interrupt connnections
@@ -33,6 +34,10 @@ module DATAPATH_SC(
 	input i_clk,
 	input i_rst
 	);
+	// TODO: find a place to this signal
+`ifdef __ATOMIC
+	assign o_DM_f7 = f7;
+`endif
 
 	parameter PC_RESET = `PC_RESET;	
 	parameter HART = 0;
