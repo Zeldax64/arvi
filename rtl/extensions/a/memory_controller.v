@@ -55,8 +55,9 @@ module memory_controller
 
 	reg [2:0] state, next_state;
 
-	reg [`XLEN-1:0] s1, s2, alu_res;
-	
+	reg [`XLEN-1:0] s1, s2;
+	wire [`XLEN-1:0] alu_res;
+
 	always@(posedge i_clk) begin
 		if(!i_rst) begin
 			o_ack     <= 0;
@@ -72,7 +73,7 @@ module memory_controller
 			// ALU
 			s1        <= 0;
 			s2        <= 0;
-			alu_res   <= 0;			
+			//alu_res   <= 0;			
 		end
 		else begin
 			o_ack     <= ack_d;
@@ -88,7 +89,7 @@ module memory_controller
 			// ALU
 			s1        <= i_wr_data;
 			s2        <= i_rd_data;
-			alu_res   <= s1 + s2;
+			//alu_res   <= s1 + s2;
 		end
 	end 
 	// FSM
@@ -224,5 +225,10 @@ module memory_controller
 			.o_gnt       (sc_grant)
 		);
 
+	atomic_alu atomic_alu (
+		.i_op 	 (i_operation[6:2]),
+		.s1 	 (s1), 
+		.s2 	 (s2), 
+		.alu_res (alu_res));
 
 endmodule

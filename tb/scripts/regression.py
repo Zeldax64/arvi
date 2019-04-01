@@ -16,6 +16,8 @@ def test_loop(progs):
 	return failed
 
 def isa():
+	print("--- ISA Tests ---")
+
 	# Getting programs list
 	test_folder = "tb/tests/isa/rv32ui"
 	files = glob.glob(test_folder+'/*')
@@ -25,8 +27,19 @@ def isa():
 			progs.append(file)
 
 	# Testing
-	print("--- ISA Tests ---")
 	failed = test_loop(progs)
+
+	# Getting programs list
+	test_folder = "tb/tests/isa/rv32ua"
+	files = glob.glob(test_folder+'/*')
+	progs = []
+	for file in files:
+		if '.' not in file:
+			progs.append(file)
+
+	# Testing
+	failed = test_loop(progs) or failed
+
 
 	# Result
 	if not failed: 

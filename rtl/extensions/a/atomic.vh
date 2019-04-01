@@ -1,4 +1,5 @@
-`ifdef __ATOMIC
+`ifndef __ATOMIC_INSTRUCTIONS
+`define __ATOMIC_INSTRUCTIONS
 
 `define LR 		5'b00010
 `define SC 		5'b00011

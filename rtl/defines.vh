@@ -11,6 +11,6 @@
 `define PROGRAM_DATA "./test/asm/addi.bin"
 
 // Extensions
-`define __ATOMIC
+//`define __ATOMIC
 
 `endif

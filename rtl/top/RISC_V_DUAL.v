@@ -1,12 +1,13 @@
 /*
-	Broken file! Work in progress...
+	Work in progress...
+	Current status: First tests with atomic extension were successful.
 */
 
 `timescale 1ns / 1ps
 
 `include "defines.vh"
 /* verilator lint_off DECLFILENAME */
-module RISC_V(
+module RISC_V_DUAL(
 /* verilator lint_on DECLFILENAME */
 	input i_clk,
 	input i_rst,
