@@ -33,14 +33,15 @@ module lr_sc_tbl
 
 	integer j;
 	always@(posedge i_clk) begin
-		// Set reservation
-		if(i_set_res) 
-			tbl[i_id] <= i_addr;
-
 		// Reset logic
 		for(j = 0; j < N_IDS; j = j+1) begin
 			tbl[j] <= (rst[j] || ~i_rst) ? {ADDR_WIDTH{1'b0}} : tbl[j];
 		end
+
+		// Set reservation
+		if(i_set_res) 
+			tbl[i_id] <= i_addr;
+
 		if(i_check_res && !hit[i_id]) // If any SC occurs after an LR
 			tbl[i_id] <= {ADDR_WIDTH{1'b0}}; 
 	end

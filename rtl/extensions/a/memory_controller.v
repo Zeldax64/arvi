@@ -41,8 +41,8 @@ module memory_controller
 	- Create ALU
 */
 	wire is_lr, is_sc, is_AMO;
-	assign is_lr = (i_operation[6:2] == `LR);
-	assign is_sc = (i_operation[6:2] == `SC);
+	assign is_lr = (i_operation[6:2] == `LR) && i_atomic;
+	assign is_sc = (i_operation[6:2] == `SC) && i_atomic;
 	assign is_AMO = i_atomic && !(is_lr | is_sc); 
 
 	reg ack_d;
@@ -220,7 +220,7 @@ module memory_controller
 			.i_set_res   (is_lr),
 			.i_check_res (is_sc),
 			.i_id        (i_id),
-			.i_addr      (o_addr[`XLEN-1:2]),
+			.i_addr      (i_addr[`XLEN-1:2]),
 			.o_gnt       (sc_grant)
 		);
 

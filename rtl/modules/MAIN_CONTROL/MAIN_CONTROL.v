@@ -244,12 +244,12 @@ module MAIN_CONTROL(
 					o_atomic   = 1;
 					if(f7[2]) begin // SC
 						o_MemRead  = 1; //
-						o_MemWrite = 0; //
-						o_MemToReg = 0; //
+						o_MemWrite = 1; //
+						o_MemToReg = 1; //
 					end
 					else begin // LR
-						o_MemRead  = 0; //
-						o_MemWrite = 1; //
+						o_MemRead  = 1; //
+						o_MemWrite = 0; //
 						o_MemToReg = 1; //
 					end
 				end

@@ -1,7 +1,7 @@
 `ifdef __ATOMIC
 
 `define LR 		5'b00010
-`define SC 		5'b00010
+`define SC 		5'b00011
 `define AMOSWAP 5'b00001
 `define AMOADD  5'b00000
 `define AMOXOR  5'b00100
