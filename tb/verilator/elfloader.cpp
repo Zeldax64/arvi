@@ -1,3 +1,8 @@
+/*
+  elfloader.cpp
+  This is the same file from ETH's Ariane project with minor modifications.
+*/
+
 #include <fesvr/elf.h>
 #include <fesvr/memif.h>
 
@@ -149,8 +154,10 @@ std::map<std::string, uint64_t> load_elf(const char* path, std::vector<uint8_t> 
 
     while(get_section(&address, &len)) {
         buffer = new char[len];
+        for(unsigned int i = 0; i < len; i++) {
+               buffer[i] = 0;
+        }   
         read_section(address, buffer);
-        
         uint32_t base_addr = address & MAX_MEM;
 
         if(base_addr > i_mem->size()) {
