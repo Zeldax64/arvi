@@ -45,6 +45,7 @@ public:
 private:
 	void wait(uint32_t cycles);
 	void mem_access();
+	uint32_t mem_read(uint32_t addr);
 	void to_host(uint32_t val);
 	void dump_sig();
 };

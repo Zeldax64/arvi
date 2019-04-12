@@ -51,12 +51,14 @@ int main(int argc, char** argv) {
 
 	if(dut->success()) {
 		//std::cout << "*** PASSED ***" << std::endl;
+		//std::cout << "Cycles: " << cycles << std::endl;
 		fail = false;
 	}
 	else {
 		//std::cout << "*** FAILED ***" << std::endl;
 		fail = true;
 	}
+	//std::cout << "Cycles: " << cycles << std::endl;
 
 	delete dut;
 	

@@ -32,7 +32,6 @@ bool RISCV::load_mem(const char* path) {
   		sig_addr = symbols["begin_signature"];
   		sig_len = symbols["end_signature"] - sig_addr;
   	}
-
   	//std::string dump_path(path);
   	//dump_elf(path, (dump_path+".elf_dump").c_str());
 
@@ -103,6 +102,17 @@ void RISCV::wait(uint32_t cycles) {
 	}
 }
 
+uint32_t RISCV::mem_read(uint32_t addr) {
+	uint32_t base_addr = addr & this->MEM_SIZE;
+	uint32_t val;
+	val  = this->mem[base_addr];
+	val |= this->mem[base_addr+1] << 8;
+	val |= this->mem[base_addr+2] << 16;
+	val |= this->mem[base_addr+3] << 24;
+
+	return val;
+}
+
 void RISCV::mem_access() {
 	uint32_t base_addr = dut->o_addr & this->MEM_SIZE;
 
@@ -123,22 +133,17 @@ void RISCV::mem_access() {
 		}
 		// Read
 		uint32_t val;
-		val  = this->mem[base_addr];
-		val |= this->mem[base_addr+1] << 8;
-		val |= this->mem[base_addr+2] << 16;
-		val |= this->mem[base_addr+3] << 24;
-
+		val = mem_read(dut->o_addr);
 		dut->i_rd_data = val;
 
 		dut->i_ack = 1;
+
+
 	}
 
 }
 
 void RISCV::to_host(uint32_t val) {
-	if(val == 0)
-		std::cout << "TOHOST VAL == 0!" << std::endl;
-	
 	if(val == 1) { // Test passed
 		this->io_success = true;
 		this->sim_done = true;
