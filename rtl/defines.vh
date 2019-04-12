@@ -10,7 +10,12 @@
 
 `define PROGRAM_DATA "./test/asm/addi.bin"
 
+`define __SINGLE_CORE
+//`define __DUAL_CORE
+
 // Extensions
-//`define __ATOMIC
+`ifdef __DUAL_CORE
+	`define __ATOMIC
+`endif
 
 `endif

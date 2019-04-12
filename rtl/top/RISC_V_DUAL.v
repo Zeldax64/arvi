@@ -1,13 +1,12 @@
-/*
-	Work in progress...
-	Current status: First tests with atomic extension were successful.
-*/
-
 `timescale 1ns / 1ps
 
 `include "defines.vh"
 /* verilator lint_off DECLFILENAME */
+`ifdef __DUAL_CORE
+module RISC_V(
+`else
 module RISC_V_DUAL(
+`endif
 /* verilator lint_on DECLFILENAME */
 	input i_clk,
 	input i_rst,

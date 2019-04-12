@@ -3,7 +3,11 @@
 `include "defines.vh"
 
 /* verilator lint_off DECLFILENAME */
+`ifdef __SINGLE_CORE
 module RISC_V(
+`else
+module RISC_V_(
+`endif	
 /* verilator lint_on DECLFILENAME */
 	input i_clk,
 	input i_rst,
