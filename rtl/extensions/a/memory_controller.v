@@ -36,11 +36,8 @@ module memory_controller
 	output reg [3:0] o_byte_en	
 	);
 
-/*
- TODO: 
-	- Create ALU
-*/
 	wire is_lr, is_sc, is_AMO;
+	wire sc_grant;
 	assign is_lr = (i_operation[6:2] == `LR) && i_atomic;
 	assign is_sc = (i_operation[6:2] == `SC) && i_atomic;
 	assign is_AMO = i_atomic && !(is_lr | is_sc); 
@@ -73,7 +70,6 @@ module memory_controller
 			// ALU
 			s1        <= 0;
 			s2        <= 0;
-			//alu_res   <= 0;			
 		end
 		else begin
 			o_ack     <= ack_d;
@@ -89,7 +85,6 @@ module memory_controller
 			// ALU
 			s1        <= i_wr_data;
 			s2        <= i_rd_data;
-			//alu_res   <= s1 + s2;
 		end
 	end 
 	// FSM
@@ -149,8 +144,6 @@ module memory_controller
 			EX : begin
 				if(next_state == STORE) begin
 					wr_data_d = alu_res;
-					//wr_en_d   = 1;
-					//bus_en_d  = 1;
 				end
 			end
 			STORE : begin
@@ -206,11 +199,8 @@ module memory_controller
 			default : begin end
 		endcase
 	end
-
 	// End FSM
-	/* verilator lint_off UNUSED */
-	wire sc_grant;
-	/* verilator lint_on UNUSED */
+
 	lr_sc_tbl #(
 			.ADDR_WIDTH(`XLEN-2),
 			.N_IDS(N_IDS)
