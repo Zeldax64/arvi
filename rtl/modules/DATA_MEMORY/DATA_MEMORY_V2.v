@@ -4,7 +4,7 @@
 
 `timescale 1ns / 1ps
 
-`include "defines.vh"
+`include "arvi_defines.vh"
 
 module DATA_MEMORY_V2(
     input  i_clk,

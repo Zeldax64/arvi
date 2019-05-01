@@ -7,7 +7,7 @@
 
 `timescale 1ns / 1ps
 
-`include "defines.vh"
+`include "arvi_defines.vh"
 
 module BUS (
 	input i_clk,  // Clock

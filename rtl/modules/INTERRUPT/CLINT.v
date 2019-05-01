@@ -5,7 +5,7 @@
 	TODO: implement interrupt bits
 */
 
-`include "defines.vh"
+`include "arvi_defines.vh"
 
 module CLINT #(
 	parameter BASE_ADDR = 32'h2000_0000

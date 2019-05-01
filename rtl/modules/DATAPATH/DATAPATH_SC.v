@@ -4,7 +4,7 @@
 
 `timescale 1ns / 1ps
 
-`include "defines.vh"
+`include "arvi_defines.vh"
 
 module DATAPATH_SC(
 	// Instruction Memory connections

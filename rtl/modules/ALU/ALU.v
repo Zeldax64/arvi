@@ -4,7 +4,7 @@
 `timescale 1ns / 1ps
 
 `include "modules/ALU/ALU_DEFINES.vh"
-`include "defines.vh"
+`include "arvi_defines.vh"
 
 module ALU(
 	input  [3:0]  i_op,

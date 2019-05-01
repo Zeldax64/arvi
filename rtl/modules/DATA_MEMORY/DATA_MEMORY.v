@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-`include "defines.vh"
+`include "arvi_defines.vh"
 
 module DATA_MEMORY(
     output [`XLEN-1:0] o_Rd,

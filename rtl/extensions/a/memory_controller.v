@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 
-`include "defines.vh"
-`include "rtl/extensions/a/atomic.vh"
+`include "arvi_defines.vh"
+`include "extensions/a/atomic.vh"
 
 module memory_controller
 	#(

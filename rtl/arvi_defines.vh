@@ -1,5 +1,5 @@
-`ifndef __DEFINES
-`define __DEFINES
+`ifndef __ARVI_DEFINES
+`define __ARVI_DEFINES
 //`define SIMULATION
 
 `define INSTRUCTION_SIZE 31

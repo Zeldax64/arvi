@@ -5,7 +5,7 @@
 
 `timescale 1ns / 1ps
 
-`include "defines.vh"
+`include "arvi_defines.vh"
 
 module BRANCH_CONTROL(
 		input i_Branch,

@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-`include "defines.vh"
+`include "arvi_defines.vh"
 
 module INSTRUCTION_MEMORY(
     output [`INSTRUCTION_SIZE:0] o_Instruction,

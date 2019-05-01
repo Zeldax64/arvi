@@ -6,7 +6,7 @@
 */
 `timescale 1ns / 1ps
 
-`include "defines.vh"
+`include "arvi_defines.vh"
 
 module REGISTER_FILE(
     output [`XLEN-1:0] o_Rd1,
