@@ -1,6 +1,7 @@
 `timescale 1ns / 1ps
 
 `include "arvi_defines.vh"
+`include "top/bus/bus_if.vh"
 
 /* verilator lint_off DECLFILENAME */
 `ifdef __SINGLE_CORE
@@ -13,6 +14,7 @@ module RISC_V_(
 	input i_rst,
 
 	// Bus 
+	/*
 	input  i_ack,
 	input  [31:0] i_rd_data,
 	output o_bus_en,
@@ -20,6 +22,8 @@ module RISC_V_(
 	output [31:0] o_wr_data,
 	output [31:0] o_addr,
 	output [3:0]  o_byte_en
+	*/
+	`BUS_M
 	);
 	
 	// PC initial value
@@ -37,6 +41,13 @@ module RISC_V_(
 	wire DM_ren, DM_wen;
 	wire [2:0] DM_f3; 
 	wire [`XLEN-1:0] DM_rd, DM_wd, DM_addr;
+
+`ifdef __ATOMIC
+	wire [6:0] MEM_operation;
+	wire MEM_atomic;
+	assign o_operation = MEM_operation;
+	assign o_atomic = MEM_atomic;
+`endif
 
 	HART #(
 			.PC_RESET(PC_RESET),
@@ -61,10 +72,8 @@ module RISC_V_(
 		.o_DM_f3(DM_f3),
 
 `ifdef __ATOMIC
-/* verilator lint_off PINCONNECTEMPTY */
-		.o_DM_f7        (),
-		.o_MEM_atomic   (),
-/* verilator lint_on PINCONNECTEMPTY */
+		.o_DM_f7        (MEM_operation),
+		.o_MEM_atomic   (MEM_atomic),
 `endif
 		// Interrupt connections
 		.i_tip(1'b0)
