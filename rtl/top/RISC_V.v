@@ -5,10 +5,14 @@
 
 /* verilator lint_off DECLFILENAME */
 `ifdef __SINGLE_CORE
-module RISC_V(
+module RISC_V
 `else
-module RISC_V_(
+module RISC_V_
 `endif	
+	#(
+		parameter HART_ID = 0
+	)
+	(
 /* verilator lint_on DECLFILENAME */
 	input i_clk,
 	input i_rst,
@@ -51,7 +55,7 @@ module RISC_V_(
 
 	HART #(
 			.PC_RESET(PC_RESET),
-			.HART(0)
+			.HART(HART_ID)
 		) hart0(
 		.i_clk(i_clk),
 		.i_rst(i_rst),
