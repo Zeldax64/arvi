@@ -22,6 +22,8 @@
 `endif
 
 module MAIN_CONTROL(
+    input [`INSTRUCTION_SIZE:0] i_Instr,
+    
     output reg o_Branch,
     output reg o_MemRead,
     output reg o_MemWrite,
@@ -34,8 +36,6 @@ module MAIN_CONTROL(
     output reg o_PCplus4,
     output reg o_CSR_en,
     output reg o_Ex,
-
-    input [`INSTRUCTION_SIZE:0] i_Instr,
 
 `ifdef __ATOMIC
 	output o_atomic,
@@ -54,192 +54,104 @@ module MAIN_CONTROL(
 	wire [4:0] rd = i_Instr[11:7];
 
 	always @(*) begin
-    	o_Ex = 0; // No exception
+		o_Branch   = 0;
+		o_MemRead  = 0;
+		o_MemWrite = 0;
+		o_MemToReg = 0;
+		o_ALUSrcA  = 0;
+		o_ALUSrcB  = 0;
+		o_RegWrite = 0;
+		o_ALUOp    = 3'b000;
+        o_Jump     = 0;
+		o_PCplus4  = 0;
+		o_CSR_en   = 0;
+	    o_Ex	   = 0; // No exception
     	
 
 `ifdef __ATOMIC
 		o_atomic = 0;
 `endif
     	if(i_Stall) begin
-			o_Branch   = 0;
-			o_MemRead  = 0;
-			o_MemWrite = 0;
-			o_MemToReg = 0;
-			o_ALUSrcA  = 0;
-			o_ALUSrcB  = 0;
-			o_RegWrite = 0;
-			o_ALUOp    = 3'b000;
-	    	o_Jump 	   = 0;
-	    	o_PCplus4  = 0;
-	    	o_CSR_en   = 0;
     	end
     	else begin
 			case(OPCode)
 				`OP_R_TYPE : begin
-					o_Branch   = 0;
-					o_MemRead  = 0;
-					o_MemWrite = 0;
-					o_MemToReg = 0;
-					o_ALUSrcA  = 0;
-					o_ALUSrcB  = 0;
 					o_RegWrite = 1;
 					o_ALUOp    = 3'b010;
-	    			o_Jump 	   = 0;
-	    			o_PCplus4  = 0;
-	    			o_CSR_en   = 0;
 				end
 
 				`OP_I_TYPE : begin
-					o_Branch   = 0;
-					o_MemRead  = 0;
-					o_MemWrite = 0;
-					o_MemToReg = 0;
-					o_ALUSrcA  = 0;
 					o_ALUSrcB  = 1;
 					o_RegWrite = 1;
 					o_ALUOp    = 3'b011;
-	    			o_Jump 	   = 0;
-	    			o_PCplus4  = 0;
-	    			o_CSR_en   = 0;
 				end
 
 				`OP_I_L_TYPE : begin
-					o_Branch   = 0;
 					o_MemRead  = 1;
-					o_MemWrite = 0;
 					o_MemToReg = 1;
-					o_ALUSrcA  = 0;
 					o_ALUSrcB  = 1;
 					o_RegWrite = 1;
-					o_ALUOp    = 3'b000;
-	    			o_Jump 	   = 0;
-	    			o_PCplus4  = 0;
-	    			o_CSR_en   = 0;
 				end
 
 				`OP_S_TYPE : begin
-					o_Branch   = 0;
-					o_MemRead  = 0;
 					o_MemWrite = 1;
 					o_MemToReg = 1'b0; //Don't Care
-					o_ALUSrcA  = 0;
 					o_ALUSrcB  = 1;
-					o_RegWrite = 0;
-					o_ALUOp    = 3'b000;
-	    			o_Jump 	   = 0;
-	    			o_PCplus4  = 0;
-	    			o_CSR_en   = 0;    			
 				end
 
 				`OP_B_TYPE : begin
 					o_Branch   = 1;
-					o_MemRead  = 0;
-					o_MemWrite = 0;
 					o_MemToReg = 1'b0; //Don't Care
-					o_ALUSrcA  = 0;
-					o_ALUSrcB  = 0;
-					o_RegWrite = 0;
 					o_ALUOp    = 3'b001;
-	    			o_Jump 	   = 0;
-	    			o_PCplus4  = 0;
-	    			o_CSR_en   = 0;    			
 				end
 
 				`OP_U_TYPE_LUI : begin
-					o_Branch   = 0;
-					o_MemRead  = 0;
-					o_MemWrite = 0;
-					o_MemToReg = 0;
 					o_ALUSrcA  = 2;
 					o_ALUSrcB  = 1;
 					o_RegWrite = 1;
 					o_ALUOp    = 3'b100;
-	    			o_Jump 	   = 0;
-	    			o_PCplus4  = 0;
-	    			o_CSR_en   = 0;    			
 				end
 
 				`OP_U_TYPE_AUIPC : begin
-					o_Branch   = 0;
-					o_MemRead  = 0;
-					o_MemWrite = 0;
-					o_MemToReg = 0;
 					o_ALUSrcA  = 1;
 					o_ALUSrcB  = 1;
 					o_RegWrite = 1;
 					o_ALUOp    = 3'b100;
-	    			o_Jump 	   = 0;
-	    			o_PCplus4  = 0;
-	    			o_CSR_en   = 0;
 				end
 
 				`OP_J_TYPE_JAL : begin
-					o_Branch   = 0;
-					o_MemRead  = 0;
-					o_MemWrite = 0;
-					o_MemToReg = 1'b0;
-					o_ALUSrcA  = 2'b0;
-					o_ALUSrcB  = 1'b0;
 					o_RegWrite = 1;
 					o_ALUOp    = 3'b00; // Don't use ALU
 	    			o_Jump 	   = 1;
 	    			o_PCplus4  = 1;
-	    			o_CSR_en   = 0;
 				end
 
 				`OP_J_TYPE_JALR : begin
-					o_Branch   = 0;
-					o_MemRead  = 0;
-					o_MemWrite = 0;
-					o_MemToReg = 1'b0;
-					o_ALUSrcA  = 0;
 					o_ALUSrcB  = 1;
 					o_RegWrite = 1;
 					o_ALUOp    = 3'b100; // Use ALU as ADD due to U-Type (Check ALU_CONTROL)
 	    			o_Jump 	   = 2;
 	    			o_PCplus4  = 1;
-	    			o_CSR_en   = 0;
 				end
 
 				`OP_FENCE : begin // Do nothing - NOP
-					o_Branch   = 0;
-					o_MemRead  = 0;
-					o_MemWrite = 0;
-					o_MemToReg = 0;
-					o_ALUSrcA  = 0;
-					o_ALUSrcB  = 0;
-					o_RegWrite = 0;
-					o_ALUOp    = 3'b000;
-	    			o_Jump 	   = 0;
-	    			o_PCplus4  = 0;
-	    			o_CSR_en   = 0;
 
 				end
 				
 				`OP_SYSTEM_TYPE : begin
-					o_Branch   = 0;
-					o_MemRead  = 0;
-					o_MemWrite = 0;
-					o_MemToReg = 0;
 					o_ALUSrcA  = 2'b0;
 					o_ALUSrcB  = 1'b0;
 					o_RegWrite = 1;
 					o_ALUOp    = 3'b000;
-	    			o_Jump 	   = 0;
-	    			o_PCplus4  = 0;
 	    			o_CSR_en   = 1;
 	    			o_Ex	   = (f3 == 0 && (f12 == 0 || f12 == 1) && rs1 == 0 && rd == 0) ? 1 : 0; // Checking if it was an ECALL or not
 				end
 
 `ifdef __ATOMIC
 				`OP_ATOMIC : begin
-					o_Branch   = 0;
 					o_ALUSrcA  = 2'b0;
 					o_ALUSrcB  = 1'b0;
 					o_ALUOp    = 3'b101;
-	    			o_Jump 	   = 0;
-	    			o_PCplus4  = 0;
-	    			o_CSR_en   = 0;
 					o_RegWrite = 1;
 					o_atomic   = 1;
 					if(f7[2]) begin // SC
@@ -256,17 +168,7 @@ module MAIN_CONTROL(
 `endif
 
 				default : begin // Invalid instruction!
-					o_Branch   = 1'b0;
-					o_MemRead  = 1'b0;
-					o_MemWrite = 1'b0;
 					o_MemToReg = 1'b0; //Don't Care
-					o_ALUSrcA  = 2'b0;
-					o_ALUSrcB  = 1'b0;
-					o_RegWrite = 1'b0;
-					o_ALUOp    = 3'b0;
-	    			o_Jump 	   = 2'b00; 
-	    			o_PCplus4  = 1'b0;
-	    			o_CSR_en   = 0;
 	    			o_Ex	   = 1'b1; // Go to mtvec
 				end
 			endcase
