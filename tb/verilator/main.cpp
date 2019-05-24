@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
 
 	Verilated::commandArgs(argc, argv);
 	Verilated::traceEverOn(true);
-	char *mem_path;
+	char *mem_path = NULL;
 	for(int i = 1; i < argc; i++) {
 		std::string arg = argv[i];
 		if(arg.substr(0,12) == "+max-cycles=")

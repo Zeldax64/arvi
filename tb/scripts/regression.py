@@ -1,45 +1,70 @@
+'''
+	Regression tests script
+
+	This script runs several tests and report errors when they occur. This script
+	uses multithreading to launch verilator simulations as subprocesses.
+	TODO: Create a CLI (Command Line Interface) interface.
+'''
+
 import subprocess
 import sys
 import glob
 import os
+from multiprocessing.dummy import Pool
+
+mt = True
+pool = Pool() # Concurrent simulations at a time
 
 sim_path = "./obj_dir/VRISC_V"
+tests_folder = "tb/tests"
+
+
+def launch_sim(prog):
+	test_prog = "+loadmem="+prog
+	failure = subprocess.call([sim_path, test_prog])
+	if failure:
+		print("Testing: "+prog+ " FAILED")
+		return True
+	else:
+		return False
 
 def test_loop(progs):
-	failed = 0
-	for test_prog in progs:
-		test_prog = "+loadmem="+test_prog
-		failure = subprocess.call([sim_path, test_prog])
-		failed = failure or failed
-		if failure:
-			print("Testing: "+test_prog+ " FAILED")
+	failed = False
+	if mt:
+		ret = pool.map(launch_sim, progs)
+		if True in ret:
+			failed = True
+
+	else:
+		for test_prog in progs:
+			failure = launch_sim(test_prog)
+			failed = failure or failed
+
 	return failed
+
+def get_isa_files(isa_test_folder):
+	files_list = []
+
+	files = glob.glob(isa_test_folder+'/*')
+	for file in files:
+		if '.' not in file:
+			files_list.append(file)
+
+	return files_list
 
 def isa():
 	print("--- ISA Tests ---")
 
 	# Getting programs list
-	test_folder = "tb/tests/isa/rv32ui"
-	files = glob.glob(test_folder+'/*')
-	progs = []
-	for file in files:
-		if '.' not in file:
-			progs.append(file)
+	rv32ui_dir = tests_folder + "/isa/rv32ui"
+	rv32ua_dir = tests_folder+"/isa/rv32ua"
+
+	rv32ui_progs = get_isa_files(rv32ui_dir)
+	rv32ua_progs = get_isa_files(rv32ua_dir)
 
 	# Testing
-	failed = test_loop(progs)
-
-	# Getting programs list
-	test_folder = "tb/tests/isa/rv32ua"
-	files = glob.glob(test_folder+'/*')
-	progs = []
-	for file in files:
-		if '.' not in file:
-			progs.append(file)
-
-	# Testing
-	failed = test_loop(progs) or failed
-
+	failed = test_loop(rv32ui_progs)
+	failed = test_loop(rv32ua_progs) or failed
 
 	# Result
 	if not failed: 
@@ -53,7 +78,7 @@ def compliance():
 	# Testing rv32i programs
 	print("*** rv32i tests ***")
 	# Getting programs list
-	test_folder = "tb/tests/compliance/rv32i"
+	test_folder = tests_folder+"/compliance/rv32i"
 	progs = glob.glob(test_folder+'/*.elf')
 
 	# Testing
@@ -67,7 +92,7 @@ def compliance():
 	# Testing rv32mi programs
 	print("*** rv32mi tests ***")
 	# Getting programs list
-	test_folder = "tb/tests/compliance/rv32mi"
+	test_folder = tests_folder+"/compliance/rv32mi"
 	progs = glob.glob(test_folder+'/*.elf')
 	failed = test_loop(progs)
 
@@ -84,7 +109,7 @@ def compliance():
 		print("--- Compliance tests failed! ---")
 
 def benchmark():
-	test_folder = "tb/tests/benchmark"
+	test_folder = tests_folder+"/benchmark"
 	progs = glob.glob(test_folder+'/*.riscv')
 
 	# Testing
@@ -97,9 +122,20 @@ def benchmark():
 	else:
 		print("--- Benchmark tests failed! ---")
 
+def arg_parse():
+	args = sys.argv
+	run = True
+
+	if "-h" in args:
+		print("Regression tests script. This script runs tests in tb/tests folder")
+		run = False
+
+	return run
+
 def main():
-	isa()
-	compliance()
-	benchmark()
+	if arg_parse():
+		isa()
+		compliance()
+		benchmark()
 
 main()

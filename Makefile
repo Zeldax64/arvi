@@ -1,6 +1,6 @@
 VL := verilator
 TOP_MODULE := RISC_V
-CFLAGS := -CFLAGS "-std=c++0x -Wall"
+CFLAGS := -CFLAGS "-std=c++0x -Wall -O1"
 LDFLAGS := -LDFLAGS "-lfesvr"
 VLFLAGS := -Wall --cc --trace -I./rtl --exe --top-module $(TOP_MODULE) $(CFLAGS) $(LDFLAGS)
 
@@ -19,7 +19,7 @@ SCRIPTS_DIR := ./tb/scripts
 
 run: all
 	@echo "--- Running ---"
-	obj_dir/VRISC_V +loadmem=rv32ua-p-lrsc -v
+	obj_dir/VRISC_V +loadmem=rv32ui-p-add -v
 
 all: $(SOURCES) $(HEADERS)
 	$(VL) $(VLFLAGS) $(SOURCES) $(VL_SRCS) 
