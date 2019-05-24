@@ -75,7 +75,7 @@ module DATAPATH_SC(
 	wire [`XLEN-1:0] Imm;
 
 	// ALU
-	wire [3:0] alu_control_lines;
+	//wire [3:0] alu_control_lines;
 	wire [`XLEN-1:0] A;
 	wire [`XLEN-1:0] B;
 	wire [`XLEN-1:0] Alu_Res;
@@ -112,6 +112,7 @@ module DATAPATH_SC(
 	wire [`XLEN-1:0] i_DataBlock = i_IM_Instr;
 	wire IC_Stall;
 	
+	// --- Fetch Stage --- //
 	// Instruction Memory
 	I_CACHE #(.BLOCK_SIZE(1),
 			  .ENTRIES   (32)) 
@@ -132,6 +133,7 @@ module DATAPATH_SC(
 		.o_Stall    (IC_Stall)
 	);
 
+	// --- Decode Stage --- //
 	// Main Control
 	MAIN_CONTROL main_control
 	(
@@ -174,20 +176,18 @@ module DATAPATH_SC(
 		.o_Ext(Imm)
 	);
 
-	ALU_CONTROL alu_control (
-		.o_ALUControlLines (alu_control_lines),
-		.i_Funct7          (f7),
-		.i_Funct3          (f3),
-		.i_ALUOp           (MC_ALUOp)
-	);
 
-	ALU alu (
-		.i_op(alu_control_lines),
-		.i_Ra(A),
-		.i_Rb(B),
-		.o_Z(Z),
-		.o_Rc(Alu_Res)
-	);
+	// --- Execute Stage --- //
+	EX ex_stage
+		(
+			.i_rs1   (A),
+			.i_rs2   (B),
+			.i_aluop (MC_ALUOp),
+			.i_f3    (f3),
+			.i_f7    (f7),
+			.o_res   (Alu_Res),
+			.o_Z     (Z)
+		);
 
 	BRANCH_CONTROL branch_control (
 		.i_Branch   (MC_Branch),
