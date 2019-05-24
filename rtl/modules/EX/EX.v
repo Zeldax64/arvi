@@ -1,5 +1,5 @@
 /*
-	This file represents the execution stage of the processor's datapath.
+	This file represents the execution stage of processor's datapath.
 */
 
 `timescale 1ns / 1ps
