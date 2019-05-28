@@ -18,4 +18,6 @@
 	`define __ATOMIC
 `endif
 
+`define __ARVI_M_EX
+
 `endif

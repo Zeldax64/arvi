@@ -65,7 +65,9 @@ module DATAPATH_SC(
 	wire MC_PCplus4;
 	wire MC_CSR_en;
 	wire MC_Ex;
-
+`ifdef __ARVI_M_EX
+	wire MC_ALUM_en;
+`endif
 	// REGISTER_FILE
 	wire [`XLEN-1:0] i_Wd;
 	wire [`XLEN-1:0] Rd1;
@@ -104,7 +106,7 @@ module DATAPATH_SC(
 	// Assigning PC
 	always@(posedge i_clk) begin
 		if(!i_rst) PC <= PC_RESET;
-		else if(IC_Stall || MEM_stall) PC <= PC;
+		else if(IC_Stall || MEM_stall || EX_stall) PC <= PC;
 		else PC <= PC_next;
 	end
 
@@ -153,6 +155,9 @@ module DATAPATH_SC(
 `ifdef __ATOMIC
 		.o_atomic  (o_MEM_atomic),
 `endif
+`ifdef __ARVI_M_EX
+		.o_ALUM_en (MC_ALUM_en),
+`endif
 
 		.i_Instr   (instr),
 		.i_Stall   (IC_Stall)
@@ -178,6 +183,7 @@ module DATAPATH_SC(
 
 
 	// --- Execute Stage --- //
+	wire EX_stall;
 	EX ex_stage
 		(
 			.i_rs1   (A),
@@ -186,7 +192,13 @@ module DATAPATH_SC(
 			.i_f3    (f3),
 			.i_f7    (f7),
 			.o_res   (Alu_Res),
-			.o_Z     (Z)
+			.o_Z     (Z),
+`ifdef __ARVI_M_EX
+			.i_clk     (i_clk),
+			.i_m_start (MC_ALUM_en),
+			// Continuar daqui
+`endif
+			.o_stall   (EX_stall)
 		);
 
 	BRANCH_CONTROL branch_control (

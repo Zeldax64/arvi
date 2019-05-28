@@ -56,15 +56,18 @@ def isa():
 	print("--- ISA Tests ---")
 
 	# Getting programs list
-	rv32ui_dir = tests_folder + "/isa/rv32ui"
+	rv32ui_dir = tests_folder+"/isa/rv32ui"
 	rv32ua_dir = tests_folder+"/isa/rv32ua"
+	rv32um_dir = tests_folder+"/isa/rv32um"
 
 	rv32ui_progs = get_isa_files(rv32ui_dir)
 	rv32ua_progs = get_isa_files(rv32ua_dir)
+	rv32um_progs = get_isa_files(rv32um_dir)
 
 	# Testing
 	failed = test_loop(rv32ui_progs)
-	failed = test_loop(rv32ua_progs) or failed
+	#failed = test_loop(rv32ua_progs) or failed
+	failed = test_loop(rv32um_progs) or failed
 
 	# Result
 	if not failed: 
@@ -135,7 +138,7 @@ def arg_parse():
 def main():
 	if arg_parse():
 		isa()
-		compliance()
-		benchmark()
+		#compliance()
+		#benchmark()
 
 main()
