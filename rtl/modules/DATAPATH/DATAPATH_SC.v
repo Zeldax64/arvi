@@ -194,11 +194,12 @@ module DATAPATH_SC(
 			.o_res   (Alu_Res),
 			.o_Z     (Z),
 `ifdef __ARVI_M_EX
-			.i_clk     (i_clk),
-			.i_m_start (MC_ALUM_en),
-			// Continuar daqui
+			.i_clk   (i_clk),
+			.i_rst   (i_rst),
+			.i_m_en  (MC_ALUM_en),
+			
 `endif
-			.o_stall   (EX_stall)
+			.o_stall (EX_stall)
 		);
 
 	BRANCH_CONTROL branch_control (
