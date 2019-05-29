@@ -20,4 +20,6 @@
 
 `define __ARVI_M_EX
 
+`include "arvi_dpi.vh"
+
 `endif

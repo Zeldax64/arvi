@@ -107,7 +107,10 @@ module DATAPATH_SC(
 	always@(posedge i_clk) begin
 		if(!i_rst) PC <= PC_RESET;
 		else if(IC_Stall || MEM_stall || EX_stall) PC <= PC;
-		else PC <= PC_next;
+		else begin
+			PC <= PC_next;
+			new_instruction(instr);
+		end
 	end
 
 	// IM wires

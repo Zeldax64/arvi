@@ -4,6 +4,8 @@
 #include "verilated.h"
 #include "verilated_vcd_c.h"
 
+#include "arvi_dpi.h"
+
 // C includes
 #include <stdint.h>
 #include <string>
@@ -59,6 +61,7 @@ int main(int argc, char** argv) {
 		fail = true;
 	}
 	//std::cout << "Cycles: " << cycles << std::endl;
+	//std::cout << "Instr: " << get_inst_count() << std::endl;
 
 	delete dut;
 	

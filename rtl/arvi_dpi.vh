@@ -1,0 +1,1 @@
+import "DPI-C" function void new_instruction (input int inst);
