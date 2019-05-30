@@ -1,14 +1,9 @@
 #include "arvi_dpi.h"
 
-#include <stdint.h>
-
-static unsigned int inst_counter = 0;
-
 void new_instruction(int inst) { 
-	inst_counter++;
-}
+	inst_t type;
 
-uint32_t get_inst_count() {
-	return inst_counter;
+	type = inst_decode(inst);
+	//inc_inst_type(type);
 }
 

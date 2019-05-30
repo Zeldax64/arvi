@@ -1,5 +1,18 @@
+#ifndef __ARVI_DPI
+#define __ARVI_DPI
+
 #include "svdpi.h"
 #include "VRISC_V__Dpi.h"
 
-void add(int a, int b);
-unsigned int get_inst_count();
+#include <iostream>
+#include <stdint.h>
+
+#include "ISA.h"
+//#include "Instruction.h"
+
+
+
+
+void new_instruction(int inst);
+
+#endif

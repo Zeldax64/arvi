@@ -4,7 +4,6 @@
 #include "verilated.h"
 #include "verilated_vcd_c.h"
 
-#include "arvi_dpi.h"
 
 // C includes
 #include <stdint.h>
@@ -15,6 +14,8 @@
 // Internals
 #include "elfloader.h"
 #include "riscv.h"
+#include "arvi_dpi.h"
+#include "Instruction.h"
 
 int main(int argc, char** argv) {
 	bool fail;
@@ -38,6 +39,8 @@ int main(int argc, char** argv) {
 	
 	std::string path(mem_path);
 
+	//build_table();
+
 	// Reset
     RISCV* dut = new RISCV();
     if(trace)
@@ -50,10 +53,10 @@ int main(int argc, char** argv) {
 		dut->tick();
 		cycles++;
 	}
-
+	
+	//std::cout << "*** " << mem_path << " ***" << std::endl;
 	if(dut->success()) {
 		//std::cout << "*** PASSED ***" << std::endl;
-		//std::cout << "Cycles: " << cycles << std::endl;
 		fail = false;
 	}
 	else {
@@ -61,7 +64,7 @@ int main(int argc, char** argv) {
 		fail = true;
 	}
 	//std::cout << "Cycles: " << cycles << std::endl;
-	//std::cout << "Instr: " << get_inst_count() << std::endl;
+	//print_report();
 
 	delete dut;
 	
