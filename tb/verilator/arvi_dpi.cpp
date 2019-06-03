@@ -1,9 +1,12 @@
 #include "arvi_dpi.h"
 
-void new_instruction(int inst) { 
-	inst_t type;
+Profiler profiler;
 
-	type = inst_decode(inst);
-	//inc_inst_type(type);
+void new_instruction(int inst, int cycles) { 
+	profiler.inc_inst(inst, cycles);
+}
+
+Profiler* get_profiler() {
+	return &profiler;
 }
 

@@ -15,7 +15,7 @@
 #include "elfloader.h"
 #include "riscv.h"
 #include "arvi_dpi.h"
-#include "Instruction.h"
+#include "Profiler.h"
 
 int main(int argc, char** argv) {
 	bool fail;
@@ -39,8 +39,6 @@ int main(int argc, char** argv) {
 	
 	std::string path(mem_path);
 
-	//build_table();
-
 	// Reset
     RISCV* dut = new RISCV();
     if(trace)
@@ -54,17 +52,19 @@ int main(int argc, char** argv) {
 		cycles++;
 	}
 	
-	//std::cout << "*** " << mem_path << " ***" << std::endl;
+	std::cout << "*** " << mem_path << " ***" << std::endl;
 	if(dut->success()) {
-		//std::cout << "*** PASSED ***" << std::endl;
+		std::cout << "*** PASSED ***" << std::endl;
 		fail = false;
 	}
 	else {
-		//std::cout << "*** FAILED ***" << std::endl;
+		std::cout << "*** FAILED ***" << std::endl;
 		fail = true;
 	}
-	//std::cout << "Cycles: " << cycles << std::endl;
-	//print_report();
+	std::cout << "Cycles: " << cycles << std::endl;
+
+	Profiler* prof = get_profiler();
+	prof->print_report();
 
 	delete dut;
 	

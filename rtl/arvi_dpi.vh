@@ -1,1 +1,1 @@
-import "DPI-C" function void new_instruction (input int inst);
+import "DPI-C" function void new_instruction (input int inst, input int cycles);

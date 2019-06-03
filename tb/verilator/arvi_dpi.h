@@ -7,12 +7,10 @@
 #include <iostream>
 #include <stdint.h>
 
-#include "ISA.h"
-//#include "Instruction.h"
+#include "Profiler.h"
 
 
-
-
-void new_instruction(int inst);
+void new_instruction(int inst, int cycles);
+Profiler* get_profiler();
 
 #endif

@@ -107,10 +107,7 @@ module DATAPATH_SC(
 	always@(posedge i_clk) begin
 		if(!i_rst) PC <= PC_RESET;
 		else if(IC_Stall || MEM_stall || EX_stall) PC <= PC;
-		else begin
-			PC <= PC_next;
-			new_instruction(instr);
-		end
+		else PC <= PC_next;
 	end
 
 	// IM wires
@@ -323,5 +320,16 @@ module DATAPATH_SC(
 	assign i_Wd = MC_PCplus4 ? PC+4 :
 				  MC_MemtoReg ? DM_ReadData :
 				  MC_CSR_en ? CSR_Rd : Alu_Res;
+
+	// Performance DPI
+	integer cycles;
+	always@(posedge i_clk) begin
+		if(!i_rst) cycles <= 0;
+		else if(IC_Stall || MEM_stall || EX_stall) cycles <= cycles+1;
+		else begin
+			new_instruction(instr, cycles+1);
+			cycles <= 0;
+		end
+	end
 
 endmodule
