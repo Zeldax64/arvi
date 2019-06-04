@@ -322,13 +322,32 @@ module DATAPATH_SC(
 				  MC_CSR_en ? CSR_Rd : Alu_Res;
 
 	// Performance DPI
-	integer cycles;
+	integer inst_cycles;
+	integer inst_stall;
 	always@(posedge i_clk) begin
-		if(!i_rst) cycles <= 0;
-		else if(IC_Stall || MEM_stall || EX_stall) cycles <= cycles+1;
+		if(!i_rst) begin 
+			inst_cycles <= 0;
+			inst_stall <= 0;
+		end
 		else begin
-			new_instruction(instr, cycles+1);
-			cycles <= 0;
+			// Cache Performance
+			if(i_cache.hit && (inst_cycles == 0)) begin
+				cache_hit();
+			end
+			if(IC_Stall) begin
+				inst_stall <= inst_stall + 1;
+			end
+			// Instruction Performance
+			if(IC_Stall || MEM_stall || EX_stall) 
+				inst_cycles <= inst_cycles+1;
+			else begin // Finished instruction execution
+				new_instruction(instr, inst_cycles+1);
+				if(inst_stall !== 0) begin
+					cache_miss(inst_stall+1);
+				end
+				inst_stall <= 0;
+				inst_cycles <= 0;
+			end
 		end
 	end
 

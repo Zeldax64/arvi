@@ -28,7 +28,18 @@ float Instruction::get_CPI() {
 	if(counter != 0) {
 		return (float) cycles/counter;
 	}
-	else return 0.0;
+	else {
+		return 0.0;
+	}
+}
+
+void Instruction::print() {
+	std::cout << this->get_name() << ": " << this->get_counter() <<
+	" Cycles: "  << this->cycles <<  
+	" CPI: " << this->get_CPI() << 
+	//" Minimum: " << this->min_cycles << 
+	//" Maximum: " << max_cycles << 
+	std::endl;
 }
 
 void Instruction::set_cycles(uint32_t cycles) {
@@ -39,13 +50,4 @@ void Instruction::set_cycles(uint32_t cycles) {
 		if(cycles > max_cycles) max_cycles = cycles;
 	}
 	*/
-}
-
-void Instruction::print() {
-	std::cout << this->get_name() << ": " << this->get_counter() <<
-	" Cycles: "  << this->cycles <<  
-	" CPI: " << this->get_CPI() << 
-	//" Minimum: " << this->min_cycles << 
-	//" Maximum: " << max_cycles << 
-	std::endl;
 }

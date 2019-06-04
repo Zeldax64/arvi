@@ -11,6 +11,9 @@
 
 
 void new_instruction(int inst, int cycles);
+void cache_hit();
+void cache_miss(int cycles);
+
 Profiler* get_profiler();
 
 #endif
