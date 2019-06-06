@@ -8,6 +8,24 @@ Profiler::~Profiler() {
 
 }
 
+void Profiler::save_report() {
+	std::cout << path << std::endl;
+	file.open(file_path, std::ios::out); 
+	
+	cache.save_report(file);
+	isa.save_report(file);
+
+	file.close();
+}
+
+void Profiler::set_path(std::string path) {
+	this->path = path;
+	this->file_path = path+".performance_report";
+}
+
+std::string Profiler::get_path() {
+	return this->path;
+}
 
 void Profiler::inc_inst(uint32_t inst, uint32_t cycles) {
 	isa.inc_inst(inst, cycles);

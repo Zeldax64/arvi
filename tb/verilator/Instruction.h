@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <stdint.h>
 
@@ -20,7 +21,8 @@ public:
 	std::string get_name();
 	uint32_t get_counter();
 	float get_CPI();
-	void print();
+	void print_report();
+	void save_report(std::fstream &file);
 
 private:
 	void set_cycles(uint32_t cycles);

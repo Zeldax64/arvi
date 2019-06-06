@@ -57,7 +57,7 @@ void ISA::print_report() {
 	std::cout << "--- ISA Report ---" << std::endl;
 	std::cout << "Instructions issued: " << this->get_inst_count() << std::endl;
 	for(uint32_t i = 0; i <= INVALID; i++) {
-		instructions[i]->print();
+		instructions[i]->print_report();
 	}
 	/*
 	std::cout << "Instructions executed: " << inst_counter << std::endl;
@@ -72,6 +72,17 @@ void ISA::print_report() {
 	std::cout << "fence: " << fence_inst << std::endl;
 	std::cout << "wrong_op: " << wrong_op_inst << std::endl;
 	*/
+}
+
+
+void ISA::save_report(std::fstream &file) {
+	file << "<isa>" << std::endl;	
+	
+	for(uint32_t i = 0; i <= INVALID; i++) {
+		instructions[i]->save_report(file);
+	}
+	
+	file << "</isa>" << std::endl;	
 }
 
 // --- Private Methods --- //

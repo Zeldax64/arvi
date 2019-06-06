@@ -33,21 +33,29 @@ float Instruction::get_CPI() {
 	}
 }
 
-void Instruction::print() {
+void Instruction::print_report() {
 	std::cout << this->get_name() << ": " << this->get_counter() <<
 	" Cycles: "  << this->cycles <<  
 	" CPI: " << this->get_CPI() << 
-	//" Minimum: " << this->min_cycles << 
-	//" Maximum: " << max_cycles << 
 	std::endl;
 }
 
+void Instruction::save_report(std::fstream &file) {
+	file << "<inst>" << std::endl;	
+	
+		file << "\t";
+		file << "<name>"<< name << "</name>" << std::endl;
+		file << "\t";
+		file << "<counter>" << counter << "</counter>" << std::endl;
+		file << "\t";
+		file << "<cycles>" << cycles << "</cycles>" << std::endl;
+
+	file << "</inst>" << std::endl;
+}
+
+// ----- Private Methods ----- //
+
 void Instruction::set_cycles(uint32_t cycles) {
 	this->cycles += cycles;
-	/*
-	if(cycles > 0) {
-		if(cycles < min_cycles) min_cycles = cycles;
-		if(cycles > max_cycles) max_cycles = cycles;
-	}
-	*/
 }
+

@@ -64,7 +64,8 @@ int main(int argc, char** argv) {
 	std::cout << "Cycles: " << cycles << std::endl;
 
 	Profiler* prof = get_profiler();
-	prof->print_report();
+	prof->set_path(mem_path);
+	prof->save_report();
 
 	delete dut;
 	

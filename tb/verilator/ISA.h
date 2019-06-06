@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <stdint.h>
 
@@ -46,8 +47,9 @@ public:
 	void inc_inst(uint32_t inst, uint32_t cycles);
 	void inc_inst_type(inst_t type, uint32_t cycles);
 	inst_t inst_decode(uint32_t inst);
-	void print_report();
 	
+	void print_report();
+	void save_report(std::fstream &file);
 private:
 	uint32_t get_opcode(uint32_t inst);
 	uint32_t get_f3(uint32_t inst);

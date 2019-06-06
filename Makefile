@@ -19,7 +19,7 @@ SCRIPTS_DIR := ./tb/scripts
 
 run: all
 	@echo "--- Running ---"
-	obj_dir/VRISC_V +loadmem=rv32ui-p-add -v
+	obj_dir/VRISC_V +loadmem=towers.riscv -v
 
 all: $(SOURCES) $(HEADERS)
 	$(VL) $(VLFLAGS) $(SOURCES) $(VL_SRCS) 
@@ -27,8 +27,9 @@ all: $(SOURCES) $(HEADERS)
 
 .PHONY: clean help regression-tests
 
-JUNK := $(call rfind, tb/,*.vcd)
-JUNK += $(call rfind, tb/,*.signature_output)
+JUNK := $(call rfind, ./tb/,*.vcd)
+JUNK += $(call rfind, ./tb/,*.signature_output)
+JUNK += $(call rfind, ./tb/,*.performance_report)
 
 clean:
 	rm -rf obj_dir

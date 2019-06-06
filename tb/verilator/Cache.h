@@ -1,7 +1,7 @@
 #pragma once
 
-
 #include <iostream>
+#include <fstream>
 #include <stdint.h>
 
 class Cache {
@@ -17,6 +17,8 @@ public:
 
 	uint64_t get_cache_hits();
 	uint64_t get_cache_misses();
+	float get_miss_penalty();
 
 	void print_report();
+	void save_report(std::fstream &file);
 };
