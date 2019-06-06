@@ -343,7 +343,7 @@ module DATAPATH_SC(
 			else begin // Finished instruction execution
 				new_instruction(instr, inst_cycles+1);
 				if(inst_stall !== 0) begin
-					cache_miss(inst_stall+1);
+					cache_miss(inst_stall);
 				end
 				inst_stall <= 0;
 				inst_cycles <= 0;
