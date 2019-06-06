@@ -52,16 +52,16 @@ int main(int argc, char** argv) {
 		cycles++;
 	}
 	
-	std::cout << "*** " << mem_path << " ***" << std::endl;
+	//std::cout << "*** " << mem_path << " ***" << std::endl;
 	if(dut->success()) {
-		std::cout << "*** PASSED ***" << std::endl;
+		//std::cout << "*** PASSED ***" << std::endl;
 		fail = false;
 	}
 	else {
-		std::cout << "*** FAILED ***" << std::endl;
+		//std::cout << "*** FAILED ***" << std::endl;
 		fail = true;
 	}
-	std::cout << "Cycles: " << cycles << std::endl;
+	//std::cout << "Cycles: " << cycles << std::endl;
 
 	Profiler* prof = get_profiler();
 	prof->set_path(mem_path);

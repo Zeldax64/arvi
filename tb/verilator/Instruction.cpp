@@ -47,8 +47,8 @@ void Instruction::save_report(std::fstream &file) {
 		file << "<name>"<< name << "</name>" << std::endl;
 		file << "\t";
 		file << "<counter>" << counter << "</counter>" << std::endl;
-		file << "\t";
-		file << "<cycles>" << cycles << "</cycles>" << std::endl;
+		//file << "\t";
+		//file << "<cycles>" << cycles << "</cycles>" << std::endl;
 
 	file << "</inst>" << std::endl;
 }
