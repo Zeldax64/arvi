@@ -25,7 +25,7 @@ all: $(SOURCES) $(HEADERS)
 	$(VL) $(VLFLAGS) $(SOURCES) $(VL_SRCS) 
 	make -j -C obj_dir -f V$(TOP_MODULE).mk V$(TOP_MODULE)
 
-.PHONY: clean help regression-tests
+.PHONY: clean help regression-tests performance
 
 JUNK := $(call rfind, ./tb/,*.vcd)
 JUNK += $(call rfind, ./tb/,*.signature_output)
@@ -40,3 +40,7 @@ help:
 
 regression-tests: all
 	python3 $(SCRIPTS_DIR)/regression.py
+
+reports = $(wildcard tb/tests/benchmark/*.performance_report)
+performance: all
+	python3 $(SCRIPTS_DIR)/performance.py $(reports)

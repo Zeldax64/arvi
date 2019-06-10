@@ -66,7 +66,6 @@ def isa():
 
 	# Testing
 	failed = test_loop(rv32ui_progs)
-	#failed = test_loop(rv32ua_progs) or failed
 	failed = test_loop(rv32um_progs) or failed
 
 	# Result
@@ -137,8 +136,8 @@ def arg_parse():
 
 def main():
 	if arg_parse():
-		isa()
+		#isa()
 		#compliance()
-		#benchmark()
+		benchmark()
 
 main()
