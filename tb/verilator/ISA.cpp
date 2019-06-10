@@ -2,7 +2,6 @@
 
 ISA::ISA() {
 	this->build_table();
-	std::cout << "ISA Constructor\n";
 }
 
 ISA::~ISA() {
@@ -53,25 +52,12 @@ inst_t ISA::inst_decode(uint32_t inst) {
 }
 
 void ISA::print_report() {
-
 	std::cout << "--- ISA Report ---" << std::endl;
 	std::cout << "Instructions issued: " << this->get_inst_count() << std::endl;
+	
 	for(uint32_t i = 0; i <= INVALID; i++) {
 		instructions[i]->print_report();
 	}
-	/*
-	std::cout << "Instructions executed: " << inst_counter << std::endl;
-	std::cout << "r_op: " << r_op_inst << std::endl;
-	std::cout << "imm: " << imm_inst << std::endl;
-	std::cout << "load: " << load_inst << std::endl;
-	std::cout << "store: " << store_inst << std::endl;
-	std::cout << "branch: " << branch_inst << std::endl;
-	std::cout << "jal: " << jal_inst << std::endl;
-	std::cout << "jalr: " << jalr_inst << std::endl;
-	std::cout << "env: " << env_inst << std::endl;
-	std::cout << "fence: " << fence_inst << std::endl;
-	std::cout << "wrong_op: " << wrong_op_inst << std::endl;
-	*/
 }
 
 

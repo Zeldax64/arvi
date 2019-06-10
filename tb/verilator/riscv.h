@@ -24,7 +24,7 @@ class RISCV {
 	uint64_t mtick; // Tick counter
 
 	const uint32_t MEM_SIZE = 0xFFFFFF;
-	std::string path;
+	std::string program_path;
 
 	// Elf symbols
 	uint64_t tohost_addr;
@@ -41,6 +41,7 @@ public:
 	bool done();
 	bool success();
 	void open_trace(const char* path);
+	std::string get_program_path();
 
 private:
 	void wait(uint32_t cycles);

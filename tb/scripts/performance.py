@@ -10,6 +10,16 @@ def add_entry(line):
 
 	line = line.replace("\t", "")
 
+	if "<path>" in line:
+		l = line[len("<path>"):-len("</path>\n")]
+		val = l
+		name = "program"
+
+	if "<cycles>" in line:
+		l = line[len("<cycles>"):-len("</cycles>\n")]
+		val = l
+		name = "cycles"	
+
 	if "<name>" in line:
 		l = line[len("<name>"):-len("</name>\n")]
 		name = l

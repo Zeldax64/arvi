@@ -16,7 +16,7 @@ RISCV::~RISCV() {
 }
 
 bool RISCV::load_mem(const char* path) {
-	this->path = path;
+	this->program_path = path;
 	std::map<std::string, uint64_t> symbols;
 	symbols = load_elf(path, &this->mem);
 	if(mem.size() < MEM_SIZE)
@@ -26,7 +26,7 @@ bool RISCV::load_mem(const char* path) {
     	tohost_addr = symbols["tohost"];
     	fromhost_addr = symbols["fromhost"];
   	} else {
-    	printf("warning: tohost and fromhost symbols not in ELF; can't communicate with target\n");
+    	std::cout << "warning: tohost and fromhost symbols not in ELF; can't communicate with target\n";
   	}
   	if(symbols.count("begin_signature") && symbols.count("end_signature")) {
   		sig_addr = symbols["begin_signature"];
@@ -156,7 +156,7 @@ void RISCV::to_host(uint32_t val) {
 // Dump test signature
 void RISCV::dump_sig() {
 	if(sig_len) {
-		std::string sig_file(path);
+		std::string sig_file(this->program_path);
 		if(sig_file.find_last_of("."))
 			sig_file = sig_file.substr(0, sig_file.find_last_of("."));
 		

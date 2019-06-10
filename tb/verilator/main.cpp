@@ -4,7 +4,6 @@
 #include "verilated.h"
 #include "verilated_vcd_c.h"
 
-
 // C includes
 #include <stdint.h>
 #include <string>
@@ -65,6 +64,7 @@ int main(int argc, char** argv) {
 
 	Profiler* prof = get_profiler();
 	prof->set_path(mem_path);
+	prof->set_ticker(&cycles);
 	prof->save_report();
 
 	delete dut;
