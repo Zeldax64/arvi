@@ -16,16 +16,17 @@ SOURCES := $(call rfind,$(SRC_DIR)/,*.v)
 HEADERS := $(call rfind,$(SRC_DIR)/,*.vh)
 
 SCRIPTS_DIR := ./tb/scripts
+#TOP_PARAMETERS = -GI_CACHE_ENTRIES=256
 
 run: all
 	@echo "--- Running ---"
 	obj_dir/VRISC_V +loadmem=towers.riscv -v
 
 all: $(SOURCES) $(HEADERS)
-	$(VL) $(VLFLAGS) $(SOURCES) $(VL_SRCS) 
+	$(VL) $(VLFLAGS) $(SOURCES) $(VL_SRCS) $(TOP_PARAMETERS)
 	make -j -C obj_dir -f V$(TOP_MODULE).mk V$(TOP_MODULE)
 
-.PHONY: clean help regression-tests performance
+.PHONY: clean help regression-tests benchmark performance 
 
 JUNK := $(call rfind, ./tb/,*.vcd)
 JUNK += $(call rfind, ./tb/,*.signature_output)
@@ -35,12 +36,30 @@ clean:
 	rm -rf obj_dir
 	rm -f *.vcd *.lxt2 $(JUNK)
 
+reports = $(wildcard tb/tests/benchmark/*.performance_report)
+reports2 = tb/tests/benchmark/*.performance_report
+
 help:
-	echo $(TEST_SRCS)
+	echo $(reports2)
 
 regression-tests: all
-	python3 $(SCRIPTS_DIR)/regression.py
+	python3 $(SCRIPTS_DIR)/regression.py --isa --compliance --benchmark
 
-reports = $(wildcard tb/tests/benchmark/*.performance_report)
-performance: all
+benchmark: all
+	python3 $(SCRIPTS_DIR)/regression.py --benchmark
+
+performance:
 	python3 $(SCRIPTS_DIR)/performance.py $(reports)
+
+report:
+	$(MAKE) benchmark TOP_PARAMETERS=-GI_CACHE_ENTRIES=64
+	$(MAKE) performance
+	mv dataframe.csv riscv32i-64entries.csv
+
+	$(MAKE) benchmark TOP_PARAMETERS=-GI_CACHE_ENTRIES=128
+	$(MAKE) performance
+	mv dataframe.csv riscv32i-128entries.csv
+
+	$(MAKE) benchmark TOP_PARAMETERS=-GI_CACHE_ENTRIES=256
+	$(MAKE) performance
+	mv dataframe.csv riscv32i-256entries.csv
