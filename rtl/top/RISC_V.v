@@ -10,7 +10,9 @@ module RISC_V
 module RISC_V_
 `endif	
 	#(
-		parameter HART_ID = 0
+		parameter PC_RESET = `PC_RESET,
+		parameter HART_ID = 0,
+		parameter I_CACHE_ENTRIES = 128
 	)
 	(
 /* verilator lint_on DECLFILENAME */
@@ -31,7 +33,6 @@ module RISC_V_
 	);
 	
 	// PC initial value
-	parameter PC_RESET = `PC_RESET;
 
 	/* Connections */
 	// Instruction Memory
@@ -55,7 +56,8 @@ module RISC_V_
 
 	HART #(
 			.PC_RESET(PC_RESET),
-			.HART(HART_ID)
+			.HART(HART_ID),
+			.I_CACHE_ENTRIES(I_CACHE_ENTRIES)
 		) hart0(
 		.i_clk(i_clk),
 		.i_rst(i_rst),

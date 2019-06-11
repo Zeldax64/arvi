@@ -3,8 +3,14 @@
 `include "arvi_defines.vh"
 
 /* verilator lint_off DECLFILENAME */
-module HART(
+module HART
 /* verilator lint_on DECLFILENAME */
+	#(
+	parameter PC_RESET = `PC_RESET,
+	parameter HART = 0,
+	parameter I_CACHE_ENTRIES = 128
+	)
+	(
 	input i_clk,
 	input i_rst,
 
@@ -31,14 +37,11 @@ module HART(
 	// Interrupt connections
 	input i_tip
 	);
-	
-	// PC initial value
-	parameter PC_RESET = `PC_RESET;
-	parameter HART = 0;
 
 	DATAPATH_SC #(
 			.PC_RESET(PC_RESET),
-			.HART(HART)
+			.HART(HART),
+			.I_CACHE_ENTRIES(I_CACHE_ENTRIES)
 			
 		) datapath (
 		.i_clk(i_clk),

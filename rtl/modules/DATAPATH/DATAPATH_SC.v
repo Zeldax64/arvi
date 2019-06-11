@@ -6,7 +6,13 @@
 
 `include "arvi_defines.vh"
 
-module DATAPATH_SC(
+module DATAPATH_SC
+	#(
+		parameter PC_RESET = `PC_RESET,	
+		parameter HART = 0,
+		parameter I_CACHE_ENTRIES = 128
+	)
+	(
 	// Instruction Memory connections
 	input  [`XLEN-1:0] i_IM_Instr,
 	input i_IC_MemReady,
@@ -38,9 +44,6 @@ module DATAPATH_SC(
 `ifdef __ATOMIC
 	assign o_DM_f7 = f7;
 `endif
-
-	parameter PC_RESET = `PC_RESET;	
-	parameter HART = 0;
 
 	reg [`XLEN-1:0] PC;
 	reg [`XLEN-1:0] PC_next;
@@ -117,7 +120,7 @@ module DATAPATH_SC(
 	// --- Fetch Stage --- //
 	// Instruction Memory
 	I_CACHE #(.BLOCK_SIZE(1),
-			  .ENTRIES   (32)) 
+			  .ENTRIES   (I_CACHE_ENTRIES)) 
 	i_cache 
 	(
 		.i_clk (i_clk),
