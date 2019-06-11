@@ -18,6 +18,9 @@ pool = Pool() # Concurrent simulations at a time
 sim_path = "./obj_dir/VRISC_V"
 tests_folder = "tb/tests"
 
+isa_tests = False 
+compliance_tests = False
+benchmark_tests = False
 
 def launch_sim(prog):
 	test_prog = "+loadmem="+prog
@@ -125,19 +128,38 @@ def benchmark():
 		print("--- Benchmark tests failed! ---")
 
 def arg_parse():
+	global isa_tests  
+	global compliance_tests 
+	global benchmark_tests
+
 	args = sys.argv
-	run = True
+	run = False
 
 	if "-h" in args:
 		print("Regression tests script. This script runs tests in tb/tests folder")
 		run = False
+	if "--isa" in args:
+		isa_tests = True
+		run = True
+	if "--compliance" in args:
+		compliance_tests = True	
+		run = True
+	if "--benchmark" in args:
+		benchmark_tests = True	
+		run = True
 
 	return run
 
 def main():
+	global isa_tests  
+	global compliance_tests 
+	global benchmark_tests
 	if arg_parse():
-		#isa()
-		#compliance()
-		benchmark()
+		if isa_tests:
+			isa()
+		if compliance_tests:
+			compliance()
+		if benchmark_tests:
+			benchmark()
 
 main()
