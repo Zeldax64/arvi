@@ -12,12 +12,9 @@ rfind = $(wildcard $1$2) $(foreach d,$(call subdirs,$1),$(call rfind,$d,$2))
 ######################################
 SRC_DIR := ./rtl
 SOURCES := $(call rfind,$(SRC_DIR)/,*.v)
-#SOURCES += $(wildcard rtl/top/*.v)
 HEADERS := $(call rfind,$(SRC_DIR)/,*.vh)
 
 SCRIPTS_DIR := ./tb/scripts
-#TOP_PARAMETERS = -GI_CACHE_ENTRIES=256
-
 run: all
 	@echo "--- Running ---"
 	obj_dir/VRISC_V +loadmem=towers.riscv -v
@@ -51,15 +48,3 @@ benchmark: all
 performance:
 	python3 $(SCRIPTS_DIR)/performance.py $(reports)
 
-report:
-	$(MAKE) benchmark TOP_PARAMETERS=-GI_CACHE_ENTRIES=64
-	$(MAKE) performance
-	mv dataframe.csv riscv32i-64entries.csv
-
-	$(MAKE) benchmark TOP_PARAMETERS=-GI_CACHE_ENTRIES=128
-	$(MAKE) performance
-	mv dataframe.csv riscv32i-128entries.csv
-
-	$(MAKE) benchmark TOP_PARAMETERS=-GI_CACHE_ENTRIES=256
-	$(MAKE) performance
-	mv dataframe.csv riscv32i-256entries.csv
