@@ -68,7 +68,7 @@ module DATAPATH_SC
 	wire MC_PCplus4;
 	wire MC_CSR_en;
 	wire MC_Ex;
-`ifdef __ARVI_M_EX
+`ifdef __RV32_M
 	wire MC_ALUM_en;
 `endif
 	// REGISTER_FILE
@@ -80,7 +80,6 @@ module DATAPATH_SC
 	wire [`XLEN-1:0] Imm;
 
 	// ALU
-	//wire [3:0] alu_control_lines;
 	wire [`XLEN-1:0] A;
 	wire [`XLEN-1:0] B;
 	wire [`XLEN-1:0] Alu_Res;
@@ -158,7 +157,7 @@ module DATAPATH_SC
 `ifdef __ATOMIC
 		.o_atomic  (o_MEM_atomic),
 `endif
-`ifdef __ARVI_M_EX
+`ifdef __RV32_M
 		.o_ALUM_en (MC_ALUM_en),
 `endif
 
@@ -187,6 +186,14 @@ module DATAPATH_SC
 
 	// --- Execute Stage --- //
 	wire EX_stall;
+
+	wire o_EX_en;
+	wire [`XLEN-1:0] o_EX_rs1;
+	wire [`XLEN-1:0] o_EX_rs2;
+	wire [2:0] o_EX_f3;
+	wire [`XLEN-1:0] i_EX_res;
+	wire i_EX_ack;
+
 	EX ex_stage
 		(
 			.i_rs1   (A),
@@ -196,14 +203,36 @@ module DATAPATH_SC
 			.i_f7    (f7),
 			.o_res   (Alu_Res),
 			.o_Z     (Z),
-`ifdef __ARVI_M_EX
+`ifdef __RV32_M
 			.i_clk   (i_clk),
 			.i_rst   (i_rst),
 			.i_m_en  (MC_ALUM_en),
-			
+
 `endif
+//`ifdef __RV32_M_EXTERNAL
+			.i_res   (i_EX_res),
+			.i_ack   (i_EX_ack),
+			.o_en    (o_EX_en),
+			.o_rs1   (o_EX_rs1),
+			.o_rs2   (o_EX_rs2),
+			.o_f3    (o_EX_f3),
+
+//`endif
 			.o_stall (EX_stall)
 		);
+
+	rv32_m_external rv32_m_external
+	(
+		.i_clk   (i_clk),
+		.i_rst   (i_rst),
+		.i_en    (o_EX_en),
+		.i_rs1   (o_EX_rs1),
+		.i_rs2   (o_EX_rs2),
+		.i_f3    (o_EX_f3),
+		.o_res   (i_EX_res),
+		.o_ack   (i_EX_ack)
+	);
+	
 
 	BRANCH_CONTROL branch_control (
 		.i_Branch   (MC_Branch),
@@ -324,7 +353,7 @@ module DATAPATH_SC
 				  MC_MemtoReg ? DM_ReadData :
 				  MC_CSR_en ? CSR_Rd : Alu_Res;
 
-	// Performance DPI
+	// ***** Performance DPI ***** //
 	integer inst_cycles;
 	integer inst_stall;
 	always@(posedge i_clk) begin

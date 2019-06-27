@@ -21,10 +21,6 @@
 `define OP_ATOMIC 		7'b0101111
 `endif
 
-`ifdef __ARVI_M_EX
-// RV-M
-//`define OP_MUL_EX 		7'b0110011
-`endif
 
 module MAIN_CONTROL(
     input [`INSTRUCTION_SIZE:0] i_Instr,
@@ -45,7 +41,7 @@ module MAIN_CONTROL(
 `ifdef __ATOMIC
 	output o_atomic,
 `endif
-`ifdef __ARVI_M_EX
+`ifdef __RV32_M
 	output o_ALUM_en,
 `endif
 
@@ -78,7 +74,7 @@ module MAIN_CONTROL(
 `ifdef __ATOMIC
 		o_atomic   = 0; // RV-A
 `endif
-`ifdef __ARVI_M_EX
+`ifdef __RV32_M
        o_ALUM_en   = 0; // RV-M signal
 `endif
 
@@ -89,9 +85,9 @@ module MAIN_CONTROL(
 				`OP_R_TYPE : begin
 					o_RegWrite = 1;
 					o_ALUOp    = 3'b010;
-`ifdef __ARVI_M_EX
+`ifdef __RV32_M
 					if(f7[0]) begin
-						o_ALUOp    = 3'b000; // Don't care
+						//o_ALUOp    = 3'b000; // Don't care
 						o_ALUM_en  = 1;
 					end
 `endif

@@ -18,11 +18,15 @@ module EX(
 	output [`XLEN-1:0] o_res,
 	output o_Z,
 
-`ifdef __ARVI_M_EX
+`ifdef __RV32_M
 	input i_clk,
 	input i_rst,
 	input i_m_en,
+	`ifdef __RV32_M_EXTERNAL
+		`RV32_M_IF,
+	`endif
 `endif
+
 	output o_stall
 	);
 
@@ -44,56 +48,50 @@ module EX(
 		.o_Rc (alu_res)
 	);
 
-`ifndef __ARVI_M_EX
+
+`ifdef __RV32_M
+	wire [`XLEN-1:0] rv_m_res;
+
+	`ifndef __RV32_M_EXTERNAL
+		rv32_m rv32_m
+			(
+				.i_clk   (i_clk),
+				.i_rst   (i_rst),
+				.i_en    (i_m_en),
+				.i_rs1   (i_rs1),
+				.i_rs2   (i_rs2),
+				.i_f3    (i_f3),
+				.o_res   (rv_m_res),
+				.o_stall (o_stall)
+			);
+	`else 
+		// Code for external RV32_M
+		reg en_delayed;
+		always@(posedge i_clk) begin
+			if(!i_rst || i_ack) begin
+				en_delayed <= 0;
+			end
+			else begin
+				if(i_m_en) begin
+					o_rs1 <= i_rs1;
+					o_rs2 <= i_rs2;
+					o_f3  <= i_f3;
+					en_delayed <= i_m_en; 
+				end
+			end
+		end		
+		
+		assign o_en  = !en_delayed && i_m_en; // Create a 0->1 pulse
+
+		assign o_stall  = !i_ack && i_m_en;
+		assign rv_m_res = i_res; 
+	`endif
+
+	assign o_res = i_m_en ? rv_m_res : alu_res; // Ex stage result	
+
+`else
 	assign o_res = alu_res;
 	assign o_stall = 0;
-`else
-	wire mul_done, div_done, done;
-	wire is_mul, is_div;
-	wire [`XLEN-1:0] mul_res, div_res, m_res;
-
-	assign is_mul = i_m_en && !i_f3[2]; 
-	assign is_div = i_m_en &&  i_f3[2];
-
-	mul_top multiplier
-		(
-			.i_clk   (i_clk),
-			.i_start (is_mul),
-			.i_f3    (i_f3),
-			.i_rs1   (i_rs1),
-			.i_rs2   (i_rs2),
-			.o_done  (mul_done),
-			.o_res   (mul_res)
-		);
-
-	wire div_en;
-	reg  div_en_d;
-
-	always@(posedge i_clk) begin
-		if(!i_rst) div_en_d <= 0;
-		else div_en_d <= is_div;
-	end
-
-	assign div_en = is_div && !div_en_d; 
-
-	div_top divider
-		(
-			.i_clk   (i_clk),
-			.i_rst   (i_rst),
-			.i_start (div_en),
-			.i_f3    (i_f3),
-			.i_rs1   (i_rs1),
-			.i_rs2   (i_rs2),
-			.o_res   (div_res),
-			.o_done  (div_done)
-		);
-
-	assign m_res   = is_div ? div_res : mul_res;
-	assign o_res   = i_m_en ? m_res : alu_res;
-	assign done    = is_div ? div_done && !div_en : mul_done; 
-	assign o_stall = ~done && i_m_en;
-
-
 `endif
 
 endmodule

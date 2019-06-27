@@ -112,6 +112,4 @@ module I_CACHE
 	wire [31:0]full_addr = {tag, index, i_Addr[1:0]};
 	/* verilator lint_on UNUSED */
 
-	initial
-		$display("Cache Entries: %d", ENTRIES);
 endmodule

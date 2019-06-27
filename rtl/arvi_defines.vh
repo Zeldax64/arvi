@@ -13,13 +13,15 @@
 `define __SINGLE_CORE
 //`define __DUAL_CORE
 
-// Extensions
 `ifdef __DUAL_CORE
 	`define __ATOMIC
 `endif
 
-`define __ARVI_M_EX
+`define __RV32_M
+`define __RV32_M_EXTERNAL
+
 
 `include "arvi_dpi.vh"
+`include "top/bus/bus_if.vh"
 
 `endif

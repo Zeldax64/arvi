@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
 	prof->set_path(mem_path);
 	prof->set_ticker(&cycles);
 	prof->save_report();
-
+	
 	delete dut;
 	
 	return fail;
