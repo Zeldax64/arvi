@@ -64,12 +64,14 @@ def isa():
 	rv32um_dir = tests_folder+"/isa/rv32um"
 
 	rv32ui_progs = get_isa_files(rv32ui_dir)
-	rv32ua_progs = get_isa_files(rv32ua_dir)
+	rv32ua_progs = get_isa_files(rv32ua_dir) 
 	rv32um_progs = get_isa_files(rv32um_dir)
 
 	# Testing
-	failed = test_loop(rv32ui_progs)
-	failed = test_loop(rv32um_progs) or failed
+	rv32ui = test_loop(rv32ui_progs)
+	#rv32ua = test_loop(rv32ua_dir) # RV32-A not tested!
+	rv32um = test_loop(rv32um_progs)
+	failed = rv32ui or rv32um
 
 	# Result
 	if not failed: 
