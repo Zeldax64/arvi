@@ -17,8 +17,8 @@
 	`define __ATOMIC
 `endif
 
-`define __RV32_M
-`define __RV32_M_EXTERNAL
+//`define __RV32_M
+//`define __RV32_M_EXTERNAL
 
 
 `include "arvi_dpi.vh"

@@ -2,9 +2,7 @@
 
 `include "arvi_defines.vh"
 
-/* verilator lint_off DECLFILENAME */
 module HART
-/* verilator lint_on DECLFILENAME */
 	#(
 	parameter PC_RESET = `PC_RESET,
 	parameter HART = 0,
@@ -32,6 +30,15 @@ module HART
 `ifdef __ATOMIC // Atomic extension signal for atomic operations
 	output o_MEM_atomic,
 	output [6:0] o_DM_f7,
+`endif
+
+`ifdef __RV32_M_EXTERNAL
+	output o_EX_en, 
+	output [`XLEN-1:0] o_EX_rs1, 
+	output [`XLEN-1:0] o_EX_rs2, 
+	output [2:0] o_EX_f3, 
+	input  [`XLEN-1:0] i_EX_res, 
+	input  i_EX_ack,
 `endif
 
 	// Interrupt connections
@@ -67,6 +74,14 @@ module HART
 		.o_DM_f7     (o_DM_f7),
 `endif
 
+`ifdef __RV32_M_EXTERNAL
+		.o_EX_en        (o_EX_en),
+		.o_EX_rs1       (o_EX_rs1),
+		.o_EX_rs2       (o_EX_rs2),
+		.o_EX_f3        (o_EX_f3),
+		.i_EX_res       (i_EX_res),
+		.i_EX_ack       (i_EX_ack),
+`endif
 		// Interrupt connections
 		.i_tip (i_tip)
 	);

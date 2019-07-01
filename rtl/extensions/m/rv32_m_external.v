@@ -26,7 +26,7 @@ module rv32_m_external(
 		if(!i_rst) begin
 			rv32_m_en <= 0;
 			stall_dly <= 0;
-			o_ack <= 0;
+			o_ack     <= 0;
 		end
 		else begin
 			if(i_en) rv32_m_en <= 1; 	 // Creates a steady enable signal

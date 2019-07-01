@@ -1,5 +1,5 @@
 /*
-	File containing a DATAPATH module to a single-cycle RISC-V processor.
+	File containing a DATAPATH module of a single-cycle RISC-V processor.
 */
 
 `timescale 1ns / 1ps
@@ -31,6 +31,16 @@ module DATAPATH_SC
 `ifdef __ATOMIC // Atomic extension signal for atomic operations
 	output o_MEM_atomic,
 	output [6:0] o_DM_f7,
+`endif
+
+	// External RV32-M implementation
+`ifdef __RV32_M_EXTERNAL
+	output o_EX_en, 
+	output [`XLEN-1:0] o_EX_rs1, 
+	output [`XLEN-1:0] o_EX_rs2, 
+	output [2:0] o_EX_f3, 
+	input  [`XLEN-1:0] i_EX_res, 
+	input  i_EX_ack,
 `endif
 
 	// Interrupt connnections
@@ -187,13 +197,6 @@ module DATAPATH_SC
 	// --- Execute Stage --- //
 	wire EX_stall;
 
-	wire o_EX_en;
-	wire [`XLEN-1:0] o_EX_rs1;
-	wire [`XLEN-1:0] o_EX_rs2;
-	wire [2:0] o_EX_f3;
-	wire [`XLEN-1:0] i_EX_res;
-	wire i_EX_ack;
-
 	EX ex_stage
 		(
 			.i_rs1   (A),
@@ -209,30 +212,16 @@ module DATAPATH_SC
 			.i_m_en  (MC_ALUM_en),
 
 `endif
-//`ifdef __RV32_M_EXTERNAL
+`ifdef __RV32_M_EXTERNAL
 			.i_res   (i_EX_res),
 			.i_ack   (i_EX_ack),
 			.o_en    (o_EX_en),
 			.o_rs1   (o_EX_rs1),
 			.o_rs2   (o_EX_rs2),
 			.o_f3    (o_EX_f3),
-
-//`endif
+`endif
 			.o_stall (EX_stall)
 		);
-
-	rv32_m_external rv32_m_external
-	(
-		.i_clk   (i_clk),
-		.i_rst   (i_rst),
-		.i_en    (o_EX_en),
-		.i_rs1   (o_EX_rs1),
-		.i_rs2   (o_EX_rs2),
-		.i_f3    (o_EX_f3),
-		.o_res   (i_EX_res),
-		.o_ack   (i_EX_ack)
-	);
-	
 
 	BRANCH_CONTROL branch_control (
 		.i_Branch   (MC_Branch),

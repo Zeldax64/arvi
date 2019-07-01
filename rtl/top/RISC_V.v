@@ -19,16 +19,16 @@ module RISC_V_
 	input i_clk,
 	input i_rst,
 
-	// Bus 
-	/*
-	input  i_ack,
-	input  [31:0] i_rd_data,
-	output o_bus_en,
-	output o_wr_en,
-	output [31:0] o_wr_data,
-	output [31:0] o_addr,
-	output [3:0]  o_byte_en
-	*/
+`ifdef __RV32_M_EXTERNAL
+	output o_EX_en, 
+	output [`XLEN-1:0] o_EX_rs1, 
+	output [`XLEN-1:0] o_EX_rs2, 
+	output [2:0] o_EX_f3, 
+	input  [`XLEN-1:0] i_EX_res, 
+	input  i_EX_ack,
+`endif
+
+	// Bus Master
 	`BUS_M
 	);
 	
@@ -81,6 +81,16 @@ module RISC_V_
 		.o_DM_f7        (MEM_operation),
 		.o_MEM_atomic   (MEM_atomic),
 `endif
+
+
+`ifdef __RV32_M_EXTERNAL
+		.o_EX_en        (o_EX_en),
+		.o_EX_rs1       (o_EX_rs1),
+		.o_EX_rs2       (o_EX_rs2),
+		.o_EX_f3        (o_EX_f3),
+		.i_EX_res       (i_EX_res),
+		.i_EX_ack       (i_EX_ack),
+`endif
 		// Interrupt connections
 		.i_tip(1'b0)
 	);
@@ -115,6 +125,18 @@ module RISC_V_
 			.o_byte_en      (o_byte_en)
 		);
 
-
+/*
+	rv32_m_external rv32_m_external
+	(
+		.i_clk   (i_clk),
+		.i_rst   (i_rst),
+		.i_en    (o_EX_en),
+		.i_rs1   (o_EX_rs1),
+		.i_rs2   (o_EX_rs2),
+		.i_f3    (o_EX_f3),
+		.o_res   (i_EX_res),
+		.o_ack   (i_EX_ack)
+	);
+*/	
 
 endmodule
