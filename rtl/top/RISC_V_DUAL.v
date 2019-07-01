@@ -1,13 +1,14 @@
 `timescale 1ns / 1ps
 
 `include "arvi_defines.vh"
+
 /* verilator lint_off DECLFILENAME */
-`ifdef __DUAL_CORE
-module RISC_V(
+`ifndef __DUAL_CORE
+
 `else
-module RISC_V_DUAL(
-`endif
+module RISC_V(
 /* verilator lint_on DECLFILENAME */
+
 	input i_clk,
 	input i_rst,
 
@@ -70,6 +71,7 @@ module RISC_V_DUAL(
 	genvar i;
 	generate
 		for(i = 0; i < HARTS; i = i+1) begin
+			/* verilator lint_off PINMISSING */
 			HART #(
 					.PC_RESET(PC_RESET),
 					.HART(i)
@@ -100,7 +102,7 @@ module RISC_V_DUAL(
 				//.i_tip(tip)
 				.i_tip(1'b0)
 			);
-
+			/* verilator lint_on PINMISSING */
 			BUS bus
 				(
 					.i_clk          (i_clk),
@@ -173,7 +175,6 @@ module RISC_V_DUAL(
 			.o_operation (MC_operation)
 		);
 
-`ifdef __ATOMIC // Atomic extension signal for atomic operations
 	memory_controller #(
 			.N_IDS(HARTS)
 		) memory_controller (
@@ -202,6 +203,5 @@ module RISC_V_DUAL(
 		);
 
 
-`endif
-
 endmodule
+`endif
