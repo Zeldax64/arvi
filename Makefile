@@ -1,8 +1,9 @@
 VL := verilator
 TOP_MODULE := RISC_V
-CFLAGS := -CFLAGS "-std=c++0x -Wall -O1"
+DEFINES := -D__ARVI_PERFORMANCE_ANALYSIS
+CFLAGS := -CFLAGS "-std=c++0x -Wall -O1 $(DEFINES)"
 LDFLAGS := -LDFLAGS "-lfesvr"
-VLFLAGS := -Wall --cc --trace -I./rtl --exe --top-module $(TOP_MODULE) $(CFLAGS) $(LDFLAGS)
+VLFLAGS := -Wall --cc --trace -I./rtl --exe --top-module $(TOP_MODULE) $(CFLAGS) $(LDFLAGS) $(DEFINES)
 
 VL_SRCS := $(wildcard tb/verilator/*.cpp)
 
@@ -20,8 +21,8 @@ run: all
 	obj_dir/VRISC_V +loadmem=towers.riscv -v
 
 all: $(SOURCES) $(HEADERS)
-	$(VL) $(VLFLAGS) $(SOURCES) $(VL_SRCS) $(TOP_PARAMETERS)
-	make -j -C obj_dir -f V$(TOP_MODULE).mk V$(TOP_MODULE)
+	$(VL) $(VLFLAGS) $(SOURCES) $(VL_SRCS) $(TOP_PARAMETERS) -D__ARVI_PERFORMANCE_ANALYSIS
+	make -j -C obj_dir -f V$(TOP_MODULE).mk V$(TOP_MODULE) 
 
 .PHONY: clean help regression-tests benchmark performance 
 

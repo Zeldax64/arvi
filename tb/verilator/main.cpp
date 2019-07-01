@@ -13,8 +13,11 @@
 // Internals
 #include "elfloader.h"
 #include "riscv.h"
+
+#ifdef __ARVI_PERFORMANCE_ANALYSIS
 #include "arvi_dpi.h"
 #include "Profiler.h"
+#endif
 
 int main(int argc, char** argv) {
 	bool fail;
@@ -62,11 +65,13 @@ int main(int argc, char** argv) {
 	}
 	//std::cout << "Cycles: " << cycles << std::endl;
 
+#ifdef __ARVI_PERFORMANCE_ANALYSIS
 	Profiler* prof = get_profiler();
 	prof->set_path(mem_path);
 	prof->set_ticker(&cycles);
 	prof->save_report();
-	
+#endif	
+
 	delete dut;
 	
 	return fail;

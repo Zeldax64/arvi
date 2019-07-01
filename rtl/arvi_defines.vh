@@ -22,7 +22,7 @@
 
 `include "top/bus/bus_if.vh"
 
-`define __ARVI_PERFORMANCE_ANALYSIS
+//`define __ARVI_PERFORMANCE_ANALYSIS
 `ifdef __ARVI_PERFORMANCE_ANALYSIS
 `include "arvi_dpi.vh"
 `endif 
