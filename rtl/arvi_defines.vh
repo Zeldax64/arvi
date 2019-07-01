@@ -20,8 +20,11 @@
 //`define __RV32_M
 //`define __RV32_M_EXTERNAL
 
-
-`include "arvi_dpi.vh"
 `include "top/bus/bus_if.vh"
+
+`define __ARVI_PERFORMANCE_ANALYSIS
+`ifdef __ARVI_PERFORMANCE_ANALYSIS
+`include "arvi_dpi.vh"
+`endif 
 
 `endif

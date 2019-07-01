@@ -342,6 +342,8 @@ module DATAPATH_SC
 				  MC_MemtoReg ? DM_ReadData :
 				  MC_CSR_en ? CSR_Rd : Alu_Res;
 
+
+`ifdef __ARVI_PERFORMANCE_ANALYSIS
 	// ***** Performance DPI ***** //
 	integer inst_cycles;
 	integer inst_stall;
@@ -371,5 +373,6 @@ module DATAPATH_SC
 			end
 		end
 	end
+`endif
 
 endmodule
