@@ -6,20 +6,19 @@
 #include <stdint.h>
 #include <vector>
 
-#include "ISA.h"
-#include "Cache.h"
+#include "Hart.h"
 
 class Profiler {
 	std::string path;
 	std::string file_path;
 	std::fstream file;
 	ISA isa;
-	std::vector<ISA*> harts;
+	std::vector<Hart*> harts;
 	Cache cache;
 	uint64_t *ticker;
 
 public:
-	Profiler();
+	Profiler(uint32_t harts_no);
 	~Profiler();
 
 
@@ -39,6 +38,6 @@ public:
 	uint64_t get_cache_hits();
 
 private:
-	ISA* get_hart(uint32_t hart);
+	Hart* get_hart(uint32_t hart);
 
 };

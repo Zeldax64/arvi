@@ -1,6 +1,6 @@
 #include "arvi_dpi.h"
 
-Profiler profiler;
+Profiler profiler(2);
 
 void new_instruction(int hart, int inst, int cycles) { 
 	profiler.inc_inst(hart, inst, cycles);
