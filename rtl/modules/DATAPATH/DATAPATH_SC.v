@@ -355,7 +355,7 @@ module DATAPATH_SC
 		else begin
 			// Cache Performance
 			if(i_cache.hit && (inst_cycles == 0)) begin
-				cache_hit();
+				cache_hit(HART);
 			end
 			if(IC_Stall) begin
 				inst_stall <= inst_stall + 1;
@@ -364,9 +364,9 @@ module DATAPATH_SC
 			if(IC_Stall || MEM_stall || EX_stall) 
 				inst_cycles <= inst_cycles+1;
 			else begin // Finished instruction execution
-				new_instruction(instr, inst_cycles+1);
+				new_instruction(HART, instr, inst_cycles+1);
 				if(inst_stall !== 0) begin
-					cache_miss(inst_stall);
+					cache_miss(HART, inst_stall);
 				end
 				inst_stall <= 0;
 				inst_cycles <= 0;
