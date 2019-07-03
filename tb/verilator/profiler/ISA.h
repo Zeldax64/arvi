@@ -26,6 +26,8 @@ typedef enum inst_t {
 	MUL, MULH, MULHSU, MULHU, DIV, DIVU, REM, REMU, // 8
 
 	// RV32A
+	LR_W, SC_W,
+	AMOSWAP_W, AMOADD_W, AMOXOR_W, AMOAND_W, AMOOR_W, AMOMIN_W, AMOMAX_W, AMOMINU_W, AMOMAXU_W,
 
 	INVALID
 } inst_t;
@@ -42,7 +44,9 @@ typedef enum opcode_t {
 	OP_J_TYPE_JAL	= 0b1101111,
 	OP_J_TYPE_JALR	= 0b1100111,
 	OP_SYSTEM_TYPE	= 0b1110011,
-	OP_FENCE_TYPE	= 0b0001111	
+	OP_FENCE_TYPE	= 0b0001111,
+
+	OP_ATOMIC		= 0b0101111
 } opcode_t;
 
 class ISA {
@@ -61,6 +65,7 @@ public:
 private:
 	inst_t rv32i_dec(uint32_t inst);
 	inst_t rv32m_dec(uint32_t inst);
+	inst_t rv32a_dec(uint32_t inst);
 
 	// RV32I Decode
 	inst_t dec_R_TYPE(uint32_t inst);
