@@ -1,5 +1,6 @@
 VL := verilator
 TOP_MODULE := RISC_V
+# Shared defines between Verilog and C++ code
 DEFINES := -D__ARVI_PERFORMANCE_ANALYSIS
 CFLAGS := -CFLAGS "-std=c++0x -Wall -O1 $(DEFINES)"
 LDFLAGS := -LDFLAGS "-lfesvr"

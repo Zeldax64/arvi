@@ -60,18 +60,18 @@ def isa():
 
 	# Getting programs list
 	rv32ui_dir = tests_folder+"/isa/rv32ui"
-	rv32ua_dir = tests_folder+"/isa/rv32ua"
 	rv32um_dir = tests_folder+"/isa/rv32um"
+	rv32ua_dir = tests_folder+"/isa/rv32ua"
 
 	rv32ui_progs = get_isa_files(rv32ui_dir)
-	rv32ua_progs = get_isa_files(rv32ua_dir) 
 	rv32um_progs = get_isa_files(rv32um_dir)
+	rv32ua_progs = get_isa_files(rv32ua_dir) 
 
 	# Testing
 	rv32ui = test_loop(rv32ui_progs)
-	#rv32ua = test_loop(rv32ua_dir) # RV32-A not tested!
 	rv32um = test_loop(rv32um_progs)
-	failed = rv32ui or rv32um
+	rv32ua = test_loop(rv32ua_progs) # RV32-A not tested!
+	failed = rv32ui or rv32um or rv32ua
 
 	# Result
 	if not failed: 

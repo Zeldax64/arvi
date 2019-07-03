@@ -25,6 +25,7 @@ int main(int argc, char** argv) {
 	uint64_t cycles = 0;
 	uint64_t MAX_CYCLES = 2000000;
 	bool trace= false;
+	int cores_no = 1;
 
 	Verilated::commandArgs(argc, argv);
 	Verilated::traceEverOn(true);
@@ -40,6 +41,13 @@ int main(int argc, char** argv) {
 	}
 	
 	std::string path(mem_path);
+
+#ifdef __ARVI_PERFORMANCE_ANALYSIS
+	Profiler* prof = new Profiler(cores_no);
+	set_profiler(prof);
+	prof->set_path(mem_path);
+	prof->set_ticker(&cycles);
+#endif
 
 	// Reset
     RISCV* dut = new RISCV();
@@ -66,9 +74,6 @@ int main(int argc, char** argv) {
 	//std::cout << "Cycles: " << cycles << std::endl;
 
 #ifdef __ARVI_PERFORMANCE_ANALYSIS
-	Profiler* prof = get_profiler();
-	prof->set_path(mem_path);
-	prof->set_ticker(&cycles);
 	prof->save_report();
 #endif	
 

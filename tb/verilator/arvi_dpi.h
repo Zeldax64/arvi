@@ -9,11 +9,11 @@
 
 #include "profiler/Profiler.h"
 
-
 void new_instruction(int hart, int inst, int cycles);
 void cache_hit(int hart);
 void cache_miss(int hart, int cycles);
 
 Profiler* get_profiler();
+void set_profiler(Profiler* p);
 
 #endif
