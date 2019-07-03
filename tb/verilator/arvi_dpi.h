@@ -7,7 +7,7 @@
 #include <iostream>
 #include <stdint.h>
 
-#include "Profiler.h"
+#include "profiler/Profiler.h"
 
 
 void new_instruction(int hart, int inst, int cycles);

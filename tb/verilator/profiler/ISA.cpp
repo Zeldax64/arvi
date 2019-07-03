@@ -183,58 +183,81 @@ inst_t ISA::dec_B_TYPE(uint32_t inst) {
 }
 
 inst_t ISA::dec_SYSTEM_TYPE(uint32_t inst) {
-	uint32_t f12;
+	uint32_t f3, f12;
 	inst_t type = INVALID;
 
+	f3 = get_f3(inst);
 	f12 = inst >> 25;
 
-	if(f12 == 0) type = ECALL;
-	if(f12 == 1) type = EBREAK;
-
+	switch(f3) {
+		case 0b000: 	
+			if(f12 == 0) type = ECALL;
+			if(f12 == 1) type = EBREAK;
+		break;
+		case 0b001: type = CSRRW;  break;
+		case 0b010: type = CSRRS;  break;
+		case 0b011: type = CSRRC;  break;
+		case 0b101: type = CSRRWI; break;
+		case 0b110: type = CSRRSI; break;
+		case 0b111: type = CSRRCI; break;
+	}
 	return type;
 }
 
 
 void ISA::build_table() {
-	instructions[LUI]		= new Instruction(LUI, "LUI");
-	instructions[AUIPC]		= new Instruction(AUIPC, "AUIPC");
-	instructions[JAL]		= new Instruction(JAL, "JAL");
-	instructions[JALR]		= new Instruction(JALR, "JALR");
-	instructions[BEQ]		= new Instruction(BEQ, "BEQ");
-	instructions[BNE]		= new Instruction(BNE, "BNE");
-	instructions[BLT]		= new Instruction(BLT, "BLT");
-	instructions[BGE]		= new Instruction(BGE, "BGE");
-	instructions[BLTU]		= new Instruction(BLTU, "BLTU");
-	instructions[BGEU]		= new Instruction(BGEU, "BGEU");
-	instructions[LB]		= new Instruction(LB, "LB");
-	instructions[LH]		= new Instruction(LH, "LH");
-	instructions[LW]		= new Instruction(LW, "LW");
-	instructions[LBU]		= new Instruction(LBU, "LBU");
-	instructions[LHU]		= new Instruction(LHU, "LHU");
-	instructions[SB]		= new Instruction(SB, "SB");
-	instructions[SH]		= new Instruction(SH, "SH");
-	instructions[SW]		= new Instruction(SW, "SW");
-	instructions[ADDI]		= new Instruction(ADDI, "ADDI");
-	instructions[SLTI]		= new Instruction(SLTI, "SLTI");
-	instructions[SLTIU]		= new Instruction(SLTIU, "SLTIU");
-	instructions[XORI]		= new Instruction(XORI, "XORI");
-	instructions[ORI]		= new Instruction(ORI, "ORI");
-	instructions[ANDI]		= new Instruction(ANDI, "ANDI");
-	instructions[SLLI]		= new Instruction(SLLI, "SLLI");
-	instructions[SRLI]		= new Instruction(SRLI, "SRLI");
-	instructions[SRAI]		= new Instruction(SRAI, "SRAI");
-	instructions[ADD]		= new Instruction(ADD, "ADD");
-	instructions[SUB]		= new Instruction(SUB, "SUB");
-	instructions[SLL]		= new Instruction(SLL, "SLL");
-	instructions[SLT]		= new Instruction(SLT, "SLT");
-	instructions[SLTU]		= new Instruction(SLTU, "SLTU");
-	instructions[XOR]		= new Instruction(XOR, "XOR");
-	instructions[SRL]		= new Instruction(SRL, "SRL");
-	instructions[SRA]		= new Instruction(SRA, "SRA");
-	instructions[OR]		= new Instruction(OR, "OR");
-	instructions[AND]		= new Instruction(AND, "AND");
-	instructions[FENCE]		= new Instruction(FENCE, "FENCE");
-	instructions[ECALL]		= new Instruction(ECALL, "ECALL");
-	instructions[EBREAK]	= new Instruction(EBREAK, "EBREAK");
-	instructions[INVALID]	= new Instruction(INVALID, "INVALID");
+	instructions[LUI]     = new Instruction(LUI, "LUI");
+	instructions[AUIPC]   = new Instruction(AUIPC, "AUIPC");
+	instructions[JAL]     = new Instruction(JAL, "JAL");
+	instructions[JALR]    = new Instruction(JALR, "JALR");
+
+	instructions[BEQ]     = new Instruction(BEQ, "BEQ");
+	instructions[BNE]     = new Instruction(BNE, "BNE");
+	instructions[BLT]     = new Instruction(BLT, "BLT");
+	instructions[BGE]     = new Instruction(BGE, "BGE");
+	instructions[BLTU]    = new Instruction(BLTU, "BLTU");
+	instructions[BGEU]    = new Instruction(BGEU, "BGEU");
+
+	instructions[LB]      = new Instruction(LB, "LB");
+	instructions[LH]      = new Instruction(LH, "LH");
+	instructions[LW]      = new Instruction(LW, "LW");
+	instructions[LBU]     = new Instruction(LBU, "LBU");
+	instructions[LHU]     = new Instruction(LHU, "LHU");
+	instructions[SB]      = new Instruction(SB, "SB");
+	instructions[SH]      = new Instruction(SH, "SH");
+	instructions[SW]      = new Instruction(SW, "SW");
+
+	instructions[ADDI]    = new Instruction(ADDI, "ADDI");
+	instructions[SLTI]    = new Instruction(SLTI, "SLTI");
+	instructions[SLTIU]   = new Instruction(SLTIU, "SLTIU");
+	instructions[XORI]    = new Instruction(XORI, "XORI");
+	instructions[ORI]     = new Instruction(ORI, "ORI");
+	instructions[ANDI]    = new Instruction(ANDI, "ANDI");
+	instructions[SLLI]    = new Instruction(SLLI, "SLLI");
+	instructions[SRLI]    = new Instruction(SRLI, "SRLI");
+	instructions[SRAI]    = new Instruction(SRAI, "SRAI");
+
+	instructions[ADD]     = new Instruction(ADD, "ADD");
+	instructions[SUB]     = new Instruction(SUB, "SUB");
+	instructions[SLL]     = new Instruction(SLL, "SLL");
+	instructions[SLT]     = new Instruction(SLT, "SLT");
+	instructions[SLTU]    = new Instruction(SLTU, "SLTU");
+	instructions[XOR]     = new Instruction(XOR, "XOR");
+	instructions[SRL]     = new Instruction(SRL, "SRL");
+	instructions[SRA]     = new Instruction(SRA, "SRA");
+	instructions[OR]      = new Instruction(OR, "OR");
+	instructions[AND]     = new Instruction(AND, "AND");
+
+	instructions[FENCE]   = new Instruction(FENCE, "FENCE");
+
+	instructions[ECALL]   = new Instruction(ECALL, "ECALL");
+	instructions[EBREAK]  = new Instruction(EBREAK, "EBREAK");
+	instructions[CSRRW]   = new Instruction(CSRRW, "CSRRW");
+	instructions[CSRRS]   = new Instruction(CSRRS, "CSRRS");
+	instructions[CSRRC]   = new Instruction(CSRRC, "CSRRC");
+	instructions[CSRRWI]  = new Instruction(CSRRWI, "CSRRWI");
+	instructions[CSRRSI]  = new Instruction(CSRRSI, "CSRRSI");
+	instructions[CSRRCI]  = new Instruction(CSRRCI, "CSRRCI");
+
+	instructions[INVALID] = new Instruction(INVALID, "INVALID");
 }

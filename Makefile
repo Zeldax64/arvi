@@ -6,6 +6,7 @@ LDFLAGS := -LDFLAGS "-lfesvr"
 VLFLAGS := -Wall --cc --trace -I./rtl --exe --top-module $(TOP_MODULE) $(CFLAGS) $(LDFLAGS) $(DEFINES)
 
 VL_SRCS := $(wildcard tb/verilator/*.cpp)
+VL_SRCS += $(wildcard tb/verilator/profiler/*.cpp)
 
 # Function to find files in subfolders
 subdirs = $(filter-out $1,$(sort $(dir $(wildcard $1*/))))
@@ -18,7 +19,7 @@ HEADERS := $(call rfind,$(SRC_DIR)/,*.vh)
 SCRIPTS_DIR := ./tb/scripts
 run: all
 	@echo "--- Running ---"
-	obj_dir/VRISC_V +loadmem=towers.riscv -v
+	obj_dir/VRISC_V +loadmem=rv32ui-p-add -v
 
 all: $(SOURCES) $(HEADERS)
 	$(VL) $(VLFLAGS) $(SOURCES) $(VL_SRCS) $(TOP_PARAMETERS) -D__ARVI_PERFORMANCE_ANALYSIS

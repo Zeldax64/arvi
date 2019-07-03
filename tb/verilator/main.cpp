@@ -16,7 +16,7 @@
 
 #ifdef __ARVI_PERFORMANCE_ANALYSIS
 #include "arvi_dpi.h"
-#include "Profiler.h"
+#include "profiler/Profiler.h"
 #endif
 
 int main(int argc, char** argv) {
