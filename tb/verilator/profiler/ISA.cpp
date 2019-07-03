@@ -29,24 +29,10 @@ void ISA::inc_inst_type(inst_t type, uint32_t cycles) {
 }
 
 inst_t ISA::inst_decode(uint32_t inst) { 
-	uint32_t opcode, f3, f7;
 	inst_t type = INVALID;
 
-	opcode = get_opcode(inst);
-
-	switch(opcode) {
-		case OP_R_TYPE:  		type = dec_R_TYPE(inst); 		break;
-		case OP_I_TYPE:  		type = dec_I_TYPE(inst); 		break;
-		case OP_I_L_TYPE:  		type = dec_I_L_TYPE(inst); 		break;
-		case OP_S_TYPE:  		type = dec_S_TYPE(inst); 		break;
-		case OP_B_TYPE:  		type = dec_B_TYPE(inst); 		break;
-		case OP_U_TYPE_LUI:  	type = LUI; 					break;
-		case OP_U_TYPE_AUIPC:  	type = AUIPC;  					break;
-		case OP_J_TYPE_JAL:  	type = JAL;  					break;
-		case OP_J_TYPE_JALR:  	type = JALR; 					break;
-		case OP_SYSTEM_TYPE:  	type = dec_SYSTEM_TYPE(inst); 	break;
-		case OP_FENCE_TYPE:  	type = FENCE; 					break;
-	}
+	if(type == INVALID) { type = rv32i_dec(inst); }
+	if(type == INVALID) { type = rv32m_dec(inst); }
 
 	return type;
 }
@@ -73,21 +59,50 @@ void ISA::save_report(std::fstream &file) {
 
 // --- Private Methods --- //
 
-uint32_t ISA::get_opcode(uint32_t inst) {
-	uint8_t mask = 0b1111111;
-	return inst & mask;
-} 
- 
-uint32_t ISA::get_f3(uint32_t inst) {
-	uint8_t mask = 0b111;
-	return (inst>>12) & mask;
+inst_t ISA::rv32i_dec(uint32_t inst) {
+	uint32_t opcode, f3, f7;
+	inst_t type = INVALID;
+	opcode = get_opcode(inst);
+
+	switch(opcode) {
+		case OP_R_TYPE:  		type = dec_R_TYPE(inst); 		break;
+		case OP_I_TYPE:  		type = dec_I_TYPE(inst); 		break;
+		case OP_I_L_TYPE:  		type = dec_I_L_TYPE(inst); 		break;
+		case OP_S_TYPE:  		type = dec_S_TYPE(inst); 		break;
+		case OP_B_TYPE:  		type = dec_B_TYPE(inst); 		break;
+		case OP_U_TYPE_LUI:  	type = LUI; 					break;
+		case OP_U_TYPE_AUIPC:  	type = AUIPC;  					break;
+		case OP_J_TYPE_JAL:  	type = JAL;  					break;
+		case OP_J_TYPE_JALR:  	type = JALR; 					break;
+		case OP_SYSTEM_TYPE:  	type = dec_SYSTEM_TYPE(inst); 	break;
+		case OP_FENCE_TYPE:  	type = FENCE; 					break;
+	}
+
+	return type;
 }
 
-uint32_t ISA::get_f7(uint32_t inst) {
-	uint8_t mask = 0b1111111;
-	return (inst>>25) & mask;
-} 
+inst_t ISA::rv32m_dec(uint32_t inst) {
+	uint32_t opcode, f3, f7;
+	inst_t type = INVALID;
+	
+	opcode = get_opcode(inst);
 
+	if(opcode == OP_R_TYPE) {
+		f3 = get_f3(inst);
+		switch(f3) {
+			case 0b000: type = MUL;  	break;
+			case 0b001: type = MULH;  	break;
+			case 0b010: type = MULHSU; 	break;
+			case 0b011: type = MULHU; 	break;
+			case 0b100: type = DIV;	  	break;
+			case 0b101: type = DIVU; 	break;
+			case 0b110: type = REM; 	break;
+			case 0b111: type = REMU; 	break;
+		}
+	}
+	
+	return type;
+}
 
 inst_t ISA::dec_R_TYPE(uint32_t inst) {
 	uint32_t f3, f7;
@@ -95,16 +110,17 @@ inst_t ISA::dec_R_TYPE(uint32_t inst) {
 
 	f3 = get_f3(inst);
 	f7 = get_f7(inst);
-	
-	switch(f3) {
-		case 0: type = !f7 ? ADD : SUB; break;
-		case 1: type = SLL; break;
-		case 2: type = SLT; break;
-		case 3: type = SLTU; break;
-		case 4: type = XOR; break;
-		case 5: type = !f7 ? SRL : SRA;  break;
-		case 6: type = OR; break;
-		case 7: type = AND; break;
+	if(f7 == 0 || f7 == 0b0100000) {
+		switch(f3) {
+			case 0: type = !f7 ? ADD : SUB; break;
+			case 1: type = SLL; break;
+			case 2: type = SLT; break;
+			case 3: type = SLTU; break;
+			case 4: type = XOR; break;
+			case 5: type = !f7 ? SRL : SRA;  break;
+			case 6: type = OR; break;
+			case 7: type = AND; break;
+		}
 	}
 
 	return type;
@@ -204,8 +220,24 @@ inst_t ISA::dec_SYSTEM_TYPE(uint32_t inst) {
 	return type;
 }
 
+uint32_t ISA::get_opcode(uint32_t inst) {
+	uint8_t mask = 0b1111111;
+	return inst & mask;
+} 
+ 
+uint32_t ISA::get_f3(uint32_t inst) {
+	uint8_t mask = 0b111;
+	return (inst>>12) & mask;
+}
+
+uint32_t ISA::get_f7(uint32_t inst) {
+	uint8_t mask = 0b1111111;
+	return (inst>>25) & mask;
+} 
+
 
 void ISA::build_table() {
+	// RV32I
 	instructions[LUI]     = new Instruction(LUI, "LUI");
 	instructions[AUIPC]   = new Instruction(AUIPC, "AUIPC");
 	instructions[JAL]     = new Instruction(JAL, "JAL");
@@ -258,6 +290,17 @@ void ISA::build_table() {
 	instructions[CSRRWI]  = new Instruction(CSRRWI, "CSRRWI");
 	instructions[CSRRSI]  = new Instruction(CSRRSI, "CSRRSI");
 	instructions[CSRRCI]  = new Instruction(CSRRCI, "CSRRCI");
+
+	// RV32M
+	instructions[MUL]     = new Instruction(MUL, "MUL");
+	instructions[MULH]    = new Instruction(MULH, "MULH");
+	instructions[MULHSU]  = new Instruction(MULHSU, "MULHSU");
+	instructions[MULHU]   = new Instruction(MULHU, "MULHU");
+	instructions[DIV]     = new Instruction(DIV, "DIV");
+	instructions[DIVU]    = new Instruction(DIVU, "DIVU");
+	instructions[REM]     = new Instruction(REM, "REM");
+	instructions[REMU]    = new Instruction(REMU, "REMU");
+
 
 	instructions[INVALID] = new Instruction(INVALID, "INVALID");
 }

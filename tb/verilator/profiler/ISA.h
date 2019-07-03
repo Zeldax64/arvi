@@ -7,7 +7,9 @@
 
 #include "Instruction.h"
 
+// Instructions supported:
 typedef enum inst_t {
+	// RV32I
 	LUI,
 	AUIPC,
 	JAL,
@@ -19,9 +21,16 @@ typedef enum inst_t {
 	ADD, SUB, SLL, SLT, SLTU, XOR, SRL, SRA, OR, AND, // 10
 	FENCE,
 	ECALL, EBREAK, CSRRW, CSRRS, CSRRC, CSRRWI, CSRRSI, CSRRCI, // 8
+	
+	// RV32M
+	MUL, MULH, MULHSU, MULHU, DIV, DIVU, REM, REMU, // 8
+
+	// RV32A
+
 	INVALID
 } inst_t;
 
+// Opcodes types:
 typedef enum opcode_t {
 	OP_R_TYPE 		= 0b0110011,
 	OP_I_TYPE 		= 0b0010011,
@@ -50,14 +59,20 @@ public:
 	void print_report();
 	void save_report(std::fstream &file);
 private:
-	uint32_t get_opcode(uint32_t inst);
-	uint32_t get_f3(uint32_t inst);
-	uint32_t get_f7(uint32_t inst);
+	inst_t rv32i_dec(uint32_t inst);
+	inst_t rv32m_dec(uint32_t inst);
+
+	// RV32I Decode
 	inst_t dec_R_TYPE(uint32_t inst);
 	inst_t dec_I_TYPE(uint32_t inst);
 	inst_t dec_I_L_TYPE(uint32_t inst);
 	inst_t dec_S_TYPE(uint32_t inst);
 	inst_t dec_B_TYPE(uint32_t inst);
 	inst_t dec_SYSTEM_TYPE(uint32_t inst);
+
+	uint32_t get_opcode(uint32_t inst);
+	uint32_t get_f3(uint32_t inst);
+	uint32_t get_f7(uint32_t inst);
+	
 	void build_table();
 };
