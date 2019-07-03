@@ -2,24 +2,34 @@ import pandas as pd
 import sys
 
 entries = []
+prog = []
+cycles = []
 
 def add_entry(line):
-	global entries
+	global entries, prog, cycles
 	name = None
 	val = None
 
 	line = line.replace("\t", "")
-
-	if "<path>" in line:
+	if "<path>" in line and len(prog) == 0:
 		l = line[len("<path>"):-len("</path>\n")]
-		val = l
-		name = "program"
+		prog.append("program")
+		prog.append(l)
 
-	if "<cycles>" in line:
+	if "<cycles>" in line and len (cycles) == 0:
 		l = line[len("<cycles>"):-len("</cycles>\n")]
-		val = l
-		name = "cycles"	
+		cycles.append("cycles")
+		cycles.append(l)
 
+	if "<hart" in line:
+		l = line.replace("<hart", "")
+		l = l.replace(">\n", "")
+
+		name = "hart"
+		val = l
+		entries.insert(0 ,prog)
+		entries.insert(1, cycles)
+		
 	if "<name>" in line:
 		l = line[len("<name>"):-len("</name>\n")]
 		name = l
@@ -47,22 +57,28 @@ def add_entry(line):
 
 
 def read_report(path):
+	global entries
 	file = open(path, "r")
 
 	line = file.readline()
+	df = None
 	while line: 
-		if "\t" in line:
-			add_entry(line)
+		#if "\t" in line:
+		add_entry(line)
 		line = file.readline()
+		if "</hart" in line:
+			values = [row[1] for row in entries]
+			names = [row[0] for row in entries]
+			df_entry = pd.DataFrame(values)
+			df_entry = df_entry.transpose()
+			df_entry.columns = names
+			if isinstance(df, pd.DataFrame):
+				df = df.append(df_entry, ignore_index = True) 
+			else:
+				df = df_entry
+			entries = []
 	
 	file.close()
-	
-	values = [row[1] for row in entries]
-	names = [row[0] for row in entries]
-
-	df = pd.DataFrame(values)
-	df = df.transpose()
-	df.columns = names
 	return df
 
 
@@ -71,7 +87,7 @@ def arg_parse():
 	return reports
 
 def main():
-	global entries
+	global entries, prog, entries
 	df = None
 	report_files = arg_parse()
 	for report in report_files:
@@ -82,7 +98,8 @@ def main():
 		else:
 			df = report_df
 		entries = []
-
+		prog = []
+		cycles = []
 	df.to_csv("dataframe.csv")
 
 main()
