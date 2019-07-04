@@ -19,7 +19,7 @@
 
 
 `define RV32_M_IF \
-	output o_en, \
+	output reg o_en, \
 	output reg [`XLEN-1:0] o_rs1, \
 	output reg [`XLEN-1:0] o_rs2, \
 	output reg [2:0] o_f3, \

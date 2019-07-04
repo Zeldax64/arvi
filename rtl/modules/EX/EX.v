@@ -66,10 +66,12 @@ module EX(
 			);
 	`else 
 		// Code for external RV32_M
+		reg enable;
 		reg en_delayed;
 		always@(posedge i_clk) begin
 			if(!i_rst || i_ack) begin
 				en_delayed <= 0;
+				enable <= 0;
 			end
 			else begin
 				if(i_m_en) begin
@@ -78,10 +80,11 @@ module EX(
 					o_f3  <= i_f3;
 					en_delayed <= i_m_en; 
 				end
+				enable <= !en_delayed && i_m_en; // Create a 0->1 pulse
 			end
 		end		
 		
-		assign o_en  = !en_delayed && i_m_en; // Create a 0->1 pulse
+		assign o_en  = enable; // Create a 0->1 pulse
 
 		assign o_stall  = !i_ack && i_m_en;
 		assign rv_m_res = i_res; 
