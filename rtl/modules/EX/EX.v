@@ -84,8 +84,10 @@ module EX(
 			end
 		end		
 		
-		assign o_en  = enable; // Create a 0->1 pulse
-
+		always@(*) begin
+			assign o_en  = enable; // Create a 0->1 pulse
+		end
+		
 		assign o_stall  = !i_ack && i_m_en;
 		assign rv_m_res = i_res; 
 	`endif

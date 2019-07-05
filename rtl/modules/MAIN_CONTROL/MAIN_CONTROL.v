@@ -39,10 +39,10 @@ module MAIN_CONTROL(
     output reg o_Ex,
 
 `ifdef __ATOMIC
-	output o_atomic,
+	output reg o_atomic,
 `endif
 `ifdef __RV32_M
-	output o_ALUM_en,
+	output reg o_ALUM_en,
 `endif
 
     input i_Stall
