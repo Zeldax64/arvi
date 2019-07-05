@@ -26,7 +26,7 @@ all: $(SOURCES) $(HEADERS)
 	$(VL) $(VLFLAGS) $(SOURCES) $(VL_SRCS) $(TOP_PARAMETERS) -D__ARVI_PERFORMANCE_ANALYSIS
 	make -j -C obj_dir -f V$(TOP_MODULE).mk V$(TOP_MODULE) 
 
-.PHONY: clean help regression-tests benchmark performance 
+.PHONY: clean help regression-tests benchmark performance synthesis
 
 JUNK := $(call rfind, ./tb/,*.vcd)
 JUNK += $(call rfind, ./tb/,*.signature_output)
@@ -35,6 +35,9 @@ JUNK += $(call rfind, ./tb/,*.performance_report)
 clean:
 	rm -rf obj_dir
 	rm -f *.vcd *.lxt2 $(JUNK)
+	rm -rf synth .Xil
+	rm *.log *.jou
+
 
 reports = $(wildcard tb/tests/benchmark/*.performance_report)
 reports2 = tb/tests/benchmark/*.performance_report
@@ -51,3 +54,7 @@ benchmark: all
 performance:
 	python3 $(SCRIPTS_DIR)/performance.py $(reports)
 
+# Please notice that vivado is necessary to synthesize the design.
+synthesis: all
+	mkdir synth
+	vivado -mode tcl -source fpga/scripts/vivado_synth.tcl 
