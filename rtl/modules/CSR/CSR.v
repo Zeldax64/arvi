@@ -37,10 +37,6 @@ module CSR(
 	wire [2:0] f3 = i_inst[14:12];
 	wire [11:0] addr = i_inst[31:20];
 
-	// Assigning output
-	assign o_cause = mcause;
-	assign o_tvec = mtvec;
-
 	// Machine Trap Setup
 	// mstatus
 	reg mie, mpie;
@@ -56,6 +52,13 @@ module CSR(
 	reg [`XLEN-1:0] mcause;
 	reg [`XLEN-1:0] mtval;
 	wire mtip = i_Int_tip;
+
+	// Assigning output
+	assign o_cause = mcause;
+	assign o_tvec = mtvec;
+
+	wire exception;
+	wire interrupt, int_ti;
 
 	// Getting value to write according to instruction's f3
 	reg  [`XLEN-1:0] write_data;
@@ -205,11 +208,11 @@ module CSR(
 
 	// Exceptions
 	wire ex_ldst_addr = i_Ex_ld_addr || i_Ex_st_addr;
-	wire exception = i_Ex || i_Ex_inst_addr || ex_ldst_addr || ex_ebreak || ex_ecall;
+	assign exception = i_Ex || i_Ex_inst_addr || ex_ldst_addr || ex_ebreak || ex_ecall;
 
 	// Interrupts
-	wire int_ti = mtie && mtip && mie; // Timer interrupt
-	wire interrupt = int_ti;
+	assign int_ti = mtie && mtip && mie; // Timer interrupt
+	assign interrupt = int_ti;
 
 	assign o_ex = exception || interrupt;
 

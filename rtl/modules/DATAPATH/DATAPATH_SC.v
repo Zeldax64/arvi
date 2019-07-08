@@ -50,10 +50,6 @@ module DATAPATH_SC
 	input i_clk,
 	input i_rst
 	);
-	// TODO: find a place to this signal
-`ifdef __ATOMIC
-	assign o_DM_f7 = f7;
-`endif
 
 	reg [`XLEN-1:0] PC;
 	reg [`XLEN-1:0] PC_next;
@@ -104,6 +100,23 @@ module DATAPATH_SC
 	wire [`XLEN-1:0] DM_Addr;
 	wire [`XLEN-1:0] DM_ReadData;
 
+`ifdef __ATOMIC
+	assign o_DM_f7 = f7;
+`endif
+
+
+	// CSRs
+	wire [`XLEN-1:0] CSR_Rd; // temporary
+	wire [`XLEN-1:0] CSR_epc;
+	/* verilator lint_off UNUSED */
+	wire [`XLEN-1:0] CSR_tvec; 
+	wire [`XLEN-1:0] CSR_cause;
+	/* verilator lint_on UNUSED */
+	wire CSR_eret;
+	wire CSR_ex;
+	wire [`XLEN-1:0] CSR_Wd;
+	wire [`XLEN-1:0] badaddr;
+
 	// Exceptions
 	wire ex_inst_addr;
 	wire ex_ld_addr;
@@ -111,9 +124,15 @@ module DATAPATH_SC
 
 	// Stalls
 	//wire IF_stall;
+	wire IC_Stall;
+	wire EX_stall;
+	wire DM_stall;
 	wire MEM_stall;
 	//assign IF_stall = IC_stall;
 	assign MEM_stall = DM_stall;
+
+	// Possible PC's values
+	reg[`XLEN-1:0] PC_jump;
 
 	// Assigning PC
 	always@(posedge i_clk) begin
@@ -124,7 +143,6 @@ module DATAPATH_SC
 
 	// IM wires
 	wire [`XLEN-1:0] i_DataBlock = i_IM_Instr;
-	wire IC_Stall;
 	
 	// --- Fetch Stage --- //
 	// Instruction Memory
@@ -195,8 +213,6 @@ module DATAPATH_SC
 
 
 	// --- Execute Stage --- //
-	wire EX_stall;
-
 	EX ex_stage
 		(
 			.i_rs1   (A),
@@ -232,9 +248,6 @@ module DATAPATH_SC
 	);
 
 	assign DM_Addr = Alu_Res;
-	/* verilator lint_off UNUSED */
-	wire DM_stall;
-	/* verilator lint_on UNUSED */
 	DATA_MEMORY_V2 d_mem
 		(
 			.i_clk           (i_clk),
@@ -260,15 +273,9 @@ module DATAPATH_SC
 		);
 
 
-	/* verilator lint_off UNUSED */
-	wire [`XLEN-1:0] CSR_Rd; // temporary
-	wire [`XLEN-1:0] CSR_tvec; 
-	wire [`XLEN-1:0] CSR_epc;
-	wire [`XLEN-1:0] CSR_cause;
-	wire CSR_eret;
-	wire CSR_ex;
-	wire [`XLEN-1:0] CSR_Wd = (f3[2] == 1'b1) ? Imm : Rd1;
-	wire [`XLEN-1:0] badaddr = (ex_ld_addr || ex_st_addr) ? DM_Addr : PC_jump;
+
+	assign CSR_Wd = (f3[2] == 1'b1) ? Imm : Rd1;
+	assign badaddr = (ex_ld_addr || ex_st_addr) ? DM_Addr : PC_jump;
 	
 	// CSR
 	CSR #(.HART_ID(HART)
@@ -297,7 +304,6 @@ module DATAPATH_SC
 		// Interrupts
 		.i_Int_tip (i_tip)
 	);
-	/* verilator lint_on UNUSED */
 	
 	/*----- Datapath Muxes -----*/
 	// PC Mux - Chooses PC's next value
@@ -315,7 +321,6 @@ module DATAPATH_SC
 	end
 	
 	// Calculate PC without CSRs interference
-	reg[`XLEN-1:0] PC_jump;
 	assign ex_inst_addr = |PC_jump[1:0];
 	always@(*) begin
 		if(MC_Jump == 2'b10) begin // JALR

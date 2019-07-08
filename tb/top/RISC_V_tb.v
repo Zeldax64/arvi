@@ -1,9 +1,9 @@
 /* 
 	RISC_V_tb.v
 
-	Test bench for TOP_BASYS_tb.v
+	Testbench for TOP_BASYS_tb.v
 */
-`include "defines.vh"
+`include "arvi_defines.vh"
 `timescale 1ns / 1ps
 
 module RISC_V_tb;
@@ -28,7 +28,7 @@ module RISC_V_tb;
 		clk = 0;
 
 		//#SIMULATION_TIME;
-		wait(dut.data_mem.mem[0] === 0)
+		//wait(dut.data_mem.mem[0] === 0)
 		$finish;
 	end // initial
 
