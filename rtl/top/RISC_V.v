@@ -58,7 +58,7 @@ module RISC_V_
 			.PC_RESET(PC_RESET),
 			.HART(HART_ID),
 			.I_CACHE_ENTRIES(I_CACHE_ENTRIES)
-		) hart0(
+		) hart(
 		.i_clk(i_clk),
 		.i_rst(i_rst),
 		

@@ -36,7 +36,7 @@ clean:
 	rm -rf obj_dir
 	rm -f *.vcd *.lxt2 $(JUNK)
 	rm -rf synth .Xil
-	rm *.log *.jou
+	rm -f *.log *.jou
 
 
 reports = $(wildcard tb/tests/benchmark/*.performance_report)

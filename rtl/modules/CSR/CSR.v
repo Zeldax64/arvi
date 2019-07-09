@@ -192,7 +192,7 @@ module CSR(
 			case(addr)
 				`mhartid : o_Rd = HART_ID;
 				`mstatus : o_Rd = {{19{1'b0}}, 2'b11, 3'b0, mpie, 3'b0, mie, 3'b0};
-				`misa : o_Rd = {2'b01, 5'b0, 25'b00000_00010_00000_00000_00000_0}; // Read only RV32I
+				`misa : o_Rd = {2'b01, 4'b0, 26'b0_00000_00000_00000_01000_00000}; // Read only RV32I
 				`medeleg : o_Rd = medeleg; // NFI - Just Storing values
 				`mie : o_Rd = {{`XLEN-9{1'b0}}, mtie, 8'b0};
 				`mtvec : o_Rd = mtvec;
