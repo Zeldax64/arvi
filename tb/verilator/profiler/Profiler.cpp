@@ -17,7 +17,7 @@ Profiler::~Profiler() {
 void Profiler::save_report() {
 	Hart* hart;
 
-	this->file.open(file_path, std::ios::out); 
+	this->file.open(this->file_path, std::ios::out); 
 	
 	this->file << "<profiler>" << std::endl; 
 

@@ -14,10 +14,9 @@
 #include "elfloader.h"
 #include "riscv.h"
 
-#ifdef __ARVI_PERFORMANCE_ANALYSIS
+// Program Profiler
 #include "arvi_dpi.h"
 #include "profiler/Profiler.h"
-#endif
 
 int main(int argc, char** argv) {
 	bool fail;
@@ -25,6 +24,10 @@ int main(int argc, char** argv) {
 	uint64_t cycles = 0;
 	uint64_t MAX_CYCLES = 2000000;
 	bool trace= false;
+	bool performance_profiler = false;
+	Profiler* prof = NULL;		
+	char* report_output = NULL;
+
 	int cores_no = 1;
 
 	Verilated::commandArgs(argc, argv);
@@ -38,16 +41,30 @@ int main(int argc, char** argv) {
 			mem_path = argv[i]+9;
 		else if(arg.substr(0, 2) == "-v")
 			trace = true;
+		else if(arg.substr(0, 2) == "-r") {
+			prof = new Profiler(cores_no);
+		}
+		else if(arg.substr(0, 16) == "--report-output="){
+			report_output = argv[i]+16;
+		}
 	}
 	
 	std::string path(mem_path);
 
-#ifdef __ARVI_PERFORMANCE_ANALYSIS
-	Profiler* prof = new Profiler(cores_no);
-	set_profiler(prof);
-	prof->set_path(mem_path);
-	prof->set_ticker(&cycles);
-#endif
+	// If -r flag is passed, then create a performance report of the program
+	if(prof != NULL) {	
+		set_profiler(prof);
+
+		if(report_output == NULL) {
+			prof->set_path(mem_path);
+		}
+		else {
+			std::string performance_path(report_output);
+			prof->set_path(performance_path);
+		}
+		
+		prof->set_ticker(&cycles);
+	}
 
 	// Reset
     RISCV* dut = new RISCV();
@@ -73,9 +90,9 @@ int main(int argc, char** argv) {
 	}
 	//std::cout << "Cycles: " << cycles << std::endl;
 
-#ifdef __ARVI_PERFORMANCE_ANALYSIS
-	prof->save_report();
-#endif	
+	if(prof != NULL) {
+		prof->save_report();
+	}
 
 	delete dut;
 	
