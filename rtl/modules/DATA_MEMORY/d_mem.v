@@ -1,12 +1,12 @@
 /*
-	Draft - Data Memory module
+	Data Memory module.
 */
 
 `timescale 1ns / 1ps
 
 `include "arvi_defines.vh"
 
-module DATA_MEMORY_V2(
+module d_mem(
     input  i_clk,
     input  i_rst,
 

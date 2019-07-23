@@ -1,6 +1,5 @@
 `ifndef __ARVI_DEFINES
 `define __ARVI_DEFINES
-//`define SIMULATION
 
 `define INSTRUCTION_SIZE 31
 `define WORD_SIZE 31
@@ -17,6 +16,8 @@
 	`define __ATOMIC
 `endif
 
+// Remove comments to enable extensions RV32A or RV32M extensions.
+//`define __ATOMIC
 //`define __RV32_M
 //`define __RV32_M_EXTERNAL
 

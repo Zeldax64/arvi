@@ -2,7 +2,7 @@
 
 `include "arvi_defines.vh"
 
-module I_CACHE
+module i_cache
 	#(
 		parameter BLOCK_SIZE = 1, // Block size in words (4-Bytes)
 		parameter ENTRIES = 128   // Number of entries

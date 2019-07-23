@@ -146,7 +146,7 @@ module DATAPATH_SC
 	
 	// --- Fetch Stage --- //
 	// Instruction Memory
-	I_CACHE #(.BLOCK_SIZE(1),
+	i_cache #(.BLOCK_SIZE(1),
 			  .ENTRIES   (I_CACHE_ENTRIES)) 
 	i_cache 
 	(
@@ -248,7 +248,7 @@ module DATAPATH_SC
 	);
 
 	assign DM_Addr = Alu_Res;
-	DATA_MEMORY_V2 d_mem
+	d_mem d_mem
 		(
 			.i_clk           (i_clk),
 			.i_rst           (i_rst),
