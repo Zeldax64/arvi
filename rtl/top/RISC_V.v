@@ -43,7 +43,7 @@ module RISC_V_
 	
 	// Data Memory
 	`ARVI_DMEM_WIRES;
-	
+
 `ifdef __ATOMIC
 	wire [6:0] MEM_operation;
 	wire MEM_atomic;
@@ -72,7 +72,7 @@ module RISC_V_
 		.o_DM_Addr(DM_addr),
 		.o_DM_Wen(DM_wen),
 		.o_DM_MemRead(DM_ren),
-		.o_DM_f3(DM_f3),
+		.o_DM_byte_en(DM_byte_en),
 
 `ifdef __ATOMIC
 		.o_DM_f7        (MEM_operation),
@@ -113,7 +113,7 @@ module RISC_V_
 			.o_DM_ReadData   (DM_rd),
 			.i_DM_Wd         (DM_wd),
 			.i_DM_Addr       (DM_addr),
-			.i_DM_f3         (DM_f3),
+			.i_DM_byte_en    (DM_byte_en),
 			.i_DM_Wen        (DM_wen),
 			.i_DM_MemRead    (DM_ren),
 			

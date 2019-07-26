@@ -64,7 +64,7 @@ module HART
 		.o_DM_Addr(o_DM_Addr),
 		.o_DM_Wen(o_DM_Wen),
 		.o_DM_MemRead(o_DM_MemRead),
-		.o_DM_f3(o_DM_f3),
+		.o_DM_byte_en(o_DM_byte_en),
 
 `ifdef __ATOMIC
 		.o_MEM_atomic(o_MEM_atomic),

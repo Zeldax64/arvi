@@ -25,9 +25,10 @@ module d_mem(
     `ARVI_DMEM_OUTPUTS
     );
 
-	reg [`XLEN-1:0] read_data;
+	reg [`XLEN-1:0] read_data, wr_data;
 	reg ex_ld_addr, ex_st_addr;
 	wire ex; 
+	reg [3:0] byte_en;
 
 	assign o_Rd = read_data;
 
@@ -37,11 +38,11 @@ module d_mem(
 	assign ex = ex_ld_addr || ex_st_addr;;
 	
 	// To memory signals
-	assign o_DM_Wd      = i_wr_data;
+	assign o_DM_Wd      = wr_data;
 	assign o_DM_Addr    = i_addr;
 	assign o_DM_Wen     = i_wr_en && !ex_st_addr;
 	assign o_DM_MemRead = i_rd_en && !ex_ld_addr;
-	assign o_DM_f3      = i_f3;
+	assign o_DM_byte_en = byte_en;
 
 	always@(*) begin
 		ex_ld_addr = 0;
@@ -58,14 +59,45 @@ module d_mem(
 				3'b101 : read_data = {{`XLEN-16{1'b0}}, i_DM_ReadData[15:0]}; 				// LHU
 				default: read_data = i_DM_ReadData;
 			endcase 
-			// Checking if a exception occurs at reading.
+			// Checking if a exception is raised.
 			case(i_f3[1:0])
 				2'b01 :	ex_ld_addr = (i_addr[0]) 	? 1'b1 : 1'b0;
 				2'b10 : ex_ld_addr = (|i_addr[1:0]) ? 1'b1 : 1'b0;
 				default : ex_ld_addr = 0;
 			endcase
 		end
+
+		// Write data handler
 		if(i_wr_en) begin
+			// Checking which bytes must be written (SB, SH, SW).
+			case(i_f3)
+				3'b000 : begin
+					byte_en[0] = i_addr[1:0] == 2'b00;  
+					byte_en[1] = i_addr[1:0] == 2'b01;  
+					byte_en[2] = i_addr[1:0] == 2'b10;  
+					byte_en[3] = i_addr[1:0] == 2'b11;  
+				end
+				3'b001 : begin
+					byte_en[1:0] = (i_addr[1] == 1'b0) ? 2'b11 : 2'b00;
+					byte_en[3:2] = (i_addr[1] == 1'b1) ? 2'b11 : 2'b00;
+				end
+				3'b010 : begin
+					byte_en = 4'b1111;
+				end
+				default: byte_en = 4'b0000;
+			endcase
+
+			// Shifting the data to be written since the two LSB bits of
+			// the accessed address are always 2'b00. 
+			case(byte_en)
+				4'b0010 : wr_data = i_wr_data << 8;
+				4'b0100 : wr_data = i_wr_data << 16;
+				4'b1100 : wr_data = i_wr_data << 16;
+				4'b1000 : wr_data = i_wr_data << 24;
+				default : wr_data = i_wr_data;
+			endcase
+
+			// Checking if a exception is raised.
 			case(i_f3[1:0])
 				2'b01 : ex_st_addr = (i_addr[0]) ? 1'b1 : 1'b0;
 				2'b10 : ex_st_addr = (|i_addr[1:0]) ? 1'b1 : 1'b0;

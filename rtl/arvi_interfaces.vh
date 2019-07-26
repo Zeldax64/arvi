@@ -35,7 +35,7 @@
 	wire DM_mem_ready;			\
 	wire DM_ren;				\
 	wire DM_wen;				\
-	wire [2:0] DM_f3;			\
+	wire [3:0] DM_byte_en;		\
 	wire [`XLEN-1:0] DM_rd;		\
 	wire [`XLEN-1:0] DM_wd;		\
 	wire [`XLEN-1:0] DM_addr	
@@ -45,7 +45,7 @@
 	input  [`XLEN-1:0] i_DM_ReadData,	\
 	output [`XLEN-1:0] o_DM_Wd,			\
 	output [`XLEN-1:0] o_DM_Addr,		\
-	output [2:0] o_DM_f3,				\
+	output [3:0] o_DM_byte_en,			\
 	output o_DM_Wen,					\
 	output o_DM_MemRead					
 
@@ -54,10 +54,8 @@
 	output [`XLEN-1:0] o_DM_ReadData,	\
 	input  [`XLEN-1:0] i_DM_Wd,			\
 	input  [`XLEN-1:0] i_DM_Addr,		\
-	input  [2:0] i_DM_f3,				\
+	input  [3:0] i_DM_byte_en,			\
 	input  i_DM_Wen,					\
 	input  i_DM_MemRead					
-
-//`define ARVI_DMEM_CONNECTIONS
 
 `endif

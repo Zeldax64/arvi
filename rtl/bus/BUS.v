@@ -33,8 +33,7 @@ module BUS (
 );
 	
 	reg wr_en;
-	reg [31:0] wr_data, addr;
-	reg [3:0] byte_en;
+	reg [31:0] addr;
 
 	localparam READ  = 1'b0;
 	localparam WRITE = 1'b1;
@@ -51,9 +50,9 @@ module BUS (
 		else begin
 			state     <= next_state;
 			o_wr_en   <= wr_en;
-			o_wr_data <= wr_data;
+			o_wr_data <= i_DM_Wd;
 			o_addr    <= addr;
-			o_byte_en <= byte_en;
+			o_byte_en <= i_DM_byte_en;
 			o_bus_en  <= bus_req;
 		end
 	end
@@ -65,7 +64,7 @@ module BUS (
 		o_DM_data_ready = 0;
 		o_DM_ReadData = 0;
 
-		// Bus default
+		// Bus default values
 		bus_req = 0;
 		wr_en = 0;
 		addr = 0;
@@ -117,31 +116,4 @@ module BUS (
 		endcase
 	end
 
-	// Defining byte enable output
-	always@(*) begin
-		case(i_DM_f3)
-			3'b000 : begin
-				byte_en[0] = i_DM_Addr[1:0] == 2'b00;  
-				byte_en[1] = i_DM_Addr[1:0] == 2'b01;  
-				byte_en[2] = i_DM_Addr[1:0] == 2'b10;  
-				byte_en[3] = i_DM_Addr[1:0] == 2'b11;  
-			end
-			3'b001 : begin
-				byte_en[1:0] = (i_DM_Addr[1] == 1'b0) ? 2'b11 : 2'b00;
-				byte_en[3:2] = (i_DM_Addr[1] == 1'b1) ? 2'b11 : 2'b00;
-			end
-			3'b010 : begin
-				byte_en = 4'b1111;
-			end
-			default: byte_en = 4'b0000;
-		endcase
-
-		case(byte_en)
-			4'b0010 : wr_data = i_DM_Wd << 8;
-			4'b0100 : wr_data = i_DM_Wd << 16;
-			4'b1100 : wr_data = i_DM_Wd << 16;
-			4'b1000 : wr_data = i_DM_Wd << 24;
-			default : wr_data = i_DM_Wd;
-		endcase
-	end
 endmodule

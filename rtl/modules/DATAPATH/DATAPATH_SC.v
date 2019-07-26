@@ -62,7 +62,6 @@ module DATAPATH_SC
 	output reg [`RISCV_FORMAL_NRET * `RISCV_FORMAL_XLEN/8 - 1 : 0] rvfi_mem_wmask,  
 	output reg [`RISCV_FORMAL_NRET * `RISCV_FORMAL_XLEN   - 1 : 0] rvfi_mem_rdata,  
 	output reg [`RISCV_FORMAL_NRET * `RISCV_FORMAL_XLEN   - 1 : 0] rvfi_mem_wdata,   
-
 `endif
 
 	// General connections
@@ -286,7 +285,7 @@ module DATAPATH_SC
 			.i_DM_ReadData   (i_DM_ReadData),
 			.o_DM_Wd         (o_DM_Wd),
 			.o_DM_Addr       (o_DM_Addr),
-			.o_DM_f3       	 (o_DM_f3),
+			.o_DM_byte_en    (o_DM_byte_en),
 			.o_DM_Wen      	 (o_DM_Wen),
 			.o_DM_MemRead  	 (o_DM_MemRead)
 		);
@@ -369,7 +368,7 @@ module DATAPATH_SC
 
 
 `ifdef __ARVI_PERFORMANCE_ANALYSIS
-	// ***** Performance DPI ***** //
+	// ***** Performance Profiler DPI ***** //
 	integer inst_cycles;
 	integer inst_stall;
 	always@(posedge i_clk) begin
