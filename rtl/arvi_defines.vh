@@ -21,7 +21,7 @@
 //`define __RV32_M
 //`define __RV32_M_EXTERNAL
 
-`include "top/bus/bus_if.vh"
+`include "arvi_interfaces.vh"
 
 //`define __ARVI_PERFORMANCE_ANALYSIS
 `ifdef __ARVI_PERFORMANCE_ANALYSIS
