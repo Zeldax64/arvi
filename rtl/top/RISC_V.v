@@ -74,7 +74,7 @@ module RISC_V_
 		// Data Memory connections
 		.i_DM_data_ready(DM_mem_ready),
 		.i_DM_ReadData(DM_rd),
-		.o_DM_WriteData(DM_wd),
+		.o_DM_Wd(DM_wd),
 		.o_DM_Addr(DM_addr),
 		.o_DM_Wen(DM_wen),
 		.o_DM_MemRead(DM_ren),

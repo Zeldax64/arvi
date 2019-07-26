@@ -22,22 +22,19 @@ module d_mem(
     output o_ex_st,
 
     // CPU <-> Memory
-    input  i_DM_data_ready,
-	input  [`XLEN-1:0] i_DM_ReadData,
-	output [`XLEN-1:0] o_DM_Wd,
-	output [`XLEN-1:0] o_DM_Addr,
-	output [2:0] o_DM_f3,
-	output o_DM_Wen,
-	output o_DM_MemRead
+    `ARVI_DMEM_OUTPUTS
     );
 
 	reg [`XLEN-1:0] read_data;
 	reg ex_ld_addr, ex_st_addr;
-	wire ex = ex_ld_addr || ex_st_addr;
+	wire ex; 
 
+	assign o_Rd = read_data;
+
+	// Exception signals
 	assign o_ex_ld = ex_ld_addr;
 	assign o_ex_st = ex_st_addr;
-	assign o_Rd = read_data;
+	assign ex = ex_ld_addr || ex_st_addr;;
 	
 	// To memory signals
 	assign o_DM_Wd      = i_wr_data;
@@ -50,17 +47,20 @@ module d_mem(
 		ex_ld_addr = 0;
 		ex_st_addr = 0;
 		read_data  = i_DM_ReadData;
+
+		// Read data handler.
 		if(i_rd_en) begin
 			case(i_f3) 
-				3'b000 : read_data = {{`XLEN-8{i_DM_ReadData[7]}}, i_DM_ReadData[7:0]}; 
-				3'b001 : read_data = {{`XLEN-16{i_DM_ReadData[15]}}, i_DM_ReadData[15:0]}; 
-				3'b010 : read_data = i_DM_ReadData;
-				3'b100 : read_data = {{`XLEN-8 {1'b0}}, i_DM_ReadData[7:0]};
-				3'b101 : read_data = {{`XLEN-16{1'b0}}, i_DM_ReadData[15:0]};
+				3'b000 : read_data = {{`XLEN-8{i_DM_ReadData[7]}}, i_DM_ReadData[7:0]}; 	// LB
+				3'b001 : read_data = {{`XLEN-16{i_DM_ReadData[15]}}, i_DM_ReadData[15:0]}; 	// LH
+				3'b010 : read_data = i_DM_ReadData; 										// LW
+				3'b100 : read_data = {{`XLEN-8 {1'b0}}, i_DM_ReadData[7:0]}; 				// LBU
+				3'b101 : read_data = {{`XLEN-16{1'b0}}, i_DM_ReadData[15:0]}; 				// LHU
 				default: read_data = i_DM_ReadData;
 			endcase 
+			// Checking if a exception occurs at reading.
 			case(i_f3[1:0])
-				2'b01 :	ex_ld_addr = (i_addr[0]) 	 ? 1'b1 : 1'b0;
+				2'b01 :	ex_ld_addr = (i_addr[0]) 	? 1'b1 : 1'b0;
 				2'b10 : ex_ld_addr = (|i_addr[1:0]) ? 1'b1 : 1'b0;
 				default : ex_ld_addr = 0;
 			endcase
@@ -103,5 +103,7 @@ module d_mem(
 	end
 
 	wire data_req = i_wr_en || i_rd_en;
+
 	assign o_stall = (state != IDLE || data_req) && !i_DM_data_ready && !ex;
+
 endmodule

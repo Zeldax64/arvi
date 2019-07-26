@@ -20,13 +20,7 @@ module DATAPATH_SC
 	output [`XLEN-1:0] o_IM_Addr,
 
 	// Data Memory connections
-	input  i_DM_data_ready,
-	input  [`XLEN-1:0] i_DM_ReadData,
-	output [`XLEN-1:0] o_DM_Wd,
-	output [`XLEN-1:0] o_DM_Addr,
-	output [2:0] o_DM_f3,
-	output o_DM_Wen,
-	output o_DM_MemRead,
+	`ARVI_DMEM_OUTPUTS,
 
 `ifdef __ATOMIC // Atomic extension signal for atomic operations
 	output o_MEM_atomic,
