@@ -41,6 +41,9 @@ module HART
 	input  i_EX_ack,
 `endif
 
+`ifdef RISCV_FORMAL
+	`RVFI_OUTPUTS,
+`endif
 	// Interrupt connections
 	input i_tip
 	);
@@ -82,6 +85,11 @@ module HART
 		.i_EX_res       (i_EX_res),
 		.i_EX_ack       (i_EX_ack),
 `endif
+
+`ifdef RISCV_FORMAL
+		`RVFI_CONN,
+`endif
+
 		// Interrupt connections
 		.i_tip (i_tip)
 	);

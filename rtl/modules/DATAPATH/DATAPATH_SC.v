@@ -46,6 +46,31 @@ module DATAPATH_SC
 	// Interrupt connnections
 	input i_tip,
 
+`ifdef RISCV_FORMAL
+	output reg [`RISCV_FORMAL_NRET                        - 1 : 0] rvfi_valid,      
+	output reg [`RISCV_FORMAL_NRET *                 64   - 1 : 0] rvfi_order,      
+	output reg [`RISCV_FORMAL_NRET * `RISCV_FORMAL_ILEN   - 1 : 0] rvfi_insn,       
+	output reg [`RISCV_FORMAL_NRET                        - 1 : 0] rvfi_trap,       
+	output reg [`RISCV_FORMAL_NRET                        - 1 : 0] rvfi_halt,       
+	output reg [`RISCV_FORMAL_NRET                        - 1 : 0] rvfi_intr,       
+	output reg [`RISCV_FORMAL_NRET *                  2   - 1 : 0] rvfi_mode,       
+	output reg [`RISCV_FORMAL_NRET *                  2   - 1 : 0] rvfi_ixl,        
+	output reg [`RISCV_FORMAL_NRET *                  5   - 1 : 0] rvfi_rs1_addr,   
+	output reg [`RISCV_FORMAL_NRET *                  5   - 1 : 0] rvfi_rs2_addr,   
+	output reg [`RISCV_FORMAL_NRET * `RISCV_FORMAL_XLEN   - 1 : 0] rvfi_rs1_rdata,  
+	output reg [`RISCV_FORMAL_NRET * `RISCV_FORMAL_XLEN   - 1 : 0] rvfi_rs2_rdata,  
+	output reg [`RISCV_FORMAL_NRET *                  5   - 1 : 0] rvfi_rd_addr,    
+	output reg [`RISCV_FORMAL_NRET * `RISCV_FORMAL_XLEN   - 1 : 0] rvfi_rd_wdata,   
+	output reg [`RISCV_FORMAL_NRET * `RISCV_FORMAL_XLEN   - 1 : 0] rvfi_pc_rdata,   
+	output reg [`RISCV_FORMAL_NRET * `RISCV_FORMAL_XLEN   - 1 : 0] rvfi_pc_wdata,   
+	output reg [`RISCV_FORMAL_NRET * `RISCV_FORMAL_XLEN   - 1 : 0] rvfi_mem_addr,   
+	output reg [`RISCV_FORMAL_NRET * `RISCV_FORMAL_XLEN/8 - 1 : 0] rvfi_mem_rmask,  
+	output reg [`RISCV_FORMAL_NRET * `RISCV_FORMAL_XLEN/8 - 1 : 0] rvfi_mem_wmask,  
+	output reg [`RISCV_FORMAL_NRET * `RISCV_FORMAL_XLEN   - 1 : 0] rvfi_mem_rdata,  
+	output reg [`RISCV_FORMAL_NRET * `RISCV_FORMAL_XLEN   - 1 : 0] rvfi_mem_wdata,   
+
+`endif
+
 	// General connections
 	input i_clk,
 	input i_rst
@@ -124,7 +149,7 @@ module DATAPATH_SC
 
 	// Stalls
 	//wire IF_stall;
-	wire IC_Stall;
+	wire IC_stall;
 	wire EX_stall;
 	wire DM_stall;
 	wire MEM_stall;
@@ -137,7 +162,7 @@ module DATAPATH_SC
 	// Assigning PC
 	always@(posedge i_clk) begin
 		if(!i_rst) PC <= PC_RESET;
-		else if(IC_Stall || MEM_stall || EX_stall) PC <= PC;
+		else if(IC_stall || MEM_stall || EX_stall) PC <= PC;
 		else PC <= PC_next;
 	end
 
@@ -162,7 +187,7 @@ module DATAPATH_SC
 		// CPU interface
 		.i_Addr     (PC),
 		.o_Data 	(instr),
-		.o_Stall    (IC_Stall)
+		.o_Stall    (IC_stall)
 	);
 
 	// --- Decode Stage --- //
@@ -190,7 +215,7 @@ module DATAPATH_SC
 `endif
 
 		.i_Instr   (instr),
-		.i_Stall   (IC_Stall)
+		.i_Stall   (IC_stall)
 
 	);
 
@@ -280,26 +305,26 @@ module DATAPATH_SC
 	// CSR
 	CSR #(.HART_ID(HART)
 		) csr (
-		.i_clk 		(i_clk),
-		.i_rst      (i_rst),
-		.i_CSR_en 	(MC_CSR_en),
-		.i_inst     (instr),
-		.i_Wd    	(CSR_Wd),
-		.i_PC		(PC),
-		.i_badaddr  (badaddr),
+		.i_clk 			(i_clk),
+		.i_rst      	(i_rst),
+		.i_CSR_en 		(MC_CSR_en),
+		.i_inst     	(instr),
+		.i_Wd    		(CSR_Wd),
+		.i_PC			(PC),
+		.i_badaddr  	(badaddr),
 
-		.o_Rd    	(CSR_Rd),
-		.o_eret  	(CSR_eret),
-		.o_ex    	(CSR_ex),
-		.o_tvec 	(CSR_tvec),
-		.o_cause 	(CSR_cause),
-		.o_epc  	(CSR_epc),
+		.o_Rd    		(CSR_Rd),
+		.o_eret  		(CSR_eret),
+		.o_ex    		(CSR_ex),
+		.o_tvec 		(CSR_tvec),
+		.o_cause 		(CSR_cause),
+		.o_epc  		(CSR_epc),
 
 		// Exceptions
-		.i_Ex    	(MC_Ex),
+		.i_Ex    		(MC_Ex),
 		.i_Ex_inst_addr (ex_inst_addr),
-		.i_Ex_ld_addr  (ex_ld_addr),
-		.i_Ex_st_addr  (ex_st_addr),
+		.i_Ex_ld_addr  	(ex_ld_addr),
+		.i_Ex_st_addr 	(ex_st_addr),
 
 		// Interrupts
 		.i_Int_tip (i_tip)
@@ -324,15 +349,16 @@ module DATAPATH_SC
 	assign ex_inst_addr = |PC_jump[1:0];
 	always@(*) begin
 		if(MC_Jump == 2'b10) begin // JALR
-				PC_jump = Alu_Res & 32'hFFFF_FFFE;
+				PC_jump = Alu_Res & 32'hFFFF_FFFE; // Ignoring LSB
 		end
-		else
+		else begin
 			if(MC_Jump == 2'b01 || DoBranch) begin // JAL
 			 	PC_jump = PC + $signed(Imm<<1);
 			end
 			else begin // PC increment
 				PC_jump = PC + 4;
 			end		
+		end
 	end
 
 	// ALU input A Mux
@@ -362,11 +388,11 @@ module DATAPATH_SC
 			if(i_cache.hit && (inst_cycles == 0)) begin
 				cache_hit(HART);
 			end
-			if(IC_Stall) begin
+			if(IC_stall) begin
 				inst_stall <= inst_stall + 1;
 			end
 			// Instruction Performance
-			if(IC_Stall || MEM_stall || EX_stall) 
+			if(IC_stall || MEM_stall || EX_stall) 
 				inst_cycles <= inst_cycles+1;
 			else begin // Finished instruction execution
 				new_instruction(HART, instr, inst_cycles+1);
@@ -379,5 +405,56 @@ module DATAPATH_SC
 		end
 	end
 `endif
+
+`ifdef RISCV_FORMAL
+	wire stall = IC_stall || EX_stall || MEM_stall;
+	wire is_valid_inst = i_rst && !stall;
+
+	always@(posedge i_clk) begin
+		rvfi_valid     <= is_valid_inst;
+		rvfi_order     <= i_rst ? rvfi_order + rvfi_valid : 0;
+		rvfi_insn      <= instr;
+		rvfi_trap      <= CSR_ex;
+		rvfi_halt      <= 0; // Permanent 0
+		rvfi_intr      <= 0; // Permanent 0
+		rvfi_mode      <= 3; // M mode only
+		rvfi_ixl       <= 1; // 32 bits only
+		rvfi_rs1_addr  <= instr[19:15]; 
+		rvfi_rs2_addr  <= instr[24:20];
+		rvfi_rs1_rdata <= Rd1;
+		rvfi_rs2_rdata <= Rd2;
+		rvfi_rd_addr   <= (instr[11:7] && wr_to_rf) ? instr[11:7] : 0;
+		rvfi_rd_wdata  <= (instr[11:7] && wr_to_rf) ? i_Wd : 0; // TBD
+		rvfi_pc_rdata  <= PC;
+		rvfi_pc_wdata  <= PC_jump;
+
+		rvfi_mem_addr  <= 0;
+		rvfi_mem_rmask <= 0;
+		rvfi_mem_wmask <= 0; 
+		rvfi_mem_rdata <= 0; 
+		rvfi_mem_wdata <= 0; 
+
+		if(o_DM_Wen || o_DM_MemRead) begin
+			rvfi_mem_addr  <= o_DM_Addr; // 
+			rvfi_mem_rdata <= i_DM_ReadData;
+			rvfi_mem_wdata <= o_DM_Wd;
+			
+			case(instr[14:12]) // Case f3
+				3'b000: rvfi_mem_rmask <= 4'b0001;
+				3'b001: rvfi_mem_rmask <= 4'b0011;
+				3'b010: rvfi_mem_rmask <= 4'b1111;
+				3'b100: rvfi_mem_rmask <= 4'b0001;
+				3'b101: rvfi_mem_rmask <= 4'b0011;
+			endcase
+			if(o_DM_Wen) begin
+				case(instr[14:12]) // Case f3
+					3'b000: rvfi_mem_wmask <= 4'b0001;
+					3'b001: rvfi_mem_wmask <= 4'b0011;
+					3'b010: rvfi_mem_wmask <= 4'b1111;
+				endcase
+			end
+		end
+	end
+	`endif
 
 endmodule

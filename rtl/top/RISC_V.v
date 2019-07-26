@@ -28,6 +28,10 @@ module RISC_V_
 	input  i_EX_ack,
 `endif
 
+`ifdef RISCV_FORMAL
+	`RVFI_OUTPUTS,
+`endif
+
 	// Bus Master
 	`BUS_M
 	);
@@ -91,6 +95,11 @@ module RISC_V_
 		.i_EX_res       (i_EX_res),
 		.i_EX_ack       (i_EX_ack),
 `endif
+
+`ifdef RISCV_FORMAL
+		`RVFI_CONN,
+`endif
+
 		// Interrupt connections
 		.i_tip(1'b0)
 	);
@@ -124,19 +133,5 @@ module RISC_V_
 			.o_addr         (o_addr),
 			.o_byte_en      (o_byte_en)
 		);
-
-/*
-	rv32_m_external rv32_m_external
-	(
-		.i_clk   (i_clk),
-		.i_rst   (i_rst),
-		.i_en    (o_EX_en),
-		.i_rs1   (o_EX_rs1),
-		.i_rs2   (o_EX_rs2),
-		.i_f3    (o_EX_f3),
-		.o_res   (i_EX_res),
-		.o_ack   (i_EX_ack)
-	);
-*/	
 
 endmodule
