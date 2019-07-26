@@ -18,15 +18,15 @@ module CSR(
 
 	output reg o_eret,
 	output o_ex,
-	output [`XLEN-1:0] o_tvec, // Trap-Vector Base Address Register
+	output [`XLEN-1:0] o_tvec, // Trap-Vector Base Address Register.
 	output [`XLEN-1:0] o_cause,
-	output reg [`XLEN-1:0] o_epc, // Exception Program Counter
+	output reg [`XLEN-1:0] o_epc, // Exception Program Counter.
 
 	// Exceptions
 	input i_Ex,
-	input i_Ex_inst_addr, // Instruction misaligned
-	input i_Ex_ld_addr,	  // Load misaligned
-	input i_Ex_st_addr,	  // Store misaligned
+	input i_Ex_inst_addr,  // Instruction misaligned.
+	input i_Ex_ld_addr,	   // Load misaligned.
+	input i_Ex_st_addr,	   // Store misaligned.
 
 	// Interrupts
 	input i_Int_tip
@@ -48,7 +48,9 @@ module CSR(
 
 	// Machine Trap Handling
 	reg [`XLEN-1:0] mscratch;
+/* verilator lint_off UNUSED */
 	reg [`XLEN-1:0] mepc;
+/* verilator lint_on UNUSED */
 	reg [`XLEN-1:0] mcause;
 	reg [`XLEN-1:0] mtval;
 	wire mtip = i_Int_tip;
@@ -180,7 +182,7 @@ module CSR(
 				12'h000: ex_ecall  = 1; // ECALL
 				12'h001: ex_ebreak = 1; // EBREAK
 				`MRET : begin
-					o_epc = mepc;
+					o_epc = {mepc[`XLEN-1:2], 2'b00};
 					o_eret = 1'b1;
 				end
 				default : o_epc = 0;
@@ -197,7 +199,7 @@ module CSR(
 				`mie : o_Rd = {{`XLEN-9{1'b0}}, mtie, 8'b0};
 				`mtvec : o_Rd = mtvec;
 				`mscratch : o_Rd = mscratch;
-				`mepc : o_Rd = mepc;
+				`mepc : o_Rd = {mepc[`XLEN-1:2], 2'b00};
 				`mcause : o_Rd = mcause;
 				`mtval : o_Rd = mtval;
 				`mip : o_Rd = {{`XLEN-9{1'b0}}, mtip, 8'b0};
