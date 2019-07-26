@@ -40,5 +40,15 @@
 	output o_DM_Wen,					\
 	output o_DM_MemRead					
 
+`define ARVI_DMEM_INPUTS				\
+    output o_DM_data_ready,				\
+	output [`XLEN-1:0] o_DM_ReadData,	\
+	input  [`XLEN-1:0] i_DM_Wd,			\
+	input  [`XLEN-1:0] i_DM_Addr,		\
+	input  [2:0] i_DM_f3,				\
+	input  i_DM_Wen,					\
+	input  i_DM_MemRead					
+
+//`define ARVI_DMEM_CONNECTIONS
 
 `endif

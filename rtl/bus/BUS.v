@@ -1,8 +1,8 @@
 /*
-	Converts signals from the datapath to simple bus format.
+	Converts signals from the datapath to simple a bus format.
 	Please notice that when an input signal is asserted and the bus is
-	requested the request signal should remains asserted until the end
-	of transaction. This is done only to simplify implementation.
+	requested, the request signal should remains asserted until the end
+	of transaction.
 */
 
 `timescale 1ns / 1ps
@@ -10,8 +10,8 @@
 `include "arvi_defines.vh"
 
 module BUS (
-	input i_clk,  // Clock
-	input i_rst,  // Asynchronous reset active low
+	input i_clk,  
+	input i_rst,  
 	
 	// I-Cache 
 	input i_IM_data_req,
@@ -20,13 +20,7 @@ module BUS (
 	output reg [31:0] o_IM_Instr,
 	
 	// Data Memory
-	output reg o_DM_mem_ready,
-	output reg [`XLEN-1:0] o_DM_ReadData,
-	input  [`XLEN-1:0] i_DM_Wd,
-	input  [`XLEN-1:0] i_DM_Addr,
-	input  [2:0] i_DM_f3,
-	input  i_DM_Wen,
-	input  i_DM_MemRead,
+	`ARVI_DMEM_INPUTS,
 
 	// Bus 
 	input  i_ack,
@@ -68,7 +62,7 @@ module BUS (
 		next_state = state;
 		o_IM_mem_ready = 0;
 		o_IM_Instr = 0;
-		o_DM_mem_ready = 0;
+		o_DM_data_ready = 0;
 		o_DM_ReadData = 0;
 
 		// Bus default
@@ -105,11 +99,11 @@ module BUS (
 				else begin
 					if(i_DM_MemRead) begin
 						o_DM_ReadData = i_rd_data;
-						if(i_ack) o_DM_mem_ready = 1;
+						if(i_ack) o_DM_data_ready = 1;
 					end
 					if(i_DM_Wen) begin
 						if(i_ack) begin
-							o_DM_mem_ready = 1;
+							o_DM_data_ready = 1;
 							wr_en = 0;
 						end
 					end
