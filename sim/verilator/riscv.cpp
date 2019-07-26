@@ -135,10 +135,7 @@ void RISCV::mem_access() {
 		uint32_t val;
 		val = mem_read(dut->o_addr);
 		dut->i_rd_data = val;
-
 		dut->i_ack = 1;
-
-
 	}
 
 }

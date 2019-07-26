@@ -16,7 +16,7 @@ mt = True
 pool = Pool() # Concurrent simulations at a time
 
 sim_path = "./obj_dir/VRISC_V"
-tests_folder = "tb/tests"
+tests_folder = "sim/tests"
 
 isa_tests = False 
 compliance_tests = False
@@ -93,7 +93,7 @@ def compliance():
 
 	# Compairing references
 	os.environ["SUITEDIR"] = test_folder
-	compair = subprocess.call(["tb/scripts/verify.sh"])
+	compair = subprocess.call(["sim/scripts/verify.sh"])
 	compliant = compair or failed
 
 	# Testing rv32mi programs
@@ -105,7 +105,7 @@ def compliance():
 
 	# Compairing references
 	os.environ["SUITEDIR"] = test_folder
-	compair = subprocess.call(["tb/scripts/verify.sh"])
+	compair = subprocess.call(["sim/scripts/verify.sh"])
 
 	compliant = compair or failed or compliant
 
@@ -138,7 +138,7 @@ def arg_parse():
 	run = False
 
 	if "-h" in args:
-		print("Regression tests script. This script runs tests in tb/tests folder")
+		print("Regression tests script. This script runs tests in sim/tests folder")
 		run = False
 	if "--isa" in args:
 		isa_tests = True

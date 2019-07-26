@@ -6,8 +6,8 @@ CFLAGS := -CFLAGS "-std=c++0x -Wall -O1 $(DEFINES)"
 LDFLAGS := -LDFLAGS "-lfesvr"
 VLFLAGS := -Wall --cc --trace -I./rtl --exe --top-module $(TOP_MODULE) $(CFLAGS) $(LDFLAGS) $(DEFINES)
 
-VL_SRCS := $(wildcard tb/verilator/*.cpp)
-VL_SRCS += $(wildcard tb/verilator/profiler/*.cpp)
+VL_SRCS := $(wildcard sim/verilator/*.cpp)
+VL_SRCS += $(wildcard sim/verilator/profiler/*.cpp)
 
 # Function to find files in subfolders
 subdirs = $(filter-out $1,$(sort $(dir $(wildcard $1*/))))
@@ -17,7 +17,7 @@ SRC_DIR := ./rtl
 SOURCES := $(call rfind,$(SRC_DIR)/,*.v)
 HEADERS := $(call rfind,$(SRC_DIR)/,*.vh)
 
-SCRIPTS_DIR := ./tb/scripts
+SCRIPTS_DIR := ./sim/scripts
 run: all
 	@echo "--- Running ---"
 	obj_dir/VRISC_V +loadmem=rv32ui-p-add -v
@@ -28,9 +28,9 @@ all: $(SOURCES) $(HEADERS)
 
 .PHONY: clean help regression-tests benchmark performance synthesis
 
-JUNK := $(call rfind, ./tb/,*.vcd)
-JUNK += $(call rfind, ./tb/,*.signature_output)
-JUNK += $(call rfind, ./tb/,*.performance_report)
+JUNK := $(call rfind, ./sim/,*.vcd)
+JUNK += $(call rfind, ./sim/,*.signature_output)
+JUNK += $(call rfind, ./sim/,*.performance_report)
 
 clean:
 	rm -rf obj_dir
@@ -39,8 +39,8 @@ clean:
 	rm -f *.log *.jou
 
 
-reports = $(wildcard tb/tests/benchmark/*.performance_report)
-reports2 = tb/tests/benchmark/*.performance_report
+reports = $(wildcard sim/tests/benchmark/*.performance_report)
+reports2 = sim/tests/benchmark/*.performance_report
 
 help:
 	echo $(reports2)
