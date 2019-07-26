@@ -30,7 +30,16 @@
 	input  [`XLEN-1:0] i_res, 		\
 	input  i_ack 					
 
-// Data Memory Module Interfaces
+// Data Memory Interfaces
+`define ARVI_DMEM_WIRES			\
+	wire DM_mem_ready;			\
+	wire DM_ren;				\
+	wire DM_wen;				\
+	wire [2:0] DM_f3;			\
+	wire [`XLEN-1:0] DM_rd;		\
+	wire [`XLEN-1:0] DM_wd;		\
+	wire [`XLEN-1:0] DM_addr	
+
 `define ARVI_DMEM_OUTPUTS				\
     input  i_DM_data_ready,				\
 	input  [`XLEN-1:0] i_DM_ReadData,	\

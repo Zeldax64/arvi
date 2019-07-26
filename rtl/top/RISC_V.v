@@ -35,9 +35,6 @@ module RISC_V_
 	`BUS_M
 	);
 	
-	// PC initial value
-
-	/* Connections */
 	// Instruction Memory
 	wire IM_data_req;
 	wire IM_mem_ready;
@@ -45,11 +42,8 @@ module RISC_V_
 	wire [`XLEN-1:0] IM_addr;
 	
 	// Data Memory
-	wire DM_mem_ready;
-	wire DM_ren, DM_wen;
-	wire [2:0] DM_f3; 
-	wire [`XLEN-1:0] DM_rd, DM_wd, DM_addr;
-
+	`ARVI_DMEM_WIRES;
+	
 `ifdef __ATOMIC
 	wire [6:0] MEM_operation;
 	wire MEM_atomic;
@@ -105,32 +99,32 @@ module RISC_V_
 
 	BUS bus_if
 		(
-			.i_clk          (i_clk),
-			.i_rst          (i_rst),
+			.i_clk           (i_clk),
+			.i_rst           (i_rst),
 
 			// Instruction Memory
-			.i_IM_data_req  (IM_data_req),
-			.i_IM_addr      (IM_addr),
-			.o_IM_mem_ready (IM_mem_ready),
-			.o_IM_Instr     (IM_instr),
+			.i_IM_data_req   (IM_data_req),
+			.i_IM_addr       (IM_addr),
+			.o_IM_mem_ready  (IM_mem_ready),
+			.o_IM_Instr      (IM_instr),
 			
 			// Data Memory
-			.o_DM_mem_ready (DM_mem_ready),
-			.o_DM_ReadData  (DM_rd),
-			.i_DM_Wd        (DM_wd),
-			.i_DM_Addr      (DM_addr),
-			.i_DM_f3        (DM_f3),
-			.i_DM_Wen       (DM_wen),
-			.i_DM_MemRead   (DM_ren),
+			.o_DM_data_ready (DM_mem_ready),
+			.o_DM_ReadData   (DM_rd),
+			.i_DM_Wd         (DM_wd),
+			.i_DM_Addr       (DM_addr),
+			.i_DM_f3         (DM_f3),
+			.i_DM_Wen        (DM_wen),
+			.i_DM_MemRead    (DM_ren),
 			
 			// Bus signals
-			.i_ack          (i_ack),
-			.i_rd_data      (i_rd_data),
-			.o_bus_en      	(o_bus_en),
-			.o_wr_en        (o_wr_en),
-			.o_wr_data      (o_wr_data),
-			.o_addr         (o_addr),
-			.o_byte_en      (o_byte_en)
+			.i_ack           (i_ack),
+			.i_rd_data       (i_rd_data),
+			.o_bus_en      	 (o_bus_en),
+			.o_wr_en         (o_wr_en),
+			.o_wr_data       (o_wr_data),
+			.o_addr          (o_addr),
+			.o_byte_en       (o_byte_en)
 		);
 
 endmodule
