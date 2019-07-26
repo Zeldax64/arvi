@@ -1,4 +1,7 @@
 /* 
+	***Unmainteined file***
+	Please notice that this project uses only Verilator as simulator.
+
 	RISC_V_tb.v
 
 	Testbench for TOP_BASYS_tb.v
