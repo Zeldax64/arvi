@@ -35,7 +35,7 @@ module d_mem(
 	// Exception signals.
 	assign o_ex_ld = ex_ld_addr;
 	assign o_ex_st = ex_st_addr;
-	assign ex = ex_ld_addr || ex_st_addr;;
+	assign ex = ex_ld_addr || ex_st_addr;
 	
 	// To memory signals.
 	assign o_DM_Wd      = wr_data;
