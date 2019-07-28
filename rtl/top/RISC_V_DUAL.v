@@ -37,7 +37,7 @@ module RISC_V(
 	// Data Memory
 	wire [HARTS-1:0] DM_mem_ready;
 	wire [HARTS-1:0] DM_ren, DM_wen;
-	wire [2:0] DM_f3 [HARTS-1:0]; 
+	wire [3:0] DM_byte_en [HARTS-1:0]; 
 	wire [`XLEN-1:0] DM_rd [HARTS-1:0];
 	wire [`XLEN-1:0] DM_wd [HARTS-1:0]; 
 	wire [`XLEN-1:0] DM_addr[HARTS-1:0];
@@ -71,7 +71,6 @@ module RISC_V(
 	genvar i;
 	generate
 		for(i = 0; i < HARTS; i = i+1) begin
-			/* verilator lint_off PINMISSING */
 			HART #(
 					.PC_RESET(PC_RESET),
 					.HART(i)
@@ -88,11 +87,11 @@ module RISC_V(
 				// Data Memory connections
 				.i_DM_data_ready(DM_mem_ready[i]),
 				.i_DM_ReadData(DM_rd[i]),
-				.o_DM_WriteData(DM_wd[i]),
+				.o_DM_Wd(DM_wd[i]),
 				.o_DM_Addr(DM_addr[i]),
 				.o_DM_Wen(DM_wen[i]),
 				.o_DM_MemRead(DM_ren[i]),
-				.o_DM_f3(DM_f3[i]),
+				.o_DM_byte_en(DM_byte_en[i]),
 
 `ifdef __ATOMIC 
 				.o_MEM_atomic   (MEM_atomic[i]),
@@ -102,104 +101,104 @@ module RISC_V(
 				//.i_tip(tip)
 				.i_tip(1'b0)
 			);
-			/* verilator lint_on PINMISSING */
+
 			BUS bus
 				(
-					.i_clk          (i_clk),
-					.i_rst          (i_rst),
+					.i_clk           (i_clk),
+					.i_rst           (i_rst),
 
 					// Instruction Memory
-					.i_IM_data_req  (IM_data_req[i]),
-					.i_IM_addr      (IM_addr[i]),
-					.o_IM_mem_ready (IM_mem_ready[i]),
-					.o_IM_Instr     (IM_instr[i]),
+					.i_IM_data_req   (IM_data_req[i]),
+					.i_IM_addr       (IM_addr[i]),
+					.o_IM_mem_ready  (IM_mem_ready[i]),
+					.o_IM_Instr      (IM_instr[i]),
 					
 					// Data Memory
-					.o_DM_mem_ready (DM_mem_ready[i]),
-					.o_DM_ReadData  (DM_rd[i]),
-					.i_DM_Wd        (DM_wd[i]),
-					.i_DM_Addr      (DM_addr[i]),
-					.i_DM_f3        (DM_f3[i]),
-					.i_DM_Wen       (DM_wen[i]),
-					.i_DM_MemRead   (DM_ren[i]),
+					.o_DM_data_ready (DM_mem_ready[i]),
+					.o_DM_ReadData   (DM_rd[i]),
+					.i_DM_Wd         (DM_wd[i]),
+					.i_DM_Addr       (DM_addr[i]),
+					.i_DM_byte_en    (DM_byte_en[i]),
+					.i_DM_Wen        (DM_wen[i]),
+					.i_DM_MemRead    (DM_ren[i]),
 					
 					// Bus signals
-					.i_ack          (ack[i]),
-					.i_rd_data      (rd_data[i]),
-					.o_bus_en       (bus_en[i]),
-					.o_wr_en        (wr_en[i]),
-					.o_wr_data      (wr_data[i]),
-					.o_addr         (addr[i]),
-					.o_byte_en      (byte_en[i])
+					.i_ack           (ack[i]),
+					.i_rd_data       (rd_data[i]),
+					.o_bus_en        (bus_en[i]),
+					.o_wr_en         (wr_en[i]),
+					.o_wr_data       (wr_data[i]),
+					.o_addr          (addr[i]),
+					.o_byte_en       (byte_en[i])
 				);
 		end
 	endgenerate
 
 	ARBITER_2X1 arbiter_2x1
 		(
-			.i_clk      (i_clk),
-			.i_rst      (i_rst),
+			.i_clk      	(i_clk),
+			.i_rst      	(i_rst),
 			
 			// Bus 1
-			.i_bus_en1  (bus_en[0]),
-			.i_wr_rd1   (wr_en[0]),
-			.i_wr_data1 (wr_data[0]),
-			.i_addr1    (addr[0]),
-			.i_byte_en1 (byte_en[0]),
-			.o_ack1     (ack[0]),
-			.o_rd_data1 (rd_data[0]),
-			.i_atomic1  (MEM_atomic[0]),
-			.i_operation1 (MEM_operation[0]),
+			.i_bus_en1  	(bus_en[0]),
+			.i_wr_rd1   	(wr_en[0]),
+			.i_wr_data1 	(wr_data[0]),
+			.i_addr1    	(addr[0]),
+			.i_byte_en1 	(byte_en[0]),
+			.o_ack1     	(ack[0]),
+			.o_rd_data1 	(rd_data[0]),
+			.i_atomic1  	(MEM_atomic[0]),
+			.i_operation1 	(MEM_operation[0]),
 			
 			// Bus 2
-			.i_bus_en2  (bus_en[1]),
-			.i_wr_rd2   (wr_en[1]),
-			.i_wr_data2 (wr_data[1]),
-			.i_addr2    (addr[1]),
-			.i_byte_en2 (byte_en[1]),
-			.o_ack2     (ack[1]),
-			.o_rd_data2 (rd_data[1]),
-			.i_atomic2  (MEM_atomic[1]),			
-			.i_operation2(MEM_operation[1]),
+			.i_bus_en2  	(bus_en[1]),
+			.i_wr_rd2   	(wr_en[1]),
+			.i_wr_data2 	(wr_data[1]),
+			.i_addr2    	(addr[1]),
+			.i_byte_en2 	(byte_en[1]),
+			.o_ack2     	(ack[1]),
+			.o_rd_data2 	(rd_data[1]),
+			.i_atomic2  	(MEM_atomic[1]),			
+			.i_operation2	(MEM_operation[1]),
 			
 			// To Bus
-			.i_ack      (MC_ack),
-			.i_rd_data  (MC_rd_data),
-			.o_id       (MC_id),
-			.o_bus_en   (MC_bus_en),
-			.o_wr_en    (MC_wr_en),
-			.o_wr_data  (MC_wr_data),
-			.o_addr     (MC_addr),
-			.o_byte_en  (MC_byte_en),
-			.o_atomic   (MC_atomic),
-			.o_operation (MC_operation)
+			.i_ack      	(MC_ack),
+			.i_rd_data  	(MC_rd_data),
+			.o_id       	(MC_id),
+			.o_bus_en   	(MC_bus_en),
+			.o_wr_en    	(MC_wr_en),
+			.o_wr_data  	(MC_wr_data),
+			.o_addr     	(MC_addr),
+			.o_byte_en  	(MC_byte_en),
+			.o_atomic   	(MC_atomic),
+			.o_operation	(MC_operation)
 		);
 
 	memory_controller #(
 			.N_IDS(HARTS)
 		) memory_controller (
-			.i_clk     (i_clk),
-			.i_rst     (i_rst),
+			.i_clk     		(i_clk),
+			.i_rst     		(i_rst),
 			
-			.i_bus_en  (MC_bus_en),
-			.i_wr_en   (MC_wr_en),
-			.i_wr_data (MC_wr_data),
-			.i_addr    (MC_addr),
-			.i_byte_en (MC_byte_en),
-			.o_ack     (MC_ack),
-			.o_rd_data (MC_rd_data),
+			.i_bus_en  		(MC_bus_en),
+			.i_wr_en   		(MC_wr_en),
+			.i_wr_data 		(MC_wr_data),
+			.i_addr    		(MC_addr),
+			.i_byte_en 		(MC_byte_en),
+			.o_ack     		(MC_ack),
+			.o_rd_data 		(MC_rd_data),
 			
-			.i_atomic  (MC_atomic),
-			.i_id      (MC_id),
-			.i_operation (MC_operation),
+			.i_atomic  		(MC_atomic),
+			.i_id      		(MC_id),
+			.i_operation 	(MC_operation),
 			
-			.i_ack     (i_ack),
-			.i_rd_data (i_rd_data),
-			.o_bus_en  (o_bus_en),
-			.o_wr_en   (o_wr_en),
-			.o_wr_data (o_wr_data),
-			.o_addr    (o_addr),
-			.o_byte_en (o_byte_en)
+			.i_ack     		(i_ack),
+			.i_rd_data 		(i_rd_data),
+			.o_bus_en  		(o_bus_en),
+			.o_wr_en   		(o_wr_en),
+			.o_wr_data 		(o_wr_data),
+			.o_addr    		(o_addr),
+			.o_byte_en 		(o_byte_en)
 		);
 
 
