@@ -35,6 +35,12 @@ module BUS (
 	reg wr_en;
 	reg [31:0] addr;
 
+	reg DM_data_ready;
+	reg [31:0] DM_ReadData;
+	
+	assign o_DM_data_ready = DM_data_ready;
+	assign o_DM_ReadData = DM_ReadData; 
+
 	localparam READ  = 1'b0;
 	localparam WRITE = 1'b1;
 
@@ -61,8 +67,8 @@ module BUS (
 		next_state = state;
 		o_IM_mem_ready = 0;
 		o_IM_Instr = 0;
-		o_DM_data_ready = 0;
-		o_DM_ReadData = 0;
+		DM_data_ready = 0;
+		DM_ReadData = 0;
 
 		// Bus default values
 		bus_req = 0;
@@ -97,12 +103,12 @@ module BUS (
 				end
 				else begin
 					if(i_DM_MemRead) begin
-						o_DM_ReadData = i_rd_data;
-						if(i_ack) o_DM_data_ready = 1;
+						DM_ReadData = i_rd_data;
+						if(i_ack) DM_data_ready = 1;
 					end
 					if(i_DM_Wen) begin
 						if(i_ack) begin
-							o_DM_data_ready = 1;
+							DM_data_ready = 1;
 							wr_en = 0;
 						end
 					end
