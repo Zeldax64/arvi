@@ -25,7 +25,7 @@ module d_mem(
     `ARVI_DMEM_OUTPUTS
     );
 
-	reg [`XLEN-1:0] read_data, wr_data;
+	reg [`XLEN-1:0] read_data, shifted_rd, wr_data;
 	reg ex_ld_addr, ex_st_addr;
 	wire ex; 
 	reg [3:0] byte_en;
@@ -39,27 +39,52 @@ module d_mem(
 	
 	// To memory signals.
 	assign o_DM_Wd      = wr_data;
-	assign o_DM_Addr    = i_addr;
+	assign o_DM_Addr    = {i_addr[`XLEN-1:2], 2'b00};
 	assign o_DM_Wen     = i_wr_en && !ex_st_addr;
 	assign o_DM_MemRead = i_rd_en && !ex_ld_addr;
 	assign o_DM_byte_en = byte_en;
-
+	
+	//reg [3:0] rmask;
+	
 	always@(*) begin
 		ex_ld_addr = 0;
 		ex_st_addr = 0;
-		read_data  = i_DM_ReadData;
+
+		case(i_f3[1:0])
+			2'b00 : begin
+				byte_en[0] = i_addr[1:0] == 2'b00;  
+				byte_en[1] = i_addr[1:0] == 2'b01;  
+				byte_en[2] = i_addr[1:0] == 2'b10;  
+				byte_en[3] = i_addr[1:0] == 2'b11;  
+			end
+			2'b01 : begin
+				byte_en[1:0] = (i_addr[1] == 1'b0) ? 2'b11 : 2'b00;
+				byte_en[3:2] = (i_addr[1] == 1'b1) ? 2'b11 : 2'b00;
+			end
+			2'b10 : begin
+				byte_en = 4'b1111;
+			end
+			default: byte_en = 4'b0000;
+		endcase
 
 		// Read data handler.
+		case(byte_en)
+			4'b0010 : shifted_rd = i_DM_ReadData >> 8;
+			4'b0100 : shifted_rd = i_DM_ReadData >> 16;
+			4'b1100 : shifted_rd = i_DM_ReadData >> 16;
+			4'b1000 : shifted_rd = i_DM_ReadData >> 24;
+			default : shifted_rd = i_DM_ReadData;
+		endcase
+
+		case(i_f3) 
+			3'b000 : read_data = {{`XLEN-8{shifted_rd[7]}}, shifted_rd[7:0]}; 		// LB
+			3'b001 : read_data = {{`XLEN-16{shifted_rd[15]}}, shifted_rd[15:0]}; 	// LH
+			3'b100 : read_data = {{`XLEN-8 {1'b0}}, shifted_rd[7:0]}; 				// LBU
+			3'b101 : read_data = {{`XLEN-16{1'b0}}, shifted_rd[15:0]}; 				// LHU
+			default : read_data = shifted_rd;
+		endcase 
+		// Checking if a exception is raised.
 		if(i_rd_en) begin
-			case(i_f3) 
-				3'b000 : read_data = {{`XLEN-8{i_DM_ReadData[7]}}, i_DM_ReadData[7:0]}; 	// LB
-				3'b001 : read_data = {{`XLEN-16{i_DM_ReadData[15]}}, i_DM_ReadData[15:0]}; 	// LH
-				3'b010 : read_data = i_DM_ReadData; 										// LW
-				3'b100 : read_data = {{`XLEN-8 {1'b0}}, i_DM_ReadData[7:0]}; 				// LBU
-				3'b101 : read_data = {{`XLEN-16{1'b0}}, i_DM_ReadData[15:0]}; 				// LHU
-				default: read_data = i_DM_ReadData;
-			endcase 
-			// Checking if a exception is raised.
 			case(i_f3[1:0])
 				2'b01 :	ex_ld_addr = (i_addr[0]) 	? 1'b1 : 1'b0;
 				2'b10 : ex_ld_addr = (|i_addr[1:0]) ? 1'b1 : 1'b0;
@@ -69,23 +94,6 @@ module d_mem(
 
 		// Write data handler
 		// Checking which bytes must be written (SB, SH, SW).
-		case(i_f3)
-			3'b000 : begin
-				byte_en[0] = i_addr[1:0] == 2'b00;  
-				byte_en[1] = i_addr[1:0] == 2'b01;  
-				byte_en[2] = i_addr[1:0] == 2'b10;  
-				byte_en[3] = i_addr[1:0] == 2'b11;  
-			end
-			3'b001 : begin
-				byte_en[1:0] = (i_addr[1] == 1'b0) ? 2'b11 : 2'b00;
-				byte_en[3:2] = (i_addr[1] == 1'b1) ? 2'b11 : 2'b00;
-			end
-			3'b010 : begin
-				byte_en = 4'b1111;
-			end
-			default: byte_en = 4'b0000;
-		endcase
-
 		// Shifting the data to be written since the two LSB bits of
 		// the accessed address are always 2'b00. 
 		case(byte_en)
