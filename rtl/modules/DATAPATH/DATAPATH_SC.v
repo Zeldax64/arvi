@@ -403,6 +403,8 @@ module DATAPATH_SC
 	wire stall = IC_stall || EX_stall || MEM_stall;
 	wire is_valid_inst = i_rst && !stall;
 
+	reg [3:0] mask;
+
 	always@(posedge i_clk) begin
 		rvfi_valid     <= is_valid_inst;
 		rvfi_order     <= i_rst ? rvfi_order + rvfi_valid : 0;
@@ -432,20 +434,30 @@ module DATAPATH_SC
 			rvfi_mem_rdata <= i_DM_ReadData;
 			rvfi_mem_wdata <= o_DM_Wd;
 			
-			case(instr[14:12]) // Case f3
-				3'b000: rvfi_mem_rmask <= 4'b0001;
-				3'b001: rvfi_mem_rmask <= 4'b0011;
-				3'b010: rvfi_mem_rmask <= 4'b1111;
-				3'b100: rvfi_mem_rmask <= 4'b0001;
-				3'b101: rvfi_mem_rmask <= 4'b0011;
+			case(instr[13:12]) // Case f3
+				2'b00 : begin
+					mask[0] = DM_Addr[1:0] == 2'b00;  
+					mask[1] = DM_Addr[1:0] == 2'b01;  
+					mask[2] = DM_Addr[1:0] == 2'b10;  
+					mask[3] = DM_Addr[1:0] == 2'b11;  
+				end
+				2'b01 : begin
+					mask[1:0] = (DM_Addr[1] == 1'b0) ? 2'b11 : 2'b00;
+					mask[3:2] = (DM_Addr[1] == 1'b1) ? 2'b11 : 2'b00;
+				end
+				2'b10 : begin
+					mask = 4'b1111;
+				end
+				default: mask = 4'b0000;
 			endcase
-			if(o_DM_Wen) begin
-				case(instr[14:12]) // Case f3
-					3'b000: rvfi_mem_wmask <= 4'b0001;
-					3'b001: rvfi_mem_wmask <= 4'b0011;
-					3'b010: rvfi_mem_wmask <= 4'b1111;
-				endcase
+
+			if(o_DM_MemRead) begin
+				rvfi_mem_rmask <= mask;
 			end
+			if(o_DM_Wen) begin
+				rvfi_mem_wmask <= mask;
+			end
+
 		end
 	end
 	`endif
