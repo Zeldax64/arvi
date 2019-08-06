@@ -2,14 +2,14 @@
 
 
 module divider(  
-   input i_clk,  
-   input i_rst,  
-   input i_start,  
-   input [31:0]  i_rs1,  
-   input [31:0] i_rs2,  
-   output [31:0]  o_res,  
-   output [31:0]  o_rem,  
-   output     ok   
+   input  i_clk,  
+   input  i_rst,  
+   input  i_start,  
+   input  [31:0] i_rs1,  
+   input  [31:0] i_rs2,  
+   output [31:0] o_res,  
+   output [31:0] o_rem,  
+   output ok   
   );
 
     reg active;   
@@ -54,6 +54,7 @@ module divider(
     end  
    
     always@(*) begin
+      startreg = 1;
       if(i_start)
         startreg = 1;
       else if(ok)

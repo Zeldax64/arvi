@@ -35,15 +35,23 @@ module rv32_m(
 
 	wire div_en;
 	reg  div_en_d;
-
-	// Divider only accepts a pulse to start. Steady enable = 1 signals don't work.
-	// This should be improved
-	always@(posedge i_clk) begin
-		if(!i_rst) div_en_d <= 0;
-		else div_en_d <= is_div;
-	end
-
+	reg  div_done_d;
+	wire is_div_finished;
+	
+	// Edge detectors	
 	assign div_en = is_div && !div_en_d; 
+	assign is_div_finished = div_done && !div_done_d;
+	
+	always@(posedge i_clk) begin
+		if(!i_rst) begin 
+			div_en_d   <= 0;
+			div_done_d <= 0;
+		end
+		else begin 
+			div_en_d   <= is_div && !is_div_finished; // If it is a division but the division isn't already done, then do it.
+			div_done_d <= div_done;
+		end
+	end
 
 	div_top divider
 		(

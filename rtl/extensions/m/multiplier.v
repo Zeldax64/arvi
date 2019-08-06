@@ -5,11 +5,13 @@ module multiplier(
     input i_start, 
     input [32:0] i_a,
     input [32:0] i_b, 
-    output reg [63:0] o_c, 
+    output [63:0] o_c, 
     output reg o_done);
+    
+    assign o_c = $signed(i_a)*$signed(i_b);
+    
     always@(posedge i_clk) begin
         if(i_start) begin
-            o_c  <= $signed(i_a)*$signed(i_b);
             o_done <= 1;
         end
         else begin
