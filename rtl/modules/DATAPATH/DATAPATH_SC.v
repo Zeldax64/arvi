@@ -421,7 +421,7 @@ module DATAPATH_SC
 		rvfi_rd_addr   <= (instr[11:7] && wr_to_rf) ? instr[11:7] : 0;
 		rvfi_rd_wdata  <= (instr[11:7] && wr_to_rf) ? i_Wd : 0; // TBD
 		rvfi_pc_rdata  <= PC;
-		rvfi_pc_wdata  <= PC_jump;
+		rvfi_pc_wdata  <= PC_next;
 
 		rvfi_mem_addr  <= 0;
 		rvfi_mem_rmask <= 0;
