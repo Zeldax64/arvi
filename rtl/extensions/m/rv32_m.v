@@ -3,6 +3,7 @@
 */
 
 `include "arvi_defines.vh"
+`include "extensions/m/m_isa.vh"
 
 module rv32_m(
 	input  i_clk,
@@ -68,6 +69,17 @@ module rv32_m(
 	assign done     = is_div ? div_done && !div_en : mul_done; 
 	assign o_stall  = ~done && i_en;
 	assign rv_m_res = is_div ? div_res : mul_res; // RV32-M result
-	assign o_res    = rv_m_res; 
-
+	
+`ifdef RISCV_FORMAL_ALTOPS
+	assign o_res =	i_f3 == `MUL    ? (i_rs1 + i_rs2) ^ 32'h5876063e :
+					i_f3 == `MULH   ? (i_rs1 + i_rs2) ^ 32'hf6583fb7 :
+					i_f3 == `MULHSU ? (i_rs1 - i_rs2) ^ 32'hecfbe137 :
+					i_f3 == `MULHU  ? (i_rs1 + i_rs2) ^ 32'h949ce5e8 :
+					i_f3 == `DIV  	? (i_rs1 - i_rs2) ^ 32'h7f8529ec :
+					i_f3 == `DIVU 	? (i_rs1 - i_rs2) ^ 32'h10e8fd70 :
+					i_f3 == `REM  	? (i_rs1 - i_rs2) ^ 32'h8da68fa5 :
+					i_f3 == `REMU 	? (i_rs1 - i_rs2) ^ 32'h3138d0e1 : 32'bx;
+`else
+	assign o_res = rv_m_res; 
+`endif
 endmodule
