@@ -224,7 +224,7 @@ module DATAPATH_SC
     	.i_clk(i_clk)
     );
 
-	IMM_GEN  imm_gen (
+	imm_gen  imm_gen (
 		.i_Instr(instr),
 		.o_Ext(Imm)
 	);

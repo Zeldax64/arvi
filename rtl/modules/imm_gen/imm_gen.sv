@@ -20,9 +20,9 @@
 
 `define SYSTEM_TYPE 7'b1110011
 
-module IMM_GEN(
+module imm_gen (
 	input  [`INSTRUCTION_SIZE:0] i_Instr,
-	output reg [`XLEN-1:0] o_Ext
+	output logic [`XLEN-1:0] o_Ext
     );
 
 	wire [6:0]op;
@@ -55,7 +55,7 @@ module IMM_GEN(
 	endtask
 	/*----------------*/
 
-	always@(*) begin
+	always_comb begin
 		case(op)
 			`I_TYPE: 	  extend_I(i_Instr[31:20]);
 			`S_TYPE: 	  extend_I({i_Instr[31:25], i_Instr[11:7]});
