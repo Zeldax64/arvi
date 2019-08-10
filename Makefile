@@ -14,7 +14,7 @@ subdirs = $(filter-out $1,$(sort $(dir $(wildcard $1*/))))
 rfind = $(wildcard $1$2) $(foreach d,$(call subdirs,$1),$(call rfind,$d,$2))
 ######################################
 SRC_DIR := ./rtl
-SOURCES := $(call rfind,$(SRC_DIR)/,*.v)
+SOURCES := $(call rfind,$(SRC_DIR)/,*.sv)
 HEADERS := $(call rfind,$(SRC_DIR)/,*.vh)
 
 SCRIPTS_DIR := ./sim/scripts
