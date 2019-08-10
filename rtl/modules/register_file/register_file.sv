@@ -8,9 +8,9 @@
 
 `include "arvi_defines.vh"
 
-module REGISTER_FILE(
-    output [`XLEN-1:0] o_Rd1,
-    output [`XLEN-1:0] o_Rd2,
+module register_file (
+    output logic [`XLEN-1:0] o_Rd1,
+    output logic [`XLEN-1:0] o_Rd2,
     input [4:0] i_Rnum1,
     input [4:0] i_Rnum2,
     input i_Wen,
@@ -26,7 +26,7 @@ module REGISTER_FILE(
 	assign o_Rd2 = |i_Rnum2 ? x[i_Rnum2] : 0;
 
 	//Writing occurs just in the positive edge clk;
-	always @(posedge i_clk) begin
+	always_ff@(posedge i_clk) begin
 		if (i_Wen) begin
 			x[i_Wnum] <= i_Wd;
 		end

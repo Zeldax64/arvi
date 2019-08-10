@@ -213,7 +213,7 @@ module DATAPATH_SC
 	);
 
 	wire wr_to_rf = MC_RegWrite && !EX_stall && !CSR_ex && !MEM_stall;
-	REGISTER_FILE reg_file (
+	register_file reg_file (
     	.o_Rd1(Rd1),
     	.o_Rd2(Rd2),
     	.i_Rnum1(instr[19:15]),
