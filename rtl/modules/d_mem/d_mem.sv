@@ -16,10 +16,10 @@ module d_mem(
     input  [2:0] i_f3,
     input  i_wr_en,
     input  i_rd_en,
-    output [`XLEN-1:0] o_Rd,
-    output o_stall,
-    output o_ex_ld,
-    output o_ex_st,
+    output logic [`XLEN-1:0] o_Rd,
+    output logic o_stall,
+    output logic o_ex_ld,
+    output logic o_ex_st,
 
     // CPU <-> Memory
     `ARVI_DMEM_OUTPUTS
@@ -46,7 +46,7 @@ module d_mem(
 	
 	//reg [3:0] rmask;
 	
-	always@(*) begin
+	always_comb begin
 		ex_ld_addr = 0;
 		ex_st_addr = 0;
 
@@ -121,14 +121,14 @@ module d_mem(
 	localparam READ  = 2'b01;
 	localparam WRITE = 2'b10;
 
-	always@(posedge i_clk) begin
+	always_ff@(posedge i_clk) begin
 		if(!i_rst || ex) 
 			state <= IDLE;
 		else
 			state <= next_state;
 	end
 
-	always@(*) begin
+	always_comb begin
 		next_state = state; // Default
 		if(state == IDLE) begin
 			if(i_rd_en) next_state = READ;
