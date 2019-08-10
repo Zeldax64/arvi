@@ -22,27 +22,27 @@
 `endif
 
 
-module MAIN_CONTROL(
+module main_control (
     input [`INSTRUCTION_SIZE:0] i_Instr,
     
-    output reg o_Branch,
-    output reg o_MemRead,
-    output reg o_MemWrite,
-    output reg o_MemToReg,
-    output reg [2:0] o_ALUOp,
-    output reg [1:0] o_ALUSrcA,
-    output reg o_ALUSrcB,
-    output reg o_RegWrite,
-    output reg [1:0] o_Jump,
-    output reg o_PCplus4,
-    output reg o_CSR_en,
-    output reg o_Ex,
+    output logic o_Branch,
+    output logic o_MemRead,
+    output logic o_MemWrite,
+    output logic o_MemToReg,
+    output logic [2:0] o_ALUOp,
+    output logic [1:0] o_ALUSrcA,
+    output logic o_ALUSrcB,
+    output logic o_RegWrite,
+    output logic [1:0] o_Jump,
+    output logic o_PCplus4,
+    output logic o_CSR_en,
+    output logic o_Ex,
 
 `ifdef __ATOMIC
-	output reg o_atomic,
+	output logic o_atomic,
 `endif
 `ifdef __RV32_M
-	output reg o_ALUM_en,
+	output logic o_ALUM_en,
 `endif
 
     input i_Stall
@@ -57,7 +57,7 @@ module MAIN_CONTROL(
 	wire [4:0] rs1 = i_Instr[19:15];
 	wire [4:0] rd = i_Instr[11:7];
 
-	always @(*) begin
+	always_comb begin
 		o_Branch   = 0;
 		o_MemRead  = 0;
 		o_MemWrite = 0;

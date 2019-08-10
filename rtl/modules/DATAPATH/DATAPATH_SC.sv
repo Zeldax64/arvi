@@ -185,7 +185,7 @@ module DATAPATH_SC
 
 	// --- Decode Stage --- //
 	// Main Control
-	MAIN_CONTROL main_control
+	main_control main_control
 	(
 		.o_Branch   (MC_Branch),
 		.o_MemRead  (MC_MemRead),
