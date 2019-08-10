@@ -33,14 +33,14 @@ module EX(
 	wire [3:0] alu_control_lines;
 	wire [`XLEN-1:0] alu_res;
 
-	ALU_CONTROL alu_control (
+	alu_control alu_control (
 		.i_Funct7          (i_f7),
 		.i_Funct3          (i_f3),
 		.i_ALUOp           (i_aluop),
 		.o_ALUControlLines (alu_control_lines)
 	);
 
-	ALU alu (
+	alu alu (
 		.i_op (alu_control_lines),
 		.i_Ra (i_rs1),
 		.i_Rb (i_rs2),

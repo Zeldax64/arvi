@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 
 //ALU Control Lines
-`include "modules/ALU/ALU_DEFINES.vh"
+`include "modules/alu/alu_defines.vh"
 
 //Funct7
 `define F7_TYPE0  7'b0000000
@@ -25,14 +25,14 @@
 `define ALUOP_U	  3'b100
 `define ALUOP_S1  3'b101
 
-module ALU_CONTROL(
-    output reg [3:0] o_ALUControlLines,
+module alu_control (
+    output logic [3:0] o_ALUControlLines,
     input [6:0] i_Funct7,
     input [2:0] i_Funct3,
     input [2:0] i_ALUOp
     );
 
-	always @(*) begin
+	always_comb begin
 		case(i_ALUOp)
 			`ALUOP_MEM : o_ALUControlLines = `ALU_ADD;
 			`ALUOP_B :  case(i_Funct3)

@@ -3,19 +3,19 @@
 */
 `timescale 1ns / 1ps
 
-`include "modules/ALU/ALU_DEFINES.vh"
+`include "modules/alu/alu_defines.vh"
 `include "arvi_defines.vh"
 
-module ALU(
-	input  [3:0]  i_op,
-	input  [`XLEN-1:0] i_Ra,
-	input  [`XLEN-1:0] i_Rb,
+module alu(
+	input [3:0]  i_op,
+	input [`XLEN-1:0] i_Ra,
+	input [`XLEN-1:0] i_Rb,
 
-	output o_Z, // Z Flag
-	output reg [`XLEN-1:0] o_Rc 
+	output logic o_Z, // Z Flag
+	output logic [`XLEN-1:0] o_Rc 
 );
 
-	always@(*) begin
+	always_comb begin
 		case(i_op)
 			`ALU_ADD:  o_Rc = i_Ra + i_Rb;
 			`ALU_SUB:  o_Rc = i_Ra - i_Rb;
