@@ -257,7 +257,7 @@ module DATAPATH_SC
 			.o_stall (EX_stall)
 		);
 
-	BRANCH_CONTROL branch_control (
+	branch_control branch_control (
 		.i_Branch   (MC_Branch),
 		.i_Z        (Z),
 		.i_Res      (Alu_Res[0]),

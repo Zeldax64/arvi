@@ -7,14 +7,15 @@
 
 `include "arvi_defines.vh"
 
-module BRANCH_CONTROL(
+module branch_control(
 		input i_Branch,
 		input i_Z,
 		input i_Res,
 		input [2:0] i_f3,
 
-		output reg o_DoBranch
+		output logic o_DoBranch
 	);
+
 	localparam BEQ  = 3'b000;
 	localparam BNE  = 3'b001;
 	localparam BLT  = 3'b100;
@@ -22,7 +23,7 @@ module BRANCH_CONTROL(
 	localparam BLTU = 3'b110;
 	localparam BGEU = 3'b111;
 
-	always@(*) begin
+	always_comb begin
 		if(i_Branch) begin
 			case (i_f3)
 				BEQ:  o_DoBranch =  i_Z;
@@ -32,6 +33,7 @@ module BRANCH_CONTROL(
 				BLTU: o_DoBranch =  i_Res;
 				BGEU: o_DoBranch = ~i_Res;
 				default : begin
+							// TODO: Maybe create an assert here...
 							$display("BRANCH_CONTROL: Invalid Branch! f3 = %b", i_f3);
 							o_DoBranch = 1'bx;
 						end
