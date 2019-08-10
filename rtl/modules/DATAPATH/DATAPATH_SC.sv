@@ -296,7 +296,7 @@ module DATAPATH_SC
 	assign badaddr = (ex_ld_addr || ex_st_addr) ? DM_Addr : PC_jump;
 	
 	// CSR
-	CSR #(.HART_ID(HART)
+	csr #(.HART_ID(HART)
 		) csr (
 		.i_clk 			(i_clk),
 		.i_rst      	(i_rst),

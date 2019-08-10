@@ -1,12 +1,13 @@
 `timescale 1ns / 1ps
 
 `include "arvi_defines.vh"
-`include "modules/CSR/csr_defines.vh"
+`include "modules/csr/csr_defines.vh"
 
 // TODO:
-// - I think it is possible to optimize exception handling in this file
-// - Implement read only misa register to pass rv32im mcsr test
-module CSR(
+// - Rework this file to achieve better synthesis results.
+// - I think it is possible to optimize exception handling in this file.
+// - Implement read only misa register to pass rv32im mcsr test.
+module csr(
 	input i_clk,
 	input i_rst, 
 	input i_CSR_en, // CSR enable
@@ -14,13 +15,13 @@ module CSR(
 	input [31:0] i_inst,
 	input [`XLEN-1:0] i_PC,
 	input [`XLEN-1:0] i_badaddr,
-	output reg [`XLEN-1:0] o_Rd,
+	output logic [`XLEN-1:0] o_Rd,
 
-	output reg o_eret,
-	output o_ex,
-	output [`XLEN-1:0] o_tvec, // Trap-Vector Base Address Register.
-	output [`XLEN-1:0] o_cause,
-	output reg [`XLEN-1:0] o_epc, // Exception Program Counter.
+	output logic o_eret,
+	output logic o_ex,
+	output logic [`XLEN-1:0] o_tvec, // Trap-Vector Base Address Register.
+	output logic [`XLEN-1:0] o_cause,
+	output logic [`XLEN-1:0] o_epc, // Exception Program Counter.
 
 	// Exceptions
 	input i_Ex,
@@ -64,7 +65,7 @@ module CSR(
 
 	// Getting value to write according to instruction's f3
 	reg  [`XLEN-1:0] write_data;
-	always@(*) begin
+	always_comb begin
 		case(f3[1:0])
 			2'b01: write_data =  i_Wd;
 			2'b10: write_data =  i_Wd | o_Rd;
@@ -75,7 +76,7 @@ module CSR(
 
 	// NFI => Not Fully Implemented
 	// Write
-	always@(posedge i_clk) begin
+	always_ff@(posedge i_clk) begin
 		// Reset logic
 		if(!i_rst) begin
 			mie <= 0;
@@ -171,7 +172,7 @@ module CSR(
 	end
 
 	reg ex_ecall, ex_ebreak;
-	always@(*) begin
+	always_comb begin
 		o_epc = 0;
 		o_Rd = 0;
 		o_eret = 0;
