@@ -71,7 +71,7 @@ module RISC_V(
 	genvar i;
 	generate
 		for(i = 0; i < HARTS; i = i+1) begin
-			HART #(
+			hart #(
 					.PC_RESET(PC_RESET),
 					.HART(i)
 				) hart(

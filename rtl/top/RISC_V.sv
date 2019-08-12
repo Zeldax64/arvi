@@ -51,7 +51,7 @@ module RISC_V_
 	assign o_atomic = MEM_atomic;
 `endif
 
-	HART #(
+	hart #(
 			.PC_RESET(PC_RESET),
 			.HART(HART_ID),
 			.I_CACHE_ENTRIES(I_CACHE_ENTRIES)

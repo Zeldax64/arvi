@@ -2,7 +2,7 @@
 
 `include "arvi_defines.vh"
 
-module HART
+module hart
 	#(
 	parameter PC_RESET = `PC_RESET,
 	parameter HART = 0,
