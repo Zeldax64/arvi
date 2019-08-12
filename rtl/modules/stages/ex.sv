@@ -6,7 +6,7 @@
 
 `include "arvi_defines.vh"
 
-module EX(
+module ex(
 	input [`XLEN-1:0] i_rs1,
 	input [`XLEN-1:0] i_rs2,
 
@@ -68,7 +68,7 @@ module EX(
 		// Code for external RV32_M
 		reg enable;
 		reg en_delayed;
-		always@(posedge i_clk) begin
+		always_ff@(posedge i_clk) begin
 			if(!i_rst || i_ack) begin
 				en_delayed <= 0;
 				enable <= 0;
@@ -84,7 +84,7 @@ module EX(
 			end
 		end		
 		
-		always@(*) begin
+		always_comb begin
 			o_en  = enable; // Create a 0->1 pulse
 		end
 		

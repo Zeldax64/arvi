@@ -231,7 +231,7 @@ module DATAPATH_SC
 
 
 	// --- Execute Stage --- //
-	EX ex_stage
+	ex ex_stage
 		(
 			.i_rs1   (A),
 			.i_rs2   (B),
