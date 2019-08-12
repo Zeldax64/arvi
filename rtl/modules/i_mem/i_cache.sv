@@ -26,8 +26,8 @@ module i_cache
 	/*----- States -----*/
 	localparam COMPARE_TAG = 1'b0;
 	localparam ALLOCATE = 1'b1;
-	reg next_state;
-	reg state;
+	logic next_state;
+	logic state;
 
 	// Local Parameters
 	localparam N = $clog2(ENTRIES);    	 // Number of index bits
@@ -42,9 +42,9 @@ module i_cache
 	wire [TAG_SIZE-1:0] tag = i_Addr[TAG_OFFSET +: TAG_SIZE];	// Tag field of address
 
 	// Cache table
-	reg [ENTRIES-1:0] valid; // Valid field
-	reg [TAG_SIZE-1:0] tag_field [ENTRIES-1:0]; // Tag field
-	reg [BLOCK_SIZE*32-1:0] data [ENTRIES-1:0]; // Cached data
+	logic [ENTRIES-1:0] valid; // Valid field
+	logic [TAG_SIZE-1:0] tag_field [ENTRIES-1:0]; // Tag field
+	logic [BLOCK_SIZE*32-1:0] data [ENTRIES-1:0]; // Cached data
 	
 	// General wires
 	wire hit = (state == COMPARE_TAG) ? valid[index] && tag_field[index] == tag : 1'b0;
@@ -67,7 +67,7 @@ module i_cache
 	endgenerate
 
 	// FSM - State Transition
-	always@(posedge i_clk) begin
+	always_ff@(posedge i_clk) begin
 		if(!i_rst) begin
 			valid <= 0;
 			state <= COMPARE_TAG;
@@ -85,7 +85,7 @@ module i_cache
 	end
 
 	// FSM - Next state logic
-	always@(*) begin
+	always_comb begin
 		if(state == COMPARE_TAG) begin
 			if(hit) begin
 				next_state = COMPARE_TAG;
