@@ -6,7 +6,7 @@
 
 `include "arvi_defines.vh"
 
-module DATAPATH_SC
+module datapath_sc
 	#(
 		parameter PC_RESET = `PC_RESET,	
 		parameter HART = 0,
@@ -41,27 +41,27 @@ module DATAPATH_SC
 	input i_tip,
 
 `ifdef RISCV_FORMAL
-	output reg [`RISCV_FORMAL_NRET                        - 1 : 0] rvfi_valid,      
-	output reg [`RISCV_FORMAL_NRET *                 64   - 1 : 0] rvfi_order,      
-	output reg [`RISCV_FORMAL_NRET * `RISCV_FORMAL_ILEN   - 1 : 0] rvfi_insn,       
-	output reg [`RISCV_FORMAL_NRET                        - 1 : 0] rvfi_trap,       
-	output reg [`RISCV_FORMAL_NRET                        - 1 : 0] rvfi_halt,       
-	output reg [`RISCV_FORMAL_NRET                        - 1 : 0] rvfi_intr,       
-	output reg [`RISCV_FORMAL_NRET *                  2   - 1 : 0] rvfi_mode,       
-	output reg [`RISCV_FORMAL_NRET *                  2   - 1 : 0] rvfi_ixl,        
-	output reg [`RISCV_FORMAL_NRET *                  5   - 1 : 0] rvfi_rs1_addr,   
-	output reg [`RISCV_FORMAL_NRET *                  5   - 1 : 0] rvfi_rs2_addr,   
-	output reg [`RISCV_FORMAL_NRET * `RISCV_FORMAL_XLEN   - 1 : 0] rvfi_rs1_rdata,  
-	output reg [`RISCV_FORMAL_NRET * `RISCV_FORMAL_XLEN   - 1 : 0] rvfi_rs2_rdata,  
-	output reg [`RISCV_FORMAL_NRET *                  5   - 1 : 0] rvfi_rd_addr,    
-	output reg [`RISCV_FORMAL_NRET * `RISCV_FORMAL_XLEN   - 1 : 0] rvfi_rd_wdata,   
-	output reg [`RISCV_FORMAL_NRET * `RISCV_FORMAL_XLEN   - 1 : 0] rvfi_pc_rdata,   
-	output reg [`RISCV_FORMAL_NRET * `RISCV_FORMAL_XLEN   - 1 : 0] rvfi_pc_wdata,   
-	output reg [`RISCV_FORMAL_NRET * `RISCV_FORMAL_XLEN   - 1 : 0] rvfi_mem_addr,   
-	output reg [`RISCV_FORMAL_NRET * `RISCV_FORMAL_XLEN/8 - 1 : 0] rvfi_mem_rmask,  
-	output reg [`RISCV_FORMAL_NRET * `RISCV_FORMAL_XLEN/8 - 1 : 0] rvfi_mem_wmask,  
-	output reg [`RISCV_FORMAL_NRET * `RISCV_FORMAL_XLEN   - 1 : 0] rvfi_mem_rdata,  
-	output reg [`RISCV_FORMAL_NRET * `RISCV_FORMAL_XLEN   - 1 : 0] rvfi_mem_wdata,   
+	output logic [`RISCV_FORMAL_NRET                        - 1 : 0] rvfi_valid,      
+	output logic [`RISCV_FORMAL_NRET *                 64   - 1 : 0] rvfi_order,      
+	output logic [`RISCV_FORMAL_NRET * `RISCV_FORMAL_ILEN   - 1 : 0] rvfi_insn,       
+	output logic [`RISCV_FORMAL_NRET                        - 1 : 0] rvfi_trap,       
+	output logic [`RISCV_FORMAL_NRET                        - 1 : 0] rvfi_halt,       
+	output logic [`RISCV_FORMAL_NRET                        - 1 : 0] rvfi_intr,       
+	output logic [`RISCV_FORMAL_NRET *                  2   - 1 : 0] rvfi_mode,       
+	output logic [`RISCV_FORMAL_NRET *                  2   - 1 : 0] rvfi_ixl,        
+	output logic [`RISCV_FORMAL_NRET *                  5   - 1 : 0] rvfi_rs1_addr,   
+	output logic [`RISCV_FORMAL_NRET *                  5   - 1 : 0] rvfi_rs2_addr,   
+	output logic [`RISCV_FORMAL_NRET * `RISCV_FORMAL_XLEN   - 1 : 0] rvfi_rs1_rdata,  
+	output logic [`RISCV_FORMAL_NRET * `RISCV_FORMAL_XLEN   - 1 : 0] rvfi_rs2_rdata,  
+	output logic [`RISCV_FORMAL_NRET *                  5   - 1 : 0] rvfi_rd_addr,    
+	output logic [`RISCV_FORMAL_NRET * `RISCV_FORMAL_XLEN   - 1 : 0] rvfi_rd_wdata,   
+	output logic [`RISCV_FORMAL_NRET * `RISCV_FORMAL_XLEN   - 1 : 0] rvfi_pc_rdata,   
+	output logic [`RISCV_FORMAL_NRET * `RISCV_FORMAL_XLEN   - 1 : 0] rvfi_pc_wdata,   
+	output logic [`RISCV_FORMAL_NRET * `RISCV_FORMAL_XLEN   - 1 : 0] rvfi_mem_addr,   
+	output logic [`RISCV_FORMAL_NRET * `RISCV_FORMAL_XLEN/8 - 1 : 0] rvfi_mem_rmask,  
+	output logic [`RISCV_FORMAL_NRET * `RISCV_FORMAL_XLEN/8 - 1 : 0] rvfi_mem_wmask,  
+	output logic [`RISCV_FORMAL_NRET * `RISCV_FORMAL_XLEN   - 1 : 0] rvfi_mem_rdata,  
+	output logic [`RISCV_FORMAL_NRET * `RISCV_FORMAL_XLEN   - 1 : 0] rvfi_mem_wdata,   
 `endif
 
 	// General connections
@@ -69,8 +69,8 @@ module DATAPATH_SC
 	input i_rst
 	);
 
-	reg [`XLEN-1:0] PC;
-	reg [`XLEN-1:0] PC_next;
+	logic [`XLEN-1:0] PC;
+	logic [`XLEN-1:0] PC_next;
 
 	// Instruction wires renaming
 	//wire [`XLEN-1:0] instr = i_IM_Instr;
@@ -153,7 +153,7 @@ module DATAPATH_SC
 	reg[`XLEN-1:0] PC_jump;
 
 	// Assigning PC
-	always@(posedge i_clk) begin
+	always_ff@(posedge i_clk) begin
 		if(!i_rst) PC <= PC_RESET;
 		else if(IC_stall || MEM_stall || EX_stall) PC <= PC;
 		else PC <= PC_next;
@@ -325,8 +325,8 @@ module DATAPATH_SC
 	
 	/*----- Datapath Muxes -----*/
 	// PC Mux - Chooses PC's next value
-	// NOTA: this code and jump/branch signals must be improved
-	always@(*) begin
+	// TODO: this code and jump/branch signals must be improved
+	always_comb begin
 		if(CSR_ex) begin // Illegal instruction or MC_Ex(ECALL)
 			PC_next = {CSR_tvec[`XLEN-1:2], 2'b00};
 		end
@@ -340,7 +340,7 @@ module DATAPATH_SC
 	
 	// Calculate PC without CSRs interference
 	assign ex_inst_addr = |PC_jump[1:0];
-	always@(*) begin
+	always_comb begin
 		if(MC_Jump == 2'b10) begin // JALR
 				PC_jump = Alu_Res & 32'hFFFF_FFFE; // Ignoring LSB
 		end
@@ -371,7 +371,7 @@ module DATAPATH_SC
 	// ***** Performance Profiler DPI ***** //
 	integer inst_cycles;
 	integer inst_stall;
-	always@(posedge i_clk) begin
+	always_ff@(posedge i_clk) begin
 		if(!i_rst) begin 
 			inst_cycles <= 0;
 			inst_stall <= 0;
@@ -405,7 +405,7 @@ module DATAPATH_SC
 
 	reg [3:0] mask;
 
-	always@(posedge i_clk) begin
+	always_ff@(posedge i_clk) begin
 		rvfi_valid     <= is_valid_inst;
 		rvfi_order     <= i_rst ? rvfi_order + rvfi_valid : 0;
 		rvfi_insn      <= instr;

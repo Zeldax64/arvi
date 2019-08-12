@@ -42,7 +42,7 @@ module HART
 	input i_tip
 	);
 
-	DATAPATH_SC #(
+	datapath_sc #(
 			.PC_RESET(PC_RESET),
 			.HART(HART),
 			.I_CACHE_ENTRIES(I_CACHE_ENTRIES)
