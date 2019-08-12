@@ -2,22 +2,23 @@
 	Draft CLINT implementation supporting only one hart and
 	time interrupt
 	Memory size: 0x0000 - 0xbffc
-	TODO: implement interrupt bits
+	TODO: Implement interrupt bits
+	TODO: Test this module
 */
 
 `include "arvi_defines.vh"
 
-module CLINT #(
+module clint #(
 	parameter BASE_ADDR = 32'h2000_0000
 	)
 	(
-	input i_clk,
-	input i_rst,
-	input i_wen,
-	input i_ren,
+	input  i_clk,
+	input  i_rst,
+	input  i_wen,
+	input  i_ren,
 	input  [`XLEN-1:0] i_addr,
 	input  [`XLEN-1:0] i_wrdata,
-	output reg [`XLEN-1:0] o_rddata,
+	output logic [`XLEN-1:0] o_rddata,
 
 	// Interrupts
 	output o_tip
@@ -31,7 +32,7 @@ module CLINT #(
 	reg [63:0] mtime, mtimecmp0;
 
 	assign o_tip = mtime >= mtimecmp0;
-	always@(posedge i_clk) begin
+	always_ff@(posedge i_clk) begin
 		if(!i_rst)
 			mtime <= 0;
 		else begin
@@ -45,7 +46,7 @@ module CLINT #(
 		mtime <= mtime+1'b1;
 	end
 
-	always@(*) begin
+	always_comb begin
 		if(i_ren) begin
 			case(i_addr)
 				MTIMECMP0_LO : o_rddata = mtimecmp0[31:0];
