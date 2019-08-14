@@ -16,9 +16,9 @@ module rv32_m(
 	output o_stall	
 	);
 
-	wire mul_done, div_done, done;
-	wire is_mul, is_div;
-	wire [`XLEN-1:0] mul_res, div_res, rv_m_res;
+	logic mul_done, div_done, done;
+	logic is_mul, is_div;
+	logic [`XLEN-1:0] mul_res, div_res, rv_m_res;
 
 	assign is_mul = i_en && !i_f3[2]; 
 	assign is_div = i_en &&  i_f3[2];
@@ -34,16 +34,16 @@ module rv32_m(
 			.o_res   (mul_res)
 		);
 
-	wire div_en;
-	reg  div_en_d;
-	reg  div_done_d;
-	wire is_div_finished;
+	logic div_en;
+	logic div_en_d;
+	logic div_done_d;
+	logic is_div_finished;
 	
 	// Edge detectors	
 	assign div_en = is_div && !div_en_d; 
 	assign is_div_finished = div_done && !div_done_d;
 	
-	always@(posedge i_clk) begin
+	always_ff@(posedge i_clk) begin
 		if(!i_rst) begin 
 			div_en_d   <= 0;
 			div_done_d <= 0;

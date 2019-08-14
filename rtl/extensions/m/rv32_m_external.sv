@@ -14,15 +14,15 @@ module rv32_m_external(
 	input  [`XLEN-1:0] i_rs1,
 	input  [`XLEN-1:0] i_rs2,
 	input  [2:0] i_f3,
-	output reg [`XLEN-1:0] o_res,
-	output reg o_ack
+	output logic [`XLEN-1:0] o_res,
+	output logic o_ack
 	);
 	
-	wire finished, stall;
-	wire [`XLEN-1:0] res;
-	reg rv32_m_en, stall_dly;
+	logic finished, stall;
+	logic [`XLEN-1:0] res;
+	logic rv32_m_en, stall_dly;
 
-	always@(posedge i_clk) begin
+	always_ff@(posedge i_clk) begin
 		if(!i_rst) begin
 			rv32_m_en <= 0;
 			stall_dly <= 0;

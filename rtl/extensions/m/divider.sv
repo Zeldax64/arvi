@@ -19,8 +19,8 @@ module divider(
     reg signed [31:0] denom;   
     reg signed [31:0] work;       
     wire [32:0] sub; 
-
-    always @(posedge i_clk) begin  
+    
+    always_ff@(posedge i_clk) begin  
       if (!i_rst) begin  
         active <= 0;  
         cycle  <= 0;  
@@ -53,7 +53,7 @@ module divider(
      end  
     end  
    
-    always@(*) begin
+    always_comb begin
       startreg = 1;
       if(i_start)
         startreg = 1;

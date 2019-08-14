@@ -9,8 +9,8 @@ module mul_top(
     input [2:0] i_f3,
 	input [`XLEN-1:0] i_rs1, 
     input [`XLEN-1:0] i_rs2,
-    output o_done,
-    output reg [`XLEN-1:0] o_res
+    output logic o_done,
+    output logic [`XLEN-1:0] o_res
     );
 
     reg instr_mulh, instr_mulhsu;
@@ -25,7 +25,7 @@ module mul_top(
 	assign instr_rs1_signed = |{instr_mulh, instr_mulhsu};                     
 	assign instr_rs2_signed = |{instr_mulh};                                           
 	                         
-    always @(*) begin
+    always_comb begin
 		instr_mulh   = 0;
 		instr_mulhsu = 0;
 		o_res = out_s[31:0];
