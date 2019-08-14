@@ -17,8 +17,8 @@ module memory_controller
 	input  [31:0] i_wr_data,
 	input  [31:0] i_addr,
 	input  [3:0] i_byte_en,
-	output reg  o_ack,
-	output reg  [31:0] o_rd_data,
+	output logic o_ack,
+	output logic [31:0] o_rd_data,
 
 	// Bus atomic signals
 	input  i_atomic,
@@ -29,11 +29,11 @@ module memory_controller
 	// MEM_CONTROLLER <-> MEM
 	input  i_ack,
 	input  [31:0] i_rd_data,
-	output reg o_bus_en,
-	output reg o_wr_en,
-	output reg [31:0] o_wr_data,
-	output reg [31:0] o_addr,
-	output reg [3:0] o_byte_en	
+	output logic o_bus_en,
+	output logic o_wr_en,
+	output logic [31:0] o_wr_data,
+	output logic [31:0] o_addr,
+	output logic [3:0] o_byte_en	
 	);
 
 	wire is_lr, is_sc, is_AMO;
@@ -42,17 +42,17 @@ module memory_controller
 	assign is_sc = (i_operation[6:2] == `SC) && i_atomic;
 	assign is_AMO = i_atomic && !(is_lr | is_sc); 
 
-	reg ack_d;
-	reg [31:0] rd_data_d;
-	reg bus_en_d;
-	reg wr_en_d;
-	reg [31:0] wr_data_d;
-	reg [31:0] addr_d;
-	reg [3:0] byte_en_d;
+	logic ack_d;
+	logic [31:0] rd_data_d;
+	logic bus_en_d;
+	logic wr_en_d;
+	logic [31:0] wr_data_d;
+	logic [31:0] addr_d;
+	logic [3:0] byte_en_d;
 
-	reg [2:0] state, next_state;
+	logic [2:0] state, next_state;
 
-	reg [`XLEN-1:0] s1, s2;
+	logic [`XLEN-1:0] s1, s2;
 	wire [`XLEN-1:0] alu_res;
 
 	always@(posedge i_clk) begin

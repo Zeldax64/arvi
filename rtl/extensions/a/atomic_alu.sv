@@ -8,10 +8,10 @@ module atomic_alu(
 	input  [`XLEN-1:0] s1,
 	input  [`XLEN-1:0] s2,
 
-	output reg [`XLEN-1:0] alu_res	
+	output logic [`XLEN-1:0] alu_res	
 	);
 
-	always@(*) begin
+	always_comb begin
 		case(i_op)
 			`AMOSWAP : alu_res = s1;
 			`AMOADD  : alu_res = s1 + s2;

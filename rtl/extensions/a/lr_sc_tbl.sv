@@ -18,8 +18,8 @@ module lr_sc_tbl
 	output o_gnt
 	);
 
-	reg [ADDR_WIDTH-1:0] tbl [N_IDS-1:0];
-	wire [N_IDS-1:0] hit, rst;
+	logic [ADDR_WIDTH-1:0] tbl [N_IDS-1:0];
+	logic [N_IDS-1:0] hit, rst;
 
 	genvar i;
 	generate
@@ -32,7 +32,7 @@ module lr_sc_tbl
 	assign o_gnt = (i_check_res) ? hit[i_id] : 1'b0;
 
 	integer j;
-	always@(posedge i_clk) begin
+	always_ff@(posedge i_clk) begin
 		// Reset logic
 		for(j = 0; j < N_IDS; j = j+1) begin
 			tbl[j] <= (rst[j] || ~i_rst) ? {ADDR_WIDTH{1'b0}} : tbl[j];
