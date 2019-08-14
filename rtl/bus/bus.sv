@@ -9,15 +9,15 @@
 
 `include "arvi_defines.vh"
 
-module BUS (
+module bus (
 	input i_clk,  
 	input i_rst,  
 	
 	// I-Cache 
 	input i_IM_data_req,
 	input [`XLEN-1:0]i_IM_addr,
-	output reg o_IM_mem_ready,
-	output reg [31:0] o_IM_Instr,
+	output logic o_IM_mem_ready,
+	output logic [31:0] o_IM_Instr,
 	
 	// Data Memory
 	`ARVI_DMEM_INPUTS,
@@ -25,18 +25,18 @@ module BUS (
 	// Bus 
 	input  i_ack,
 	input  [31:0] i_rd_data,
-	output reg o_bus_en,
-	output reg o_wr_en,
-	output reg [31:0] o_wr_data,
-	output reg [31:0] o_addr,
-	output reg [3:0] o_byte_en
+	output logic o_bus_en,
+	output logic o_wr_en,
+	output logic [31:0] o_wr_data,
+	output logic [31:0] o_addr,
+	output logic [3:0] o_byte_en
 );
 	
-	reg wr_en;
-	reg [31:0] addr;
+	logic wr_en;
+	logic [31:0] addr;
 
-	reg DM_data_ready;
-	reg [31:0] DM_ReadData;
+	logic DM_data_ready;
+	logic [31:0] DM_ReadData;
 	
 	assign o_DM_data_ready = DM_data_ready;
 	assign o_DM_ReadData = DM_ReadData; 
@@ -44,14 +44,14 @@ module BUS (
 	localparam READ  = 1'b0;
 	localparam WRITE = 1'b1;
 
-	reg state, next_state;
+	logic state, next_state;
 	localparam IDLE = 1'b0;
 	localparam BUSY = 1'b1;
 
 	//wire bus_req = i_IM_data_req || i_DM_MemRead || i_DM_Wen;
-	reg bus_req;
+	logic bus_req;
 
-	always@(posedge i_clk) begin
+	always_ff@(posedge i_clk) begin
 		if(!i_rst) state <= IDLE;
 		else begin
 			state     <= next_state;
@@ -63,7 +63,7 @@ module BUS (
 		end
 	end
 	
-	always@(*) begin
+	always_comb begin
 		next_state = state;
 		o_IM_mem_ready = 0;
 		o_IM_Instr = 0;

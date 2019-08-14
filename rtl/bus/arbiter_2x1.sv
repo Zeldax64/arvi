@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-module ARBITER_2X1(
+module arbiter_2x1(
 	input i_clk,
 	input i_rst,
 
@@ -12,8 +12,8 @@ module ARBITER_2X1(
 	input  [3:0] i_byte_en1,
 	input  i_atomic1,
 	input  [6:0] i_operation1,
-	output reg o_ack1,
-	output reg [31:0] o_rd_data1,
+	output logic o_ack1,
+	output logic [31:0] o_rd_data1,
 	
 	// Bus 2
 	input  i_bus_en2,
@@ -23,35 +23,35 @@ module ARBITER_2X1(
 	input  [3:0] i_byte_en2,
 	input  i_atomic2,
 	input  [6:0] i_operation2,
-	output reg  o_ack2,
-	output reg  [31:0] o_rd_data2,
+	output logic  o_ack2,
+	output logic  [31:0] o_rd_data2,
 
 
 	// To Bus
 	input  i_ack,
 	input  [31:0] i_rd_data,
-	output reg o_atomic,
-	output reg o_id,
-	output reg o_bus_en,
-	output reg o_wr_en,
-	output reg [31:0] o_wr_data,
-	output reg [31:0] o_addr,
-	output reg [6:0] o_operation,
-	output reg [3:0] o_byte_en
+	output logic o_atomic,
+	output logic o_id,
+	output logic o_bus_en,
+	output logic o_wr_en,
+	output logic [31:0] o_wr_data,
+	output logic [31:0] o_addr,
+	output logic [6:0] o_operation,
+	output logic [3:0] o_byte_en
 	);
 	
-	reg id;
-	reg bus_en;
-	reg wr_en;
-	reg [31:0] wr_data;
-	reg [31:0] addr;
-	reg [3:0] byte_en;
-	reg ack1, ack2;
-	reg [31:0] rd_data1, rd_data2;
-	reg atomic;
-	reg [6:0] operation;
+	logic id;
+	logic bus_en;
+	logic wr_en;
+	logic [31:0] wr_data;
+	logic [31:0] addr;
+	logic [3:0] byte_en;
+	logic ack1, ack2;
+	logic [31:0] rd_data1, rd_data2;
+	logic atomic;
+	logic [6:0] operation;
 	
-	wire bus1_req, bus2_req;
+	logic bus1_req, bus2_req;
 
 	assign bus1_req = i_bus_en1;
 	assign bus2_req = i_bus_en2;
@@ -60,7 +60,7 @@ module ARBITER_2X1(
 	localparam BUS1 = 2'b01;
 	localparam BUS2 = 2'b10;
 
-	reg [1:0] state, next_state;
+	logic [1:0] state, next_state;
 
 	always@(posedge i_clk) begin
 		if(!i_rst) begin

@@ -97,7 +97,7 @@ module RISC_V_
 		.i_tip(1'b0)
 	);
 
-	BUS bus_if
+	bus bus_if
 		(
 			.i_clk           (i_clk),
 			.i_rst           (i_rst),

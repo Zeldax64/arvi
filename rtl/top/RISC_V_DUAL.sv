@@ -102,7 +102,7 @@ module RISC_V(
 				.i_tip(1'b0)
 			);
 
-			BUS bus
+			bus bus
 				(
 					.i_clk           (i_clk),
 					.i_rst           (i_rst),
@@ -134,7 +134,7 @@ module RISC_V(
 		end
 	endgenerate
 
-	ARBITER_2X1 arbiter_2x1
+	arbiter_2x1 arbiter_2x1
 		(
 			.i_clk      	(i_clk),
 			.i_rst      	(i_rst),
