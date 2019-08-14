@@ -7,7 +7,7 @@
 
 `timescale 1ns / 1ps
 
-`include "arvi_defines.vh"
+`include "arvi_defines.svh"
 
 module bus (
 	input i_clk,  

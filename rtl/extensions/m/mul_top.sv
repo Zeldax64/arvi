@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 
-`include "arvi_defines.vh"
-`include "extensions/m/m_isa.vh"
+`include "arvi_defines.svh"
+`include "extensions/m/m_isa.svh"
 
 module mul_top(
     input i_clk, 

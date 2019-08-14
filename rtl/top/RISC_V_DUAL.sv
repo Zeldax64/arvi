@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-`include "arvi_defines.vh"
+`include "arvi_defines.svh"
 
 /* verilator lint_off DECLFILENAME */
 `ifndef __DUAL_CORE

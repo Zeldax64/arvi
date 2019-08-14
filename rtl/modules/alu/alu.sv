@@ -3,8 +3,8 @@
 */
 `timescale 1ns / 1ps
 
-`include "modules/alu/alu_defines.vh"
-`include "arvi_defines.vh"
+`include "modules/alu/alu_defines.svh"
+`include "arvi_defines.svh"
 
 module alu(
 	input [3:0]  i_op,

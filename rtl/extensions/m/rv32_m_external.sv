@@ -5,7 +5,7 @@
 
 `timescale 1ns / 1ps
 
-`include "arvi_defines.vh"
+`include "arvi_defines.svh"
 
 module rv32_m_external(
 	input  i_clk,

@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 
-`include "arvi_defines.vh"
-`include "modules/csr/csr_defines.vh"
+`include "arvi_defines.svh"
+`include "modules/csr/csr_defines.svh"
 
 // TODO:
 // - Rework this file to achieve better synthesis results.

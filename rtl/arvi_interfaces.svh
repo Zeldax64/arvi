@@ -4,7 +4,7 @@
 
 `ifndef __ARVI_INTERFACES
 `define __ARVI_INTERFACES
-`include "arvi_defines.vh"
+`include "arvi_defines.svh"
 
 // Bus master interface
 `define BUS_M 					\

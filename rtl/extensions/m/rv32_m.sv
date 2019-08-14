@@ -2,8 +2,8 @@
 	This module provides RV32-M extension. It should be used in EX stage. 
 */
 
-`include "arvi_defines.vh"
-`include "extensions/m/m_isa.vh"
+`include "arvi_defines.svh"
+`include "extensions/m/m_isa.svh"
 
 module rv32_m(
 	input  i_clk,

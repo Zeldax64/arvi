@@ -6,7 +6,7 @@
 	TODO: Test this module
 */
 
-`include "arvi_defines.vh"
+`include "arvi_defines.svh"
 
 module clint #(
 	parameter BASE_ADDR = 32'h2000_0000

@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 
 //ALU Control Lines
-`include "modules/alu/alu_defines.vh"
+`include "modules/alu/alu_defines.svh"
 
 //Funct7
 `define F7_TYPE0  7'b0000000
