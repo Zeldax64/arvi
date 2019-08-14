@@ -96,8 +96,19 @@ module RISC_V_
 		// Interrupt connections
 		.i_tip(1'b0)
 	);
+		/*
+	logic i_ack;
+	logic [31:0] i_rd_data; 	
+	logic o_bus_en; 			
+	logic o_wr_en; 			
+	logic [31:0] o_wr_data;	
+	logic [31:0] o_addr; 		
+	logic [3:0]  o_byte_en;
+*/
 
-	bus bus_if
+	//bus_if.master bus_m;
+
+	bus cpu_bus
 		(
 			.i_clk           (i_clk),
 			.i_rst           (i_rst),
@@ -118,13 +129,16 @@ module RISC_V_
 			.i_DM_MemRead    (DM_ren),
 			
 			// Bus signals
-			.i_ack           (i_ack),
-			.i_rd_data       (i_rd_data),
-			.o_bus_en      	 (o_bus_en),
-			.o_wr_en         (o_wr_en),
-			.o_wr_data       (o_wr_data),
-			.o_addr          (o_addr),
-			.o_byte_en       (o_byte_en)
+			.bus_m           (bus_m)
 		);
+
+	assign bus_m.ack = i_ack ;
+	assign bus_m.rd_Data = i_rd_Data ;
+	assign o_bus_en = bus_m.bus_en  ;
+	assign o_wr_en = bus_m.wr_en  ;
+	assign o_wr_data = bus_m.wr_data  ;
+	assign o_addr = bus_m.addr  ;
+	assign o_byte_en = bus_m.byte_en  ;
+
 
 endmodule

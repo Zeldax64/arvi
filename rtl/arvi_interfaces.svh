@@ -7,6 +7,40 @@
 `include "arvi_defines.svh"
 
 // Bus master interface
+/* verilator lint_off DECLFILENAME */
+interface bus_if;
+	logic ack; 				
+	logic [31:0] rd_data; 	
+	logic bus_en; 			
+	logic wr_en; 			
+	logic [31:0] wr_data;	
+	logic [31:0] addr; 		
+	logic [3:0]  byte_en;
+		
+`ifdef __ATOMIC 						
+	logic [6:0] operation;
+	logic atomic;	
+`endif 
+
+	modport master(
+		input ack, rd_data,
+		output bus_en, wr_en, wr_data, addr, byte_en
+	`ifdef __ATOMIC
+		, operation, atomic
+	`endif
+	);
+
+	modport slave(
+		output ack, rd_data,
+		input bus_en, wr_en, wr_data, addr, byte_en
+	`ifdef __ATOMIC
+		, operation, atomic
+	`endif
+	);
+
+endinterface
+
+/* verilator lint_on DECLFILENAME */
 `define BUS_M 					\
 	input  i_ack, 				\
 	input  [31:0] i_rd_data, 	\

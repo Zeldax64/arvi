@@ -23,15 +23,17 @@ module bus (
 	`ARVI_DMEM_INPUTS,
 
 	// Bus 
-	input  i_ack,
-	input  [31:0] i_rd_data,
-	output logic o_bus_en,
-	output logic o_wr_en,
-	output logic [31:0] o_wr_data,
-	output logic [31:0] o_addr,
-	output logic [3:0] o_byte_en
+	bus_if.master bus_m
 );
-	
+
+	logic i_ack;
+	logic [31:0] i_rd_data;
+	logic o_bus_en;
+	logic o_wr_en;
+	logic [31:0] o_wr_data;
+	logic [31:0] o_addr;
+	logic [3:0] o_byte_en;
+
 	logic wr_en;
 	logic [31:0] addr;
 
@@ -121,5 +123,13 @@ module bus (
 			end
 		endcase
 	end
+
+	assign i_ack = bus_m.ack;
+	assign i_rd_Data = bus_m.rd_Data;
+	assign bus_m.bus_en = o_bus_en;
+	assign bus_m.wr_en = o_wr_en;
+	assign bus_m.wr_data = o_wr_data;
+	assign bus_m.addr = o_addr;
+	assign bus_m.byte_en = o_byte_en;
 
 endmodule

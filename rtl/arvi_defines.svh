@@ -9,8 +9,8 @@
 
 `define PROGRAM_DATA "./test/asm/addi.bin"
 
-//`define __SINGLE_CORE
-`define __DUAL_CORE
+`define __SINGLE_CORE
+//`define __DUAL_CORE
 
 `ifdef __DUAL_CORE
 	`define __ATOMIC
@@ -18,7 +18,7 @@
 
 // Remove comments to enable extensions RV32A or RV32M extensions.
 //`define __ATOMIC
-`define __RV32_M
+//`define __RV32_M
 //`define __RV32_M_EXTERNAL
 
 `include "arvi_interfaces.svh"
