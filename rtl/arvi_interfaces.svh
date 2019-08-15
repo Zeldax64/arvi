@@ -39,6 +39,26 @@ interface bus_if;
 	);
 
 endinterface
+/*
+//Worked
+interface bus_if_m(
+	input logic ack, 				
+	input logic [31:0] rd_data, 	
+	output  logic bus_en, 			
+	output  logic wr_en, 			
+	output  logic [31:0] wr_data,	
+	output  logic [31:0] addr, 		
+	output  logic [3:0]  byte_en
+		
+`ifdef __ATOMIC 						
+	,output  logic [6:0] operation,
+	output  logic atomic
+`endif
+);
+
+endinterface
+*/
+
 
 /* verilator lint_on DECLFILENAME */
 `define BUS_M 					\

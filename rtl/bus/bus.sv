@@ -125,7 +125,7 @@ module bus (
 	end
 
 	assign i_ack = bus_m.ack;
-	assign i_rd_Data = bus_m.rd_Data;
+	assign i_rd_data = bus_m.rd_data;
 	assign bus_m.bus_en = o_bus_en;
 	assign bus_m.wr_en = o_wr_en;
 	assign bus_m.wr_data = o_wr_data;

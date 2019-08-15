@@ -105,9 +105,23 @@ module RISC_V_
 	logic [31:0] o_addr; 		
 	logic [3:0]  o_byte_en;
 */
-
-	//bus_if.master bus_m;
-
+	bus_if bus_m;
+	/*
+	bus_if bus_m (
+		.ack (i_ack),
+		.rd_data(i_rd_data),
+		.bus_en(o_bus_en),
+		.wr_en(o_wr_en),
+		.wr_data  (o_wr_data),
+		.addr(o_addr),
+		.byte_en(o_byte_en)
+`ifdef __ATOMIC
+		,
+		.operation(o_operation),
+		.atomic(o_atomic)
+`endif
+		);
+	*/
 	bus cpu_bus
 		(
 			.i_clk           (i_clk),
@@ -132,13 +146,21 @@ module RISC_V_
 			.bus_m           (bus_m)
 		);
 
+	/*
 	assign bus_m.ack = i_ack ;
-	assign bus_m.rd_Data = i_rd_Data ;
-	assign o_bus_en = bus_m.bus_en  ;
-	assign o_wr_en = bus_m.wr_en  ;
-	assign o_wr_data = bus_m.wr_data  ;
-	assign o_addr = bus_m.addr  ;
-	assign o_byte_en = bus_m.byte_en  ;
-
-
+	assign bus_m.rd_data = i_rd_data;
+	assign bus_m.bus_en = o_bus_en;
+	assign bus_m.wr_en = o_wr_en;
+	assign bus_m.wr_data = o_wr_data;
+	assign bus_m.addr = o_addr;
+	assign bus_m.byte_en = o_byte_en;
+	*/
+	assign bus_m.ack = i_ack ;
+	assign bus_m.rd_data = i_rd_data;
+	assign o_bus_en = bus_m.bus_en;
+	assign o_wr_en = bus_m.wr_en;
+	assign o_wr_data = bus_m.wr_data;
+	assign o_addr = bus_m.addr;
+	assign o_byte_en = bus_m.byte_en;
+	
 endmodule
