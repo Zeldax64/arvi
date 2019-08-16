@@ -19,7 +19,7 @@ module hart
 	output o_IC_DataReq,
 
 	// Data Memory Access
-	`ARVI_DMEM_OUTPUTS,
+	dmem_if.master DM_to_mem,
 
 `ifdef __ATOMIC // Atomic extension signal for atomic operations
 	output o_MEM_atomic,
@@ -58,13 +58,7 @@ module hart
 		.o_IC_DataReq (o_IC_DataReq),
 
 		// Data Memory connections
-		.i_DM_data_ready(i_DM_data_ready),
-		.i_DM_ReadData(i_DM_ReadData),
-		.o_DM_Wd(o_DM_Wd),
-		.o_DM_Addr(o_DM_Addr),
-		.o_DM_Wen(o_DM_Wen),
-		.o_DM_MemRead(o_DM_MemRead),
-		.o_DM_byte_en(o_DM_byte_en),
+		.DM_to_mem     (DM_to_mem),
 
 `ifdef __ATOMIC
 		.o_MEM_atomic(o_MEM_atomic),

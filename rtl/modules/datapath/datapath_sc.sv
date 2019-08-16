@@ -20,7 +20,7 @@ module datapath_sc
 	output [`XLEN-1:0] o_IM_Addr,
 
 	// Data Memory connections
-	`ARVI_DMEM_OUTPUTS,
+	dmem_if.master DM_to_mem,
 
 `ifdef __ATOMIC // Atomic extension signal for atomic operations
 	output o_MEM_atomic,
@@ -266,6 +266,7 @@ module datapath_sc
 	);
 
 	assign DM_Addr = Alu_Res;
+
 	d_mem d_mem
 		(
 			.i_clk           (i_clk),
@@ -281,13 +282,7 @@ module datapath_sc
 			.o_ex_st       	 (ex_st_addr),
 
 			// CPU <-> Memory
-			.i_DM_data_ready (i_DM_data_ready),
-			.i_DM_ReadData   (i_DM_ReadData),
-			.o_DM_Wd         (o_DM_Wd),
-			.o_DM_Addr       (o_DM_Addr),
-			.o_DM_byte_en    (o_DM_byte_en),
-			.o_DM_Wen      	 (o_DM_Wen),
-			.o_DM_MemRead  	 (o_DM_MemRead)
+			.to_mem   		 (DM_to_mem)
 		);
 
 

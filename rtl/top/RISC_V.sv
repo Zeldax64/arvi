@@ -42,7 +42,6 @@ module RISC_V_
 	wire [`XLEN-1:0] IM_addr;
 	
 	// Data Memory
-	`ARVI_DMEM_WIRES;
 
 `ifdef __ATOMIC
 	wire [6:0] MEM_operation;
@@ -50,7 +49,8 @@ module RISC_V_
 	assign o_operation = MEM_operation;
 	assign o_atomic = MEM_atomic;
 `endif
-
+	
+	dmem_if DM_to_mem;
 	hart #(
 			.PC_RESET(PC_RESET),
 			.HART(HART_ID),
@@ -66,13 +66,7 @@ module RISC_V_
 		.o_IC_DataReq (IM_data_req),
 
 		// Data Memory connections
-		.i_DM_data_ready(DM_mem_ready),
-		.i_DM_ReadData(DM_rd),
-		.o_DM_Wd(DM_wd),
-		.o_DM_Addr(DM_addr),
-		.o_DM_Wen(DM_wen),
-		.o_DM_MemRead(DM_ren),
-		.o_DM_byte_en(DM_byte_en),
+		.DM_to_mem    (DM_to_mem),
 
 `ifdef __ATOMIC
 		.o_DM_f7        (MEM_operation),
@@ -134,13 +128,7 @@ module RISC_V_
 			.o_IM_Instr      (IM_instr),
 			
 			// Data Memory
-			.o_DM_data_ready (DM_mem_ready),
-			.o_DM_ReadData   (DM_rd),
-			.i_DM_Wd         (DM_wd),
-			.i_DM_Addr       (DM_addr),
-			.i_DM_byte_en    (DM_byte_en),
-			.i_DM_Wen        (DM_wen),
-			.i_DM_MemRead    (DM_ren),
+			.dmem          (DM_to_mem),
 			
 			// Bus signals
 			.bus_m           (bus_m)

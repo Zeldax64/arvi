@@ -59,8 +59,8 @@ interface bus_if_m(
 endinterface
 */
 
-
 /* verilator lint_on DECLFILENAME */
+
 `define BUS_M 					\
 	input  i_ack, 				\
 	input  [31:0] i_rd_data, 	\
@@ -84,7 +84,29 @@ endinterface
 	input  [`XLEN-1:0] i_res, 		\
 	input  i_ack 					
 
+
 // Data Memory Interfaces
+interface dmem_if;
+    logic DM_data_ready;
+	logic [`XLEN-1:0] DM_ReadData;
+	logic [`XLEN-1:0] DM_Wd;
+	logic [`XLEN-1:0] DM_Addr;
+	logic [3:0] DM_byte_en;
+	logic DM_Wen;
+	logic DM_MemRead;
+
+modport master(
+	input DM_data_ready, DM_ReadData,
+	output DM_Wd, DM_Addr, DM_byte_en, DM_Wen, DM_MemRead
+	);
+
+modport slave(
+	input  DM_Wd, DM_Addr, DM_byte_en, DM_Wen, DM_MemRead,
+	output DM_data_ready, DM_ReadData
+	);
+
+endinterface
+
 `define ARVI_DMEM_WIRES			\
 	wire DM_mem_ready;			\
 	wire DM_ren;				\

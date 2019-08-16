@@ -22,8 +22,24 @@ module d_mem(
     output logic o_ex_st,
 
     // CPU <-> Memory
-    `ARVI_DMEM_OUTPUTS
+    dmem_if.master to_mem
     );
+
+    logic i_DM_data_ready;
+	logic [`XLEN-1:0] i_DM_ReadData;
+	logic [`XLEN-1:0] o_DM_Wd;
+	logic [`XLEN-1:0] o_DM_Addr;
+	logic [3:0] o_DM_byte_en;
+	logic o_DM_Wen;
+	logic o_DM_MemRead;
+
+	assign i_DM_data_ready = to_mem.DM_data_ready;
+	assign i_DM_ReadData = to_mem.DM_ReadData;
+	assign to_mem.DM_Wd = o_DM_Wd;
+	assign to_mem.DM_Addr = o_DM_Addr;
+	assign to_mem.DM_byte_en = o_DM_byte_en;
+	assign to_mem.DM_Wen = o_DM_Wen;
+	assign to_mem.DM_MemRead = o_DM_MemRead; 
 
 	reg [`XLEN-1:0] read_data, shifted_rd, wr_data;
 	reg ex_ld_addr, ex_st_addr;
