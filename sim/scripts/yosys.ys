@@ -1,0 +1,3 @@
+
+tcl ./sim/scripts/read_rtl.tcl
+prep -top RISC_V

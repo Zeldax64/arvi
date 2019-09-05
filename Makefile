@@ -26,6 +26,9 @@ all: $(SOURCES) $(HEADERS)
 	$(VL) $(VLFLAGS) $(SOURCES) $(VL_SRCS) $(TOP_PARAMETERS) -D__ARVI_PERFORMANCE_ANALYSIS
 	make -j -C obj_dir -f V$(TOP_MODULE).mk V$(TOP_MODULE) 
 
+yosys: $(SOURCES) $(HEADERS)
+	yosys ./sim/scripts/yosys.ys
+
 .PHONY: clean help regression-tests benchmark performance synthesis
 
 JUNK := $(call rfind, ./sim/,*.vcd)
