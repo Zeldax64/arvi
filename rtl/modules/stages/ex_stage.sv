@@ -7,9 +7,8 @@
 module ex_stage (
 	input [`XLEN-1:0] i_rs1,
 	input [`XLEN-1:0] i_rs2,
-
+	input [`XLEN-1:0] i_imm,
 	// ALU CONTROL
-	input [2:0] i_aluop,
 	input [2:0] i_f3,
 	input [6:0] i_f7,
 
@@ -25,23 +24,92 @@ module ex_stage (
 	`endif
 `endif
 
+    input i_branch,
+    input i_memread,
+    input i_memwrite,
+    input i_memtoreg,
+    input [2:0] i_alu_op,
+    input [1:0] i_alu_srca,
+    input i_alu_srcb,
+    input i_regwrite,
+    input [1:0] i_jump,
+    input i_pc_plus4,
+    input i_csr_en,
+    input i_ex,
+
+`ifdef __ATOMIC
+	input i_atomic,
+	output logic o_atomic,
+`endif
+`ifdef __RV32_M
+	input i_m_en,
+`endif
+	
+	input [`XLEN-1:0] i_pc,
+
+	// Input Main Control signals
+    input i_branch,
+    input i_memread,
+    input i_memwrite,
+    input i_memtoreg,
+    input [2:0] i_alu_op,
+    input [1:0] i_alu_srca,
+    input i_alu_srcb,
+    input i_regwrite,
+    input [1:0] i_jump,
+    input i_pc_plus4,
+    input i_csr_en,
+    input i_ex,
+
+`ifdef __ATOMIC
+	input i_atomic,
+`endif
+`ifdef __RV32_M
+	input i_m_en,
+`endif
+	
+	// Output Main Control signals
+    output logic o_branch,
+    output logic o_memread,
+    output logic o_memwrite,
+    output logic o_memtoreg,
+    output logic o_regwrite,
+    output logic [1:0] o_jump,
+    output logic o_pc_plus4,
+    output logic o_csr_en,
+    output logic o_ex,
+
+`ifdef __ATOMIC
+	output logic o_atomic,
+`endif
+
+	output logic [`XLEN-1:0] o_pc,
+	output logic [`XLEN-1:0] o_pc_jump,
 	output o_stall
 	);
 
-	wire [3:0] alu_control_lines;
-	wire [`XLEN-1:0] alu_res;
+	logic [3:0] alu_control_lines;
+	logic [`XLEN-1:0] alu_res;
 
 	alu_control alu_control (
 		.i_Funct7          (i_f7),
 		.i_Funct3          (i_f3),
-		.i_ALUOp           (i_aluop),
+		.i_ALUOp           (i_alu_op),
 		.o_ALUControlLines (alu_control_lines)
 	);
 
+	// ALU input A Mux
+	logic [`XLEN-1:0] A, B;
+	assign A = i_alu_srca[1] ? 0  :
+			  (i_alu_srca[0] ? i_pc : i_rs1);
+
+	// ALU input B Mux
+	assign B = i_alu_srcb ? i_imm : i_rs2;
+
 	alu alu (
 		.i_op (alu_control_lines),
-		.i_Ra (i_rs1),
-		.i_Rb (i_rs2),
+		.i_Ra (A),
+		.i_Rb (B),
 		.o_Z  (o_Z),
 		.o_Rc (alu_res)
 	);
@@ -96,5 +164,26 @@ module ex_stage (
 	assign o_res = alu_res;
 	assign o_stall = 0;
 `endif
+
+
+	/*----- Forwarding Signals -----*/
+	// Main Control
+    assign o_branch   = i_branch;
+    assign o_memread  = i_memread;
+    assign o_memwrite = i_memwrite;
+    assign o_memtoreg = i_memtoreg;
+    assign o_regwrite = i_regwrite;
+    assign o_jump     = i_jump;
+    assign o_pc_plus4 = i_pc_plus4;
+    assign o_csr_en   = i_csr_en;
+    assign o_ex       = i_ex;
+
+`ifdef __ATOMIC
+	assign i_atomic   = i_atomic;
+	assign o_atomic   = i_atomic;
+`endif
+
+	assign o_pc       = i_pc;
+	assign o_pc_jump  = i_pc + $signed(i_imm<<1); // TODO: Check this for Jal and Branch
 
 endmodule

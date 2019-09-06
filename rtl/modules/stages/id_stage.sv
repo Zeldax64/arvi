@@ -3,7 +3,7 @@
 */
 `include "arvi_defines.svh"
 
-module id_stage(
+module id_stage (
 	input i_clk,
 	input [31:0] i_inst,
 	input i_stall,
@@ -36,7 +36,6 @@ module id_stage(
     // Writeback
 	input i_wr_en,
 	input [`XLEN-1:0] i_wr_data
-	
 	);
 
 	// Main Control

@@ -70,6 +70,9 @@ module datapath_sc
 	);
 
 	logic [`XLEN-1:0] PC;
+	/* verilator lint_off UNUSED */
+	logic [`XLEN-1:0] ex_pc, ex_pc_jump;
+	/* verilator lint_on UNUSED */
 	logic [`XLEN-1:0] PC_next;
 
 	// Instruction wires renaming
@@ -84,9 +87,9 @@ module datapath_sc
 	wire MC_MemRead;
 	wire MC_MemWrite;
 	wire MC_MemtoReg;
-	wire [2:0] MC_ALUOp;
-	wire [1:0] MC_ALUSrcA;
-	wire MC_ALUSrcB;
+//	wire [2:0] MC_ALUOp;
+//	wire [1:0] MC_ALUSrcA;
+//	wire MC_ALUSrcB;
 	wire MC_RegWrite;
 	wire [1:0] MC_Jump;
 	wire MC_PCplus4;
@@ -95,6 +98,31 @@ module datapath_sc
 `ifdef __RV32_M
 	wire MC_ALUM_en;
 `endif
+`ifdef __ATOMIC
+	logic MC_atomic;
+`endif
+
+	logic id_MC_Branch;
+	logic id_MC_MemRead;
+	logic id_MC_MemWrite;
+	logic id_MC_MemtoReg;
+	logic [2:0] id_MC_ALUOp;
+	logic [1:0] id_MC_ALUSrcA;
+	logic id_MC_ALUSrcB;
+	logic id_MC_RegWrite;
+	logic [1:0] id_MC_Jump;
+	logic id_MC_PCplus4;
+	logic id_MC_CSR_en;
+	logic id_MC_Ex;
+`ifdef __RV32_M
+	logic id_MC_ALUM_en;
+`endif
+`ifdef __ATOMIC
+	logic id_MC_atomic;
+`endif
+
+
+
 	// REGISTER_FILE
 	wire [`XLEN-1:0] i_Wd;
 	wire [`XLEN-1:0] Rd1;
@@ -104,8 +132,6 @@ module datapath_sc
 	wire [`XLEN-1:0] Imm;
 
 	// ALU
-	wire [`XLEN-1:0] A;
-	wire [`XLEN-1:0] B;
 	wire [`XLEN-1:0] Alu_Res;
 
 	// Flag
@@ -198,23 +224,23 @@ module datapath_sc
 			// Immediate generator
 			.o_imm      (Imm),
 			// Main Control
-			.o_branch   (MC_Branch),
-			.o_memread  (MC_MemRead),
-			.o_memwrite (MC_MemWrite),
-			.o_memtoreg (MC_MemtoReg),
-			.o_alu_op   (MC_ALUOp),
-			.o_alu_srca (MC_ALUSrcA),
-			.o_alu_srcb (MC_ALUSrcB),
-			.o_regwrite (MC_RegWrite),
-			.o_jump     (MC_Jump),
-			.o_pc_plus4 (MC_PCplus4),
-			.o_csr_en   (MC_CSR_en),
-			.o_ex       (MC_Ex),
+			.o_branch   (id_MC_Branch),
+			.o_memread  (id_MC_MemRead),
+			.o_memwrite (id_MC_MemWrite),
+			.o_memtoreg (id_MC_MemtoReg),
+			.o_alu_op   (id_MC_ALUOp),
+			.o_alu_srca (id_MC_ALUSrcA),
+			.o_alu_srcb (id_MC_ALUSrcB),
+			.o_regwrite (id_MC_RegWrite),
+			.o_jump     (id_MC_Jump),
+			.o_pc_plus4 (id_MC_PCplus4),
+			.o_csr_en   (id_MC_CSR_en),
+			.o_ex       (id_MC_Ex),
 `ifdef __ATOMIC
-			.o_atomic   (o_MEM_atomic),
+			.o_atomic   (id_MC_atomic),
 `endif
 `ifdef __RV32_M
-			.o_m_en     (MC_ALUM_en),
+			.o_m_en     (id_MC_ALUM_en),
 `endif
 
 			// Writeback
@@ -225,13 +251,14 @@ module datapath_sc
 	// --- Execute Stage --- //
 	ex_stage ex_stage
 		(
-			.i_rs1   (A),
-			.i_rs2   (B),
-			.i_aluop (MC_ALUOp),
+			.i_rs1   (Rd1),
+			.i_rs2   (Rd2),
+			.i_imm   (Imm),
 			.i_f3    (f3),
 			.i_f7    (f7),
 			.o_res   (Alu_Res),
 			.o_Z     (Z),
+			.i_pc 	 (PC),
 `ifdef __RV32_M
 			.i_clk   (i_clk),
 			.i_rst   (i_rst),
@@ -246,7 +273,46 @@ module datapath_sc
 			.o_rs2   (o_EX_rs2),
 			.o_f3    (o_EX_f3),
 `endif
-			.o_stall (EX_stall)
+
+			.i_branch	(id_MC_Branch),
+			.i_memread	(id_MC_MemRead),
+			.i_memwrite	(id_MC_MemWrite),
+			.i_memtoreg	(id_MC_MemtoReg),
+			.i_alu_op	(id_MC_ALUOp),
+			.i_alu_srca	(id_MC_ALUSrcA),
+			.i_alu_srcb	(id_MC_ALUSrcB),
+			.i_regwrite	(id_MC_RegWrite),
+			.i_jump		(id_MC_Jump),
+			.i_pc_plus4	(id_MC_PCplus4),
+			.i_csr_en	(id_MC_CSR_en),
+			.i_ex		(id_MC_Ex),
+
+`ifdef __ATOMIC
+			.i_atomic	(id_MC_atomic),
+`endif
+`ifdef __RV32_M
+			.i_m_en		(id_MC_ALUM_en),
+`endif
+			
+	// Output Main Control signals
+			.o_branch	(MC_Branch),
+			.o_memread	(MC_MemRead),
+			.o_memwrite	(MC_MemWrite),
+			.o_memtoreg	(MC_MemtoReg),
+			.o_regwrite	(MC_RegWrite),
+			.o_jump		(MC_Jump),
+			.o_pc_plus4	(MC_PCplus4),
+			.o_csr_en	(MC_CSR_en),
+			.o_ex		(MC_Ex),
+
+`ifdef __ATOMIC
+			.o_atomic   (o_MEM_atomic),
+`endif
+/* verilator lint_off UNUSED */
+			.o_pc       (ex_pc),
+			.o_pc_jump 	(ex_pc_jump),
+/* verilator lint_on UNUSED */
+			.o_stall 	(EX_stall)
 		);
 
 	branch_control branch_control (
@@ -340,13 +406,6 @@ module datapath_sc
 			end		
 		end
 	end
-
-	// ALU input A Mux
-	assign A = MC_ALUSrcA[1] ? 0  :
-			  (MC_ALUSrcA[0] ? PC : Rd1);
-
-	// ALU input B Mux
-	assign B = MC_ALUSrcB ? Imm : Rd2;
 
 	// Write Back Mux
 	assign i_Wd = MC_PCplus4 ? PC+4 :

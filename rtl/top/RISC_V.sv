@@ -95,20 +95,20 @@ module RISC_V_
 
 	bus cpu_bus
 		(
-			.i_clk           (i_clk),
-			.i_rst           (i_rst),
+			.i_clk          (i_clk),
+			.i_rst          (i_rst),
 
 			// Instruction Memory
-			.i_IM_data_req   (IM_data_req),
-			.i_IM_addr       (IM_addr),
-			.o_IM_mem_ready  (IM_mem_ready),
-			.o_IM_Instr      (IM_instr),
+			.i_IM_data_req  (IM_data_req),
+			.i_IM_addr      (IM_addr),
+			.o_IM_mem_ready (IM_mem_ready),
+			.o_IM_Instr     (IM_instr),
 			
 			// Data Memory
-			.dmem          (DM_to_mem.slave),
+			.dmem          	(DM_to_mem.slave),
 			
 			// Bus signals
-			.bus_m           (bus_m.master)
+			.bus_m          (bus_m.master)
 		);
 
 	assign bus_m.ack = i_ack ;
