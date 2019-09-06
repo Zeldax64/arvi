@@ -50,7 +50,7 @@ module RISC_V_
 	assign o_atomic = MEM_atomic;
 `endif
 	
-	dmem_if DM_to_mem;
+	dmem_if DM_to_mem();
 	hart #(
 			.PC_RESET(PC_RESET),
 			.HART(HART_ID),
@@ -66,7 +66,7 @@ module RISC_V_
 		.o_IC_DataReq (IM_data_req),
 
 		// Data Memory connections
-		.DM_to_mem    (DM_to_mem),
+		.DM_to_mem    (DM_to_mem.master),
 
 `ifdef __ATOMIC
 		.o_DM_f7        (MEM_operation),
@@ -90,32 +90,9 @@ module RISC_V_
 		// Interrupt connections
 		.i_tip(1'b0)
 	);
-		/*
-	logic i_ack;
-	logic [31:0] i_rd_data; 	
-	logic o_bus_en; 			
-	logic o_wr_en; 			
-	logic [31:0] o_wr_data;	
-	logic [31:0] o_addr; 		
-	logic [3:0]  o_byte_en;
-*/
-	bus_if bus_m;
-	/*
-	bus_if bus_m (
-		.ack (i_ack),
-		.rd_data(i_rd_data),
-		.bus_en(o_bus_en),
-		.wr_en(o_wr_en),
-		.wr_data  (o_wr_data),
-		.addr(o_addr),
-		.byte_en(o_byte_en)
-`ifdef __ATOMIC
-		,
-		.operation(o_operation),
-		.atomic(o_atomic)
-`endif
-		);
-	*/
+
+	bus_if bus_m();
+
 	bus cpu_bus
 		(
 			.i_clk           (i_clk),
@@ -128,21 +105,12 @@ module RISC_V_
 			.o_IM_Instr      (IM_instr),
 			
 			// Data Memory
-			.dmem          (DM_to_mem),
+			.dmem          (DM_to_mem.slave),
 			
 			// Bus signals
-			.bus_m           (bus_m)
+			.bus_m           (bus_m.master)
 		);
 
-	/*
-	assign bus_m.ack = i_ack ;
-	assign bus_m.rd_data = i_rd_data;
-	assign bus_m.bus_en = o_bus_en;
-	assign bus_m.wr_en = o_wr_en;
-	assign bus_m.wr_data = o_wr_data;
-	assign bus_m.addr = o_addr;
-	assign bus_m.byte_en = o_byte_en;
-	*/
 	assign bus_m.ack = i_ack ;
 	assign bus_m.rd_data = i_rd_data;
 	assign o_bus_en = bus_m.bus_en;
