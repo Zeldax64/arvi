@@ -183,52 +183,44 @@ module datapath_sc
 		.o_Stall    (IC_stall)
 	);
 
-	// --- Decode Stage --- //
-	// Main Control
-	main_control main_control
-	(
-		.o_Branch   (MC_Branch),
-		.o_MemRead  (MC_MemRead),
-		.o_MemWrite (MC_MemWrite),
-		.o_MemToReg (MC_MemtoReg),
-		.o_ALUOp    (MC_ALUOp),
-		.o_ALUSrcA  (MC_ALUSrcA),
-		.o_ALUSrcB  (MC_ALUSrcB),
-		.o_RegWrite (MC_RegWrite),
-		.o_Jump     (MC_Jump),
-		.o_PCplus4  (MC_PCplus4),
-		.o_CSR_en  	(MC_CSR_en),
-		.o_Ex 	    (MC_Ex),
+	// --- Instruction Decode Stage --- //
+	wire wr_to_rf = MC_RegWrite && !EX_stall && !CSR_ex && !MEM_stall;
+	
+	id_stage id_stage
+		(
+			.i_clk      (i_clk),
+			.i_inst     (instr),
+			.i_stall    (IC_stall),
 
+			// Register File
+			.o_rd1      (Rd1),
+			.o_rd2      (Rd2),
+			// Immediate generator
+			.o_imm      (Imm),
+			// Main Control
+			.o_branch   (MC_Branch),
+			.o_memread  (MC_MemRead),
+			.o_memwrite (MC_MemWrite),
+			.o_memtoreg (MC_MemtoReg),
+			.o_alu_op   (MC_ALUOp),
+			.o_alu_srca (MC_ALUSrcA),
+			.o_alu_srcb (MC_ALUSrcB),
+			.o_regwrite (MC_RegWrite),
+			.o_jump     (MC_Jump),
+			.o_pc_plus4 (MC_PCplus4),
+			.o_csr_en   (MC_CSR_en),
+			.o_ex       (MC_Ex),
 `ifdef __ATOMIC
-		.o_atomic  (o_MEM_atomic),
+			.o_atomic   (o_MEM_atomic),
 `endif
 `ifdef __RV32_M
-		.o_ALUM_en (MC_ALUM_en),
+			.o_m_en     (MC_ALUM_en),
 `endif
 
-		.i_Instr   (instr),
-		.i_Stall   (IC_stall)
-
-	);
-
-	wire wr_to_rf = MC_RegWrite && !EX_stall && !CSR_ex && !MEM_stall;
-	register_file reg_file (
-    	.o_Rd1(Rd1),
-    	.o_Rd2(Rd2),
-    	.i_Rnum1(instr[19:15]),
-    	.i_Rnum2(instr[24:20]),
-    	.i_Wen(wr_to_rf),
-    	.i_Wnum(instr[11:7]),
-    	.i_Wd(i_Wd),
-    	.i_clk(i_clk)
-    );
-
-	imm_gen  imm_gen (
-		.i_Instr(instr),
-		.o_Ext(Imm)
-	);
-
+			// Writeback
+			.i_wr_en    (wr_to_rf),
+			.i_wr_data  (i_Wd)
+		);
 
 	// --- Execute Stage --- //
 	ex ex_stage
