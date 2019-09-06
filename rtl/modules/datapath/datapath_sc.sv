@@ -223,7 +223,7 @@ module datapath_sc
 		);
 
 	// --- Execute Stage --- //
-	ex ex_stage
+	ex_stage ex_stage
 		(
 			.i_rs1   (A),
 			.i_rs2   (B),

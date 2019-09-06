@@ -1,12 +1,10 @@
 /*
-	This file represents the execution stage of processor's datapath.
+	This file implements the execution stage of processor's datapath.
 */
-
-`timescale 1ns / 1ps
 
 `include "arvi_defines.svh"
 
-module ex(
+module ex_stage (
 	input [`XLEN-1:0] i_rs1,
 	input [`XLEN-1:0] i_rs2,
 
