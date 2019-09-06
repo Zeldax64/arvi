@@ -424,10 +424,10 @@ module datapath_sc
 		rvfi_mem_rdata <= 0; 
 		rvfi_mem_wdata <= 0; 
 
-		if(o_DM_Wen || o_DM_MemRead) begin
-			rvfi_mem_addr  <= o_DM_Addr; // 
-			rvfi_mem_rdata <= i_DM_ReadData;
-			rvfi_mem_wdata <= o_DM_Wd;
+		if(DM_to_mem.DM_Wen || DM_to_mem.DM_MemRead) begin
+			rvfi_mem_addr  <= DM_to_mem.DM_Addr; // 
+			rvfi_mem_rdata <= DM_to_mem.DM_ReadData;
+			rvfi_mem_wdata <= DM_to_mem.DM_Wd;
 			
 			case(instr[13:12]) // Case f3
 				2'b00 : begin
@@ -446,10 +446,10 @@ module datapath_sc
 				default: mask = 4'b0000;
 			endcase
 
-			if(o_DM_MemRead) begin
+			if(DM_to_mem.DM_MemRead) begin
 				rvfi_mem_rmask <= mask;
 			end
-			if(o_DM_Wen) begin
+			if(DM_to_mem.DM_Wen) begin
 				rvfi_mem_wmask <= mask;
 			end
 
