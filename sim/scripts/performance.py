@@ -87,7 +87,7 @@ def arg_parse():
 	return reports
 
 def main():
-	global entries, prog, entries
+	global entries, prog, cycles
 	df = None
 	report_files = arg_parse()
 	for report in report_files:
