@@ -84,6 +84,8 @@ module ex_stage (
 	output logic [31:0] o_inst,
 	output logic [`XLEN-1:0] o_pc,
 	output logic [`XLEN-1:0] o_pc_jump,
+	output logic [`XLEN-1:0] o_wr_data,
+
 	output o_stall
 	);
 
@@ -188,5 +190,6 @@ module ex_stage (
 	assign o_inst     = i_inst;
 	assign o_pc       = i_pc;
 	assign o_pc_jump  = i_pc + $signed(i_imm<<1);
+	assign o_wr_data  = i_rs2;
 
 endmodule

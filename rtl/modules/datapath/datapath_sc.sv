@@ -254,6 +254,7 @@ module datapath_sc
 		);
 
 	// --- Execute Stage --- //
+	logic [`XLEN-1:0] ex_wr_data;
 	ex_stage ex_stage
 		(
 			.i_rs1   (Rd1),
@@ -319,6 +320,8 @@ module datapath_sc
 			.o_pc_jump 	(ex_pc_jump),
 			.o_inst     (ex_inst),
 /* verilator lint_on UNUSED */
+			.o_wr_data  (ex_wr_data),
+
 			.o_stall 	(EX_stall)
 		);
 
@@ -332,11 +335,12 @@ module datapath_sc
 
 	assign DM_Addr = Alu_Res;
 
+/*
 	d_mem d_mem
 		(
 			.i_clk           (i_clk),
 			.i_rst           (i_rst),
-			.i_wr_data       (Rd2),
+			.i_wr_data       (ex_wr_data),
 			.i_addr          (DM_Addr),
 			.i_f3            (f3),
 			.i_wr_en         (MC_MemWrite),
@@ -348,6 +352,24 @@ module datapath_sc
 
 			// CPU <-> Memory
 			.to_mem   		 (DM_to_mem)
+		);
+*/
+		mem_stage inst_mem_stage
+		(
+			.i_clk       (i_clk),
+			.i_rst       (i_rst),
+
+			.i_inst      (ex_inst),
+			.i_addr      (DM_Addr),
+			.i_wr_data   (ex_wr_data),
+			.MC_MemWrite (MC_MemWrite),
+			.MC_MemRead  (MC_MemRead),
+			.o_rd        (DM_ReadData),
+			.to_mem      (DM_to_mem),
+
+			.ex_ld_addr  (ex_ld_addr),
+			.ex_st_addr  (ex_st_addr),
+			.o_stall     (DM_stall)
 		);
 
 
