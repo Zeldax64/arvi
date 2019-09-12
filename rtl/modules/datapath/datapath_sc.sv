@@ -71,7 +71,7 @@ module datapath_sc
 
 	logic [`XLEN-1:0] PC;
 	/* verilator lint_off UNUSED */
-	logic [`XLEN-1:0] id_pc, ex_pc, ex_pc_jump;
+	logic [`XLEN-1:0] id_pc, ex_pc, ex_pc_jump, mem_pc;
 	/* verilator lint_on UNUSED */
 	logic [`XLEN-1:0] PC_next;
 
@@ -79,9 +79,8 @@ module datapath_sc
 	//wire [`XLEN-1:0] instr = i_IM_Instr;
 	/* verilator lint_off UNUSED */
 	wire [`XLEN-1:0] instr, id_inst, ex_inst;
-	/* verilator lint_on UNUSED */
-	//wire [6:0] opcode = instr[6:0];
 	wire [2:0] f3 = instr[14:12];
+	/* verilator lint_on UNUSED */
 //	wire [6:0] f7 = instr[31:25];
 
 	// Main Control signals
@@ -140,7 +139,7 @@ module datapath_sc
 	wire Z;
 
 	// BRANCH_CONTROL
-	wire DoBranch;
+//	wire DoBranch;
 
 	// DATA MEMORY
 	wire [`XLEN-1:0] DM_Addr;
@@ -178,7 +177,7 @@ module datapath_sc
 	assign MEM_stall = DM_stall;
 
 	// Possible PC's values
-	reg[`XLEN-1:0] PC_jump;
+//	reg[`XLEN-1:0] PC_jump;
 
 	// Assigning PC
 	always_ff@(posedge i_clk) begin
@@ -325,57 +324,37 @@ module datapath_sc
 			.o_stall 	(EX_stall)
 		);
 
-	branch_control branch_control (
-		.i_Branch   (MC_Branch),
-		.i_Z        (Z),
-		.i_Res      (Alu_Res[0]),
-		.i_f3       (f3),
-		.o_DoBranch (DoBranch)
-	);
-
 	assign DM_Addr = Alu_Res;
 
-/*
-	d_mem d_mem
-		(
-			.i_clk           (i_clk),
-			.i_rst           (i_rst),
-			.i_wr_data       (ex_wr_data),
-			.i_addr          (DM_Addr),
-			.i_f3            (f3),
-			.i_wr_en         (MC_MemWrite),
-			.i_rd_en         (MC_MemRead),
-			.o_Rd            (DM_ReadData),
-			.o_stall       	 (DM_stall),
-			.o_ex_ld       	 (ex_ld_addr),
-			.o_ex_st       	 (ex_st_addr),
+	mem_stage inst_mem_stage
+	(
+		.i_clk       (i_clk),
+		.i_rst       (i_rst),
 
-			// CPU <-> Memory
-			.to_mem   		 (DM_to_mem)
-		);
-*/
-		mem_stage inst_mem_stage
-		(
-			.i_clk       (i_clk),
-			.i_rst       (i_rst),
+		.i_inst      (ex_inst),
+		.i_alu_res   (Alu_Res),
+		.i_wr_data   (ex_wr_data),
+		.MC_MemWrite (MC_MemWrite),
+		.MC_MemRead  (MC_MemRead),
+		.o_rd        (DM_ReadData),
+		.to_mem      (DM_to_mem),
 
-			.i_inst      (ex_inst),
-			.i_addr      (DM_Addr),
-			.i_wr_data   (ex_wr_data),
-			.MC_MemWrite (MC_MemWrite),
-			.MC_MemRead  (MC_MemRead),
-			.o_rd        (DM_ReadData),
-			.to_mem      (DM_to_mem),
+		.ex_ld_addr  (ex_ld_addr),
+		.ex_st_addr  (ex_st_addr),
 
-			.ex_ld_addr  (ex_ld_addr),
-			.ex_st_addr  (ex_st_addr),
-			.o_stall     (DM_stall)
-		);
+		.i_branch    (MC_Branch),
+		.i_z         (Z),
 
+		.i_jump      (MC_Jump),
+		.i_pc        (ex_pc),
+		.i_pc_jump   (ex_pc_jump),
+		.o_pc        (mem_pc),
 
+		.o_stall     (DM_stall)
+	);
 
 	assign CSR_Wd = (f3[2] == 1'b1) ? Imm : Rd1;
-	assign badaddr = (ex_ld_addr || ex_st_addr) ? DM_Addr : PC_jump;
+	assign badaddr = (ex_ld_addr || ex_st_addr) ? DM_Addr : mem_pc;
 	
 	// CSR
 	csr #(.HART_ID(HART)
@@ -417,24 +396,11 @@ module datapath_sc
 			PC_next = CSR_epc;
 		end
 		else
-			PC_next = PC_jump;
+			PC_next = mem_pc;
 	end
 	
 	// Calculate PC without CSRs interference
-	assign ex_inst_addr = |PC_jump[1:0];
-	always_comb begin
-		if(MC_Jump == 2'b10) begin // JALR
-				PC_jump = Alu_Res & 32'hFFFF_FFFE; // Ignoring LSB
-		end
-		else begin
-			if(MC_Jump == 2'b01 || DoBranch) begin // JAL
-			 	PC_jump = PC + $signed(Imm<<1);
-			end
-			else begin // PC increment
-				PC_jump = PC + 4;
-			end		
-		end
-	end
+	assign ex_inst_addr = |mem_pc[1:0];
 
 	// Write Back Mux
 	assign i_Wd = MC_PCplus4 ? PC+4 :
