@@ -8,12 +8,10 @@ module ex_stage (
 	input [`XLEN-1:0] i_rs1,
 	input [`XLEN-1:0] i_rs2,
 	input [`XLEN-1:0] i_imm,
-	// ALU CONTROL
-	input [2:0] i_f3,
-	input [6:0] i_f7,
+	input [31:0] i_inst,
 
 	output [`XLEN-1:0] o_res,
-	output o_Z,
+	output o_z,
 
 `ifdef __RV32_M
 	input i_clk,
@@ -83,6 +81,7 @@ module ex_stage (
 	output logic o_atomic,
 `endif
 
+	output logic [31:0] o_inst,
 	output logic [`XLEN-1:0] o_pc,
 	output logic [`XLEN-1:0] o_pc_jump,
 	output o_stall
@@ -92,11 +91,14 @@ module ex_stage (
 	logic [`XLEN-1:0] alu_res;
 
 	alu_control alu_control (
-		.i_Funct7          (i_f7),
-		.i_Funct3          (i_f3),
+		.i_Funct7          (f7),
+		.i_Funct3          (f3),
 		.i_ALUOp           (i_alu_op),
 		.o_ALUControlLines (alu_control_lines)
 	);
+
+	logic [2:0] f3 = i_inst[14:12];
+	logic [6:0] f7 = i_inst[31:25];
 
 	// ALU input A Mux
 	logic [`XLEN-1:0] A, B;
@@ -110,7 +112,7 @@ module ex_stage (
 		.i_op (alu_control_lines),
 		.i_Ra (A),
 		.i_Rb (B),
-		.o_Z  (o_Z),
+		.o_Z  (o_z),
 		.o_Rc (alu_res)
 	);
 
@@ -126,7 +128,7 @@ module ex_stage (
 				.i_en    (i_m_en),
 				.i_rs1   (i_rs1),
 				.i_rs2   (i_rs2),
-				.i_f3    (i_f3),
+				.i_f3    (f3),
 				.o_res   (rv_m_res),
 				.o_stall (o_stall)
 			);
@@ -143,7 +145,7 @@ module ex_stage (
 				if(i_m_en) begin
 					o_rs1 <= i_rs1;
 					o_rs2 <= i_rs2;
-					o_f3  <= i_f3;
+					o_f3  <= f3;
 					en_delayed <= i_m_en; 
 				end
 				enable <= !en_delayed && i_m_en; // Create a 0->1 pulse
@@ -183,7 +185,8 @@ module ex_stage (
 	assign o_atomic   = i_atomic;
 `endif
 
+	assign o_inst     = i_inst;
 	assign o_pc       = i_pc;
-	assign o_pc_jump  = i_pc + $signed(i_imm<<1); // TODO: Check this for Jal and Branch
+	assign o_pc_jump  = i_pc + $signed(i_imm<<1);
 
 endmodule

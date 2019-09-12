@@ -5,13 +5,13 @@
 
 module id_stage (
 	input i_clk,
+
 	input [31:0] i_inst,
 	input i_stall,
 
-	output [`XLEN-1:0] o_rd1,
-	output [`XLEN-1:0] o_rd2,
-	output [`XLEN-1:0] o_imm,
-
+	output logic [`XLEN-1:0] o_rd1,
+	output logic [`XLEN-1:0] o_rd2,
+	output logic [`XLEN-1:0] o_imm,
 	// Main Control
     output logic o_branch,
     output logic o_memread,
@@ -32,8 +32,14 @@ module id_stage (
 `ifdef __RV32_M
 	output logic o_m_en,
 `endif
+	
+	// Instruction
+	output logic [31:0] o_inst,
+	// Program Counter
+	input [`XLEN-1:0] i_pc,
+	output logic [`XLEN-1:0] o_pc,
 
-    // Writeback
+    // Writeback signals
 	input i_wr_en,
 	input [`XLEN-1:0] i_wr_data
 	);
@@ -82,6 +88,9 @@ module id_stage (
 		.o_Ext(o_imm)
 	);
 
+	//*----- Forwarding Signals -----*//
+	assign o_pc   = i_pc;
+	assign o_inst = i_inst;
 
 
 endmodule

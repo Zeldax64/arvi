@@ -71,16 +71,18 @@ module datapath_sc
 
 	logic [`XLEN-1:0] PC;
 	/* verilator lint_off UNUSED */
-	logic [`XLEN-1:0] ex_pc, ex_pc_jump;
+	logic [`XLEN-1:0] id_pc, ex_pc, ex_pc_jump;
 	/* verilator lint_on UNUSED */
 	logic [`XLEN-1:0] PC_next;
 
 	// Instruction wires renaming
 	//wire [`XLEN-1:0] instr = i_IM_Instr;
-	wire [`XLEN-1:0] instr;
+	/* verilator lint_off UNUSED */
+	wire [`XLEN-1:0] instr, id_inst, ex_inst;
+	/* verilator lint_on UNUSED */
 	//wire [6:0] opcode = instr[6:0];
 	wire [2:0] f3 = instr[14:12];
-	wire [6:0] f7 = instr[31:25];
+//	wire [6:0] f7 = instr[31:25];
 
 	// Main Control signals
 	wire MC_Branch;
@@ -242,7 +244,10 @@ module datapath_sc
 `ifdef __RV32_M
 			.o_m_en     (id_MC_ALUM_en),
 `endif
-
+			
+			.o_inst     (id_inst),
+			.i_pc      	(PC),
+			.o_pc       (id_pc),		
 			// Writeback
 			.i_wr_en    (wr_to_rf),
 			.i_wr_data  (i_Wd)
@@ -254,17 +259,18 @@ module datapath_sc
 			.i_rs1   (Rd1),
 			.i_rs2   (Rd2),
 			.i_imm   (Imm),
-			.i_f3    (f3),
-			.i_f7    (f7),
+			.i_inst  (id_inst),
 			.o_res   (Alu_Res),
-			.o_Z     (Z),
-			.i_pc 	 (PC),
+			.o_z     (Z),
+
+			.i_pc 	 (id_pc),
+
 `ifdef __RV32_M
 			.i_clk   (i_clk),
 			.i_rst   (i_rst),
 			.i_m_en  (MC_ALUM_en),
-
 `endif
+
 `ifdef __RV32_M_EXTERNAL
 			.i_res   (i_EX_res),
 			.i_ack   (i_EX_ack),
@@ -311,6 +317,7 @@ module datapath_sc
 /* verilator lint_off UNUSED */
 			.o_pc       (ex_pc),
 			.o_pc_jump 	(ex_pc_jump),
+			.o_inst     (ex_inst),
 /* verilator lint_on UNUSED */
 			.o_stall 	(EX_stall)
 		);
