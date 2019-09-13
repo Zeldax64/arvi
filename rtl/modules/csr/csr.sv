@@ -35,9 +35,12 @@ module csr(
 	parameter HART_ID = 0;
 
 	// Instruction slicing
-	wire [2:0] f3 = i_inst[14:12];
-	wire [11:0] addr = i_inst[31:20];
+	wire [2:0] f3; 
+	wire [11:0] addr; ;
 
+	assign f3 = i_inst[14:12];
+	assign addr = i_inst[31:20];
+	
 	// Machine Trap Setup
 	// mstatus
 	reg mie, mpie;
@@ -64,12 +67,16 @@ module csr(
 	wire interrupt, int_ti;
 
 	// Getting value to write according to instruction's f3
-	reg  [`XLEN-1:0] write_data;
+	logic [`XLEN-1:0] write_data;
+	logic [`XLEN-1:0] zimm;
+	logic [`XLEN-1:0] wr_data;
+	assign zimm = {{`XLEN-5{1'b0}}, i_inst[19:15]};
+	assign wr_data = f3[2] ? zimm : i_Wd;
 	always_comb begin
 		case(f3[1:0])
-			2'b01: write_data =  i_Wd;
-			2'b10: write_data =  i_Wd | o_Rd;
-			2'b11: write_data = ~i_Wd & o_Rd; 
+			2'b01: write_data =  wr_data;
+			2'b10: write_data =  wr_data | o_Rd;
+			2'b11: write_data = ~wr_data & o_Rd; 
 			default: write_data = 0;
 		endcase
 	end

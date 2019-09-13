@@ -353,7 +353,7 @@ module datapath_sc
 		.o_stall     (DM_stall)
 	);
 
-	assign CSR_Wd = (f3[2] == 1'b1) ? Imm : Rd1;
+	assign CSR_Wd = Rd1;
 	assign badaddr = (ex_ld_addr || ex_st_addr) ? DM_Addr : mem_pc;
 	
 	// CSR
