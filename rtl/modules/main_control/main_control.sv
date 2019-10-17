@@ -152,6 +152,7 @@ module main_control (
 				end
 				
 				`OP_SYSTEM_TYPE : begin
+					o_MemToReg = 1'b1;
 					o_ALUSrcA  = 2'b0;
 					o_ALUSrcB  = 1'b0;
 					o_RegWrite = 1;

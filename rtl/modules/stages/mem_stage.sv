@@ -41,6 +41,14 @@ module mem_stage (
 
     output logic o_exception,
 
+    // Control signals
+    input i_mc_memtoreg,
+    input i_mc_regwrite,
+    input i_mc_pcplus4,
+    output logic o_mc_memtoreg,
+    output logic o_mc_regwrite,
+    output logic o_mc_pcplus4,
+
 	output logic o_stall
 	);
 	
@@ -143,5 +151,10 @@ module mem_stage (
 		);
 
 	assign o_rd = i_csr_en ? csr_rd : dmem_rd;
+
+	// Passing control signals forward...
+    assign o_mc_memtoreg = i_mc_memtoreg;
+    assign o_mc_regwrite = i_mc_regwrite;
+    assign o_mc_pcplus4 = i_mc_pcplus4;	
 
 endmodule

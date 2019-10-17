@@ -86,23 +86,23 @@ module datapath_sc
 //	wire [6:0] f7 = instr[31:25];
 
 	// Main Control signals
-	wire MC_Branch;
-	wire MC_MemRead;
-	wire MC_MemWrite;
-	wire MC_MemtoReg;
+//	wire MC_Branch;
+//	wire MC_MemRead;
+//	wire MC_MemWrite;
+//	wire MC_MemtoReg;
 //	wire [2:0] MC_ALUOp;
 //	wire [1:0] MC_ALUSrcA;
 //	wire MC_ALUSrcB;
-	wire MC_RegWrite;
-	wire [1:0] MC_Jump;
-	wire MC_PCplus4;
-	wire MC_CSR_en;
-	wire MC_Ex;
+//	wire MC_RegWrite;
+//	wire [1:0] MC_Jump;
+//	wire MC_PCplus4;
+//	wire MC_CSR_en;
+//	wire MC_Ex;
 `ifdef __RV32_M
-	wire MC_ALUM_en;
+//	wire MC_ALUM_en;
 `endif
 `ifdef __ATOMIC
-	logic MC_atomic;
+//	logic MC_atomic;
 `endif
 
 	logic id_MC_Branch;
@@ -124,7 +124,21 @@ module datapath_sc
 	logic id_MC_atomic;
 `endif
 
-
+	// Main Control signals exiting Execution Stage
+	logic ex_MC_Branch;
+	logic ex_MC_MemRead;
+	logic ex_MC_MemWrite;
+	logic ex_MC_MemtoReg;
+	logic ex_MC_RegWrite;
+	logic [1:0] ex_MC_Jump;
+	logic ex_MC_PCplus4;
+	logic ex_MC_CSR_en;
+	logic ex_MC_Ex;	
+	
+	// Main Control signals exiting Memory Stage
+	logic mem_MC_MemtoReg;
+	logic mem_MC_RegWrite;
+	logic mem_MC_PCplus4;
 
 	// REGISTER_FILE
 	wire [`XLEN-1:0] i_Wd;
@@ -212,7 +226,7 @@ module datapath_sc
 	);
 
 	// --- Instruction Decode Stage --- //
-	wire wr_to_rf = MC_RegWrite && !EX_stall && !MEM_stall;
+	wire wr_to_rf = mem_MC_RegWrite && !EX_stall && !MEM_stall && !mem_exception;
 	
 	id_stage id_stage
 		(
@@ -302,15 +316,15 @@ module datapath_sc
 `endif
 			
 	// Output Main Control signals
-			.o_branch	(MC_Branch),
-			.o_memread	(MC_MemRead),
-			.o_memwrite	(MC_MemWrite),
-			.o_memtoreg	(MC_MemtoReg),
-			.o_regwrite	(MC_RegWrite),
-			.o_jump		(MC_Jump),
-			.o_pc_plus4	(MC_PCplus4),
-			.o_csr_en	(MC_CSR_en),
-			.o_ex		(MC_Ex),
+			.o_branch	(ex_MC_Branch),
+			.o_memread	(ex_MC_MemRead),
+			.o_memwrite	(ex_MC_MemWrite),
+			.o_memtoreg	(ex_MC_MemtoReg),
+			.o_regwrite	(ex_MC_RegWrite),
+			.o_jump		(ex_MC_Jump),
+			.o_pc_plus4	(ex_MC_PCplus4),
+			.o_csr_en	(ex_MC_CSR_en),
+			.o_ex		(ex_MC_Ex),
 
 `ifdef __ATOMIC
 			.o_atomic   (o_MEM_atomic),
@@ -329,7 +343,7 @@ module datapath_sc
 	logic mem_csr_eret;
 	logic [`XLEN-1:0] mem_csr_tvec, mem_csr_epc;
 	
-	mem_stage inst_mem_stage
+	mem_stage mem_stage
 	(
 		.i_clk       (i_clk),
 		.i_rst       (i_rst),
@@ -337,30 +351,39 @@ module datapath_sc
 		.i_inst      (ex_inst),
 		.i_alu_res   (Alu_Res),
 		.i_wr_data   (ex_wr_data),
-		.i_memwrite  (MC_MemWrite),
-		.i_memread   (MC_MemRead),
+		.i_memwrite  (ex_MC_MemWrite),
+		.i_memread   (ex_MC_MemRead),
 		.o_rd        (DM_ReadData),
 		.to_mem      (DM_to_mem),
 
 //		.ex_ld_addr  (ex_ld_addr),
 //		.ex_st_addr  (ex_st_addr),
 
-		.i_branch    (MC_Branch),
+		.i_branch    (ex_MC_Branch),
 		.i_z         (Z),
 
-		.i_jump      (MC_Jump),
+		.i_jump      (ex_MC_Jump),
 		.i_pc        (ex_pc),
 		.i_pc_jump   (ex_pc_jump),
 		.o_pc        (mem_pc),
 
 		// CSR signals
-		.i_csr_en  	 (MC_CSR_en),
+		.i_csr_en  	 (ex_MC_CSR_en),
 		.i_csr_wd  	 (Rd1),
-		.i_ecall   	 (MC_Ex),
+		.i_ecall   	 (ex_MC_Ex),
 		.o_csr_tvec  (mem_csr_tvec),
 		.o_csr_epc   (mem_csr_epc),
 		.o_csr_eret	 (mem_csr_eret),
 		.o_exception (mem_exception),
+
+		// Input control signals
+		.i_mc_memtoreg (ex_MC_MemtoReg),
+		.i_mc_regwrite (ex_MC_RegWrite),
+		.i_mc_pcplus4  (ex_MC_PCplus4),
+		// Control signals to next stage
+		.o_mc_memtoreg (mem_MC_MemtoReg),
+		.o_mc_regwrite (mem_MC_RegWrite),
+		.o_mc_pcplus4  (mem_MC_PCplus4),
 
 		.o_stall     (DM_stall)
 	);
@@ -422,8 +445,8 @@ module datapath_sc
 				  MC_MemtoReg ? DM_ReadData :
 				  MC_CSR_en ? CSR_Rd : Alu_Res;
 	*/
-	assign i_Wd = MC_PCplus4 ? PC+4 : 
-				  MC_MemtoReg ? DM_ReadData : Alu_Res;
+	assign i_Wd = mem_MC_PCplus4 ? PC+4 : 
+				  mem_MC_MemtoReg ? DM_ReadData : Alu_Res;
 
 `ifdef __ARVI_PERFORMANCE_ANALYSIS
 	// ***** Performance Profiler DPI ***** //
