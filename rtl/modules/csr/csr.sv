@@ -20,7 +20,6 @@ module csr(
 	output logic o_eret,
 	output logic o_ex,
 	output logic [`XLEN-1:0] o_tvec, // Trap-Vector Base Address Register.
-	output logic [`XLEN-1:0] o_cause,
 	output logic [`XLEN-1:0] o_epc, // Exception Program Counter.
 
 	// Exceptions
@@ -60,8 +59,7 @@ module csr(
 	wire mtip = i_Int_tip;
 
 	// Assigning output
-	assign o_cause = mcause;
-	assign o_tvec = mtvec;
+	assign o_tvec  = {mtvec[`XLEN-1:2], 2'b00};
 
 	wire exception;
 	wire interrupt, int_ti;

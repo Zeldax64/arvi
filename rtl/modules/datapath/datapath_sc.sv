@@ -38,7 +38,9 @@ module datapath_sc
 `endif
 
 	// Interrupt connnections
+/* verilator lint_off UNUSED */
 	input i_tip,
+/* verilator lint_on UNUSED */
 
 `ifdef RISCV_FORMAL
 	output logic [`RISCV_FORMAL_NRET                        - 1 : 0] rvfi_valid,      
@@ -142,7 +144,6 @@ module datapath_sc
 //	wire DoBranch;
 
 	// DATA MEMORY
-	wire [`XLEN-1:0] DM_Addr;
 	wire [`XLEN-1:0] DM_ReadData;
 
 `ifdef __ATOMIC
@@ -151,21 +152,21 @@ module datapath_sc
 
 
 	// CSRs
-	wire [`XLEN-1:0] CSR_Rd; // temporary
-	wire [`XLEN-1:0] CSR_epc;
-	/* verilator lint_off UNUSED */
-	wire [`XLEN-1:0] CSR_tvec; 
-	wire [`XLEN-1:0] CSR_cause;
-	/* verilator lint_on UNUSED */
-	wire CSR_eret;
-	wire CSR_ex;
-	wire [`XLEN-1:0] CSR_Wd;
-	wire [`XLEN-1:0] badaddr;
+//	wire [`XLEN-1:0] CSR_Rd; // temporary
+//	wire [`XLEN-1:0] CSR_epc;
+//	/* verilator lint_off UNUSED */
+//	wire [`XLEN-1:0] CSR_tvec; 
+//	wire [`XLEN-1:0] CSR_cause;
+//	/* verilator lint_on UNUSED */
+//	wire CSR_eret;
+//	wire CSR_ex;
+//	wire [`XLEN-1:0] CSR_Wd;
+//	wire [`XLEN-1:0] badaddr;
 
-	// Exceptions
-	wire ex_inst_addr;
-	wire ex_ld_addr;
-	wire ex_st_addr;
+//	// Exceptions
+//	wire ex_inst_addr;
+//	wire ex_ld_addr;
+//	wire ex_st_addr;
 
 	// Stalls
 	//wire IF_stall;
@@ -211,7 +212,7 @@ module datapath_sc
 	);
 
 	// --- Instruction Decode Stage --- //
-	wire wr_to_rf = MC_RegWrite && !EX_stall && !CSR_ex && !MEM_stall;
+	wire wr_to_rf = MC_RegWrite && !EX_stall && !MEM_stall;
 	
 	id_stage id_stage
 		(
@@ -324,8 +325,10 @@ module datapath_sc
 			.o_stall 	(EX_stall)
 		);
 
-	assign DM_Addr = Alu_Res;
-
+	logic mem_exception;
+	logic mem_csr_eret;
+	logic [`XLEN-1:0] mem_csr_tvec, mem_csr_epc;
+	
 	mem_stage inst_mem_stage
 	(
 		.i_clk       (i_clk),
@@ -334,13 +337,13 @@ module datapath_sc
 		.i_inst      (ex_inst),
 		.i_alu_res   (Alu_Res),
 		.i_wr_data   (ex_wr_data),
-		.MC_MemWrite (MC_MemWrite),
-		.MC_MemRead  (MC_MemRead),
+		.i_memwrite  (MC_MemWrite),
+		.i_memread   (MC_MemRead),
 		.o_rd        (DM_ReadData),
 		.to_mem      (DM_to_mem),
 
-		.ex_ld_addr  (ex_ld_addr),
-		.ex_st_addr  (ex_st_addr),
+//		.ex_ld_addr  (ex_ld_addr),
+//		.ex_st_addr  (ex_st_addr),
 
 		.i_branch    (MC_Branch),
 		.i_z         (Z),
@@ -350,12 +353,22 @@ module datapath_sc
 		.i_pc_jump   (ex_pc_jump),
 		.o_pc        (mem_pc),
 
+		// CSR signals
+		.i_csr_en  	 (MC_CSR_en),
+		.i_csr_wd  	 (Rd1),
+		.i_ecall   	 (MC_Ex),
+		.o_csr_tvec  (mem_csr_tvec),
+		.o_csr_epc   (mem_csr_epc),
+		.o_csr_eret	 (mem_csr_eret),
+		.o_exception (mem_exception),
+
 		.o_stall     (DM_stall)
 	);
 
-	assign CSR_Wd = Rd1;
-	assign badaddr = (ex_ld_addr || ex_st_addr) ? DM_Addr : mem_pc;
-	
+//	assign CSR_Wd = Rd1;
+//	assign badaddr = (ex_ld_addr || ex_st_addr) ? DM_Addr : mem_pc;
+
+/*	
 	// CSR
 	csr #(.HART_ID(HART)
 		) csr (
@@ -383,30 +396,34 @@ module datapath_sc
 		// Interrupts
 		.i_Int_tip (i_tip)
 	);
-	
+*/	
+
 	/*----- Datapath Muxes -----*/
 	// PC Mux - Chooses PC's next value
 	// TODO: this code and jump/branch signals must be improved
 	always_comb begin
-		if(CSR_ex) begin // Illegal instruction or MC_Ex(ECALL)
-			PC_next = {CSR_tvec[`XLEN-1:2], 2'b00};
+		if(mem_exception) begin // Illegal instruction or MC_Ex(ECALL)
+			PC_next = mem_csr_tvec;
 		end
 
-		else if(CSR_eret) begin // xRET instruction (only MRET implemented)
-			PC_next = CSR_epc;
+		else if(mem_csr_eret) begin // xRET instruction (only MRET implemented)
+			PC_next = mem_csr_epc;
 		end
 		else
 			PC_next = mem_pc;
 	end
 	
 	// Calculate PC without CSRs interference
-	assign ex_inst_addr = |mem_pc[1:0];
+	//assign ex_inst_addr = |mem_pc[1:0];
 
 	// Write Back Mux
+	/*
 	assign i_Wd = MC_PCplus4 ? PC+4 :
 				  MC_MemtoReg ? DM_ReadData :
 				  MC_CSR_en ? CSR_Rd : Alu_Res;
-
+	*/
+	assign i_Wd = MC_PCplus4 ? PC+4 : 
+				  MC_MemtoReg ? DM_ReadData : Alu_Res;
 
 `ifdef __ARVI_PERFORMANCE_ANALYSIS
 	// ***** Performance Profiler DPI ***** //
