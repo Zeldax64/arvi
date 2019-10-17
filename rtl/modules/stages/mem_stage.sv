@@ -1,12 +1,14 @@
 /*
-	This file implements the memory access stage of processor's datapath.
+	This file implements the memory access stage of ARVI's datapath.
 */
-
-// TODO: Cancel any reg write if a exception occurs!
 
 `include "arvi_defines.svh"
 
-module mem_stage (
+module mem_stage 
+	#(
+		parameter HART_ID = 0
+	)
+	(
 	input i_clk,
 	input i_rst,
 	input [31:0] i_inst,
@@ -61,7 +63,7 @@ module mem_stage (
 	
 	// CSR Signals
 	logic csr_ex, csr_eret; 
-	logic [`XLEN-1:0] csr_tvec, csr_epc; // Useless csr_cause
+	logic [`XLEN-1:0] csr_tvec, csr_epc; 
 	
 	// Exceptions
 	logic ex_inst_addr, ex_ld_addr, ex_st_addr;
@@ -82,7 +84,7 @@ module mem_stage (
 	assign ex_inst_addr = |pc_jump[1:0];
 
 	// CSR
-	csr #(.HART_ID(0) // TODO: Fix this and create parameter
+	csr #(.HART_ID(HART_ID) 
 		) csr (
 		.i_clk 			(i_clk),
 		.i_rst      	(i_rst),

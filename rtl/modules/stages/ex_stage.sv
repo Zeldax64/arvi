@@ -1,5 +1,5 @@
 /*
-	This file implements the execution stage of processor's datapath.
+	This file implements the execution stage of ARVI's datapath.
 */
 
 `include "arvi_defines.svh"
