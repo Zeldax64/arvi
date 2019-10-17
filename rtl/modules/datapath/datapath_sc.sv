@@ -15,14 +15,14 @@ module datapath_sc
 	(
 	// Instruction Memory connections
 	input  [`XLEN-1:0] i_IM_Instr,
-	input i_IC_MemReady,
+	input  i_IC_MemReady,
 	output o_IC_DataReq,
 	output [`XLEN-1:0] o_IM_Addr,
 
-	// Data Memory connections
+	// Data Memory interface
 	dmem_if.master DM_to_mem,
 
-`ifdef __ATOMIC // Atomic extension signal for atomic operations
+`ifdef __ATOMIC // Atomic extension signals for atomic operations
 	output o_MEM_atomic,
 	output [6:0] o_DM_f7,
 `endif
@@ -170,23 +170,23 @@ module datapath_sc
 //----- Instruction Fetch(IF) -----//
 /////////////////////////////////////
 	// Instruction Memory
-	i_cache #(.BLOCK_SIZE(1),
-			  .ENTRIES   (I_CACHE_ENTRIES)) 
+	i_cache #(.BLOCK_SIZE	(1),
+			  .ENTRIES   	(I_CACHE_ENTRIES)) 
 	i_cache 
 	(
-		.i_clk (i_clk),
-		.i_rst (i_rst),
+		.i_clk 			(i_clk),
+		.i_rst 			(i_rst),
 
 		// Memmory interface
-		.i_DataBlock (i_DataBlock),
-		.i_MemReady (i_IC_MemReady),
-		.o_DataReq  (o_IC_DataReq),
-		.o_MemAddr	(o_IM_Addr),
+		.i_DataBlock 	(i_DataBlock),
+		.i_MemReady 	(i_IC_MemReady),
+		.o_DataReq  	(o_IC_DataReq),
+		.o_MemAddr		(o_IM_Addr),
 
 		// CPU interface
-		.i_Addr     (PC),
-		.o_Data 	(if_inst),
-		.o_Stall    (IC_stall)
+		.i_Addr     	(PC),
+		.o_Data 		(if_inst),
+		.o_Stall    	(IC_stall)
 	);
 
 //////////////////////////////////////	
@@ -308,7 +308,8 @@ module datapath_sc
 //----- Memory(MEM) -----//
 ///////////////////////////
 
-	mem_stage mem_stage
+	mem_stage #(.HART_ID(HART))
+		mem_stage
 	(
 		.i_clk       (i_clk),
 		.i_rst       (i_rst),

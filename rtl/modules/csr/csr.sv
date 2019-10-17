@@ -6,7 +6,7 @@
 // TODO:
 // - Rework this file to achieve better synthesis results.
 // - I think it is possible to optimize exception handling in this file.
-// - Implement read only misa register to pass rv32im mcsr test.
+
 module csr(
 	input i_clk,
 	input i_rst, 
