@@ -111,8 +111,9 @@ module datapath_sc
 /////////////////////////////////////////
 //----- Execute Stage(EX) Signals -----//
 /////////////////////////////////////////
-	logic [`XLEN-1:0] ex_alures;
 	logic ex_z;
+	logic [`XLEN-1:0] ex_alures;
+	logic [`XLEN-1:0] ex_wr_data;
 
 	// Main Control signals exiting Execution Stage.
 	logic ex_MC_Branch;
@@ -126,7 +127,7 @@ module datapath_sc
 	logic ex_MC_Ex;	
 
 /////////////////////////////////////////
-//----- Memory Stage (EX) Signals -----//
+//----- Memory Stage (MEM) Signals -----//
 /////////////////////////////////////////
 	logic [`XLEN-1:0] mem_rddata;
 	logic mem_exception;
@@ -138,8 +139,11 @@ module datapath_sc
 	logic mem_MC_RegWrite;
 	logic mem_MC_PCplus4;
 
-	// REGISTER_FILE
-	wire [`XLEN-1:0] i_Wd;
+/////////////////////////////////////////
+//----- Write Back (WB) Signals -----//
+/////////////////////////////////////////
+	logic wb_rf_wr_en;
+	logic [`XLEN-1:0] wb_wrdata;
 
 
 `ifdef __ATOMIC
@@ -187,10 +191,7 @@ module datapath_sc
 
 //////////////////////////////////////	
 //----- Instruction Decode(ID) -----//
-//////////////////////////////////////
-
-	wire wr_to_rf = mem_MC_RegWrite && !EX_stall && !MEM_stall && !mem_exception;
-	
+//////////////////////////////////////	
 	id_stage id_stage
 		(
 			.i_clk      (i_clk),
@@ -223,8 +224,8 @@ module datapath_sc
 			.i_pc      	(PC),
 			.o_pc       (id_pc),	
 			// Writeback
-			.i_wr_en    (wr_to_rf),
-			.i_wr_data  (i_Wd),
+			.i_wr_en    (wb_rf_wr_en),
+			.i_wr_data  (wb_wrdata),
 
 			.i_stall    (IC_stall)
 		);
@@ -233,7 +234,6 @@ module datapath_sc
 //----- Execute(EX) -----//
 ///////////////////////////
 
-	logic [`XLEN-1:0] ex_wr_data;
 	ex_stage ex_stage
 		(
 			.i_rs1   (id_rd1),
@@ -350,13 +350,12 @@ module datapath_sc
 		.o_stall     (MEM_stall)
 	);
 
-///////////////////////////	
-//----- Write(WB) -----//
-///////////////////////////
+//////////////////////////////	
+//----- Write Back(WB) -----//
+//////////////////////////////
 
-	/*----- Datapath Muxes -----*/
+	/*----- Write Back Mux -----*/
 	// PC Mux - Chooses PC's next value
-	// TODO: this code and jump/branch signals must be improved
 	always_comb begin
 		if(mem_exception) begin // Illegal instruction or MC_Ex(ECALL)
 			PC_next = mem_csr_tvec;
@@ -369,8 +368,10 @@ module datapath_sc
 			PC_next = mem_pc;
 	end
 
-	assign i_Wd = mem_MC_PCplus4 ? PC+4 : 
+	assign wb_wrdata = mem_MC_PCplus4 ? PC+4 : 
 				  mem_MC_MemtoReg ? mem_rddata : ex_alures;
+
+	assign wb_rf_wr_en = mem_MC_RegWrite && !EX_stall && !MEM_stall && !mem_exception;
 
 
 `ifdef __ARVI_PERFORMANCE_ANALYSIS
@@ -425,8 +426,8 @@ module datapath_sc
 		rvfi_rs2_addr  <= if_inst[24:20];
 		rvfi_rs1_rdata <= id_rd1;
 		rvfi_rs2_rdata <= id_rd2;
-		rvfi_rd_addr   <= (if_inst[11:7] && wr_to_rf) ? if_inst[11:7] : 0;
-		rvfi_rd_wdata  <= (if_inst[11:7] && wr_to_rf) ? i_Wd : 0; // TBD
+		rvfi_rd_addr   <= (if_inst[11:7] && wb_rf_wr_en) ? if_inst[11:7] : 0;
+		rvfi_rd_wdata  <= (if_inst[11:7] && wb_rf_wr_en) ? wb_wrdata : 0; // TBD
 		rvfi_pc_rdata  <= PC;
 		rvfi_pc_wdata  <= PC_next;
 
