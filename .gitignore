@@ -1,0 +1,10 @@
+# Verilator generated directory
+obj_dir/ 
+
+# gtkwave related files
+*.vcd
+*.gtkw
+
+# Simulation outputs
+*.signature_output
+*.performance_report
