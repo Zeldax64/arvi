@@ -8,7 +8,6 @@ module ex_stage (
 	input [`XLEN-1:0] i_rs1,
 	input [`XLEN-1:0] i_rs2,
 	input [`XLEN-1:0] i_imm,
-	input [31:0] i_inst,
 
 	output [`XLEN-1:0] o_res,
 	output o_z,
@@ -20,32 +19,13 @@ module ex_stage (
 	`ifdef __RV32_M_EXTERNAL
 		`RV32_M_IF,
 	`endif
-`endif
+`endif	
 
-    input i_branch,
-    input i_memread,
-    input i_memwrite,
-    input i_memtoreg,
-    input [2:0] i_alu_op,
-    input [1:0] i_alu_srca,
-    input i_alu_srcb,
-    input i_regwrite,
-    input [1:0] i_jump,
-    input i_pc_plus4,
-    input i_csr_en,
-    input i_ex,
-
-`ifdef __ATOMIC
-	input i_atomic,
-	output logic o_atomic,
-`endif
-`ifdef __RV32_M
-	input i_m_en,
-`endif
-	
+	input [31:0] i_inst,
 	input [`XLEN-1:0] i_pc,
 
-	// Input Main Control signals
+//----- Main Control Signals -----//
+	// Input signals
     input i_branch,
     input i_memread,
     input i_memwrite,
@@ -66,7 +46,7 @@ module ex_stage (
 	input i_m_en,
 `endif
 	
-	// Output Main Control signals
+	// Output signals
     output logic o_branch,
     output logic o_memread,
     output logic o_memwrite,
@@ -80,6 +60,8 @@ module ex_stage (
 `ifdef __ATOMIC
 	output logic o_atomic,
 `endif
+
+//----- Forward signals -----//
 
 	output logic [31:0] o_inst,
 	output logic [`XLEN-1:0] o_pc,
@@ -123,6 +105,8 @@ module ex_stage (
 	wire [`XLEN-1:0] rv_m_res;
 
 	`ifndef __RV32_M_EXTERNAL
+		// Code for internal RV32M.
+
 		rv32_m rv32_m
 			(
 				.i_clk   (i_clk),
@@ -135,9 +119,11 @@ module ex_stage (
 				.o_stall (o_stall)
 			);
 	`else 
-		// Code for external RV32_M
+		// Code for external RV32_M.
+
 		reg enable;
 		reg en_delayed;
+		
 		always_ff@(posedge i_clk) begin
 			if(!i_rst || i_ack) begin
 				en_delayed <= 0;
@@ -150,19 +136,19 @@ module ex_stage (
 					o_f3  <= f3;
 					en_delayed <= i_m_en; 
 				end
-				enable <= !en_delayed && i_m_en; // Create a 0->1 pulse
+				enable <= !en_delayed && i_m_en; // Create a 0->1 pulse.
 			end
 		end		
 		
 		always_comb begin
-			o_en  = enable; // Create a 0->1 pulse
+			o_en  = enable; // Create a 0->1 pulse.
 		end
 		
 		assign o_stall  = !i_ack && i_m_en;
 		assign rv_m_res = i_res; 
 	`endif
 
-	assign o_res = i_m_en ? rv_m_res : alu_res; // Ex stage result	
+	assign o_res = i_m_en ? rv_m_res : alu_res; // Ex stage result.
 
 `else
 	assign o_res = alu_res;

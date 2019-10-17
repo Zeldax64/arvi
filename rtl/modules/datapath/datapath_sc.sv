@@ -72,39 +72,23 @@ module datapath_sc
 	);
 
 	logic [`XLEN-1:0] PC;
-	/* verilator lint_off UNUSED */
-	logic [`XLEN-1:0] id_pc, ex_pc, ex_pc_jump, mem_pc;
-	/* verilator lint_on UNUSED */
 	logic [`XLEN-1:0] PC_next;
+	logic [`XLEN-1:0] id_pc, ex_pc, ex_pc_jump, mem_pc;
 
-	// Instruction wires renaming
-	//wire [`XLEN-1:0] instr = i_IM_Instr;
-	/* verilator lint_off UNUSED */
-	wire [`XLEN-1:0] instr, id_inst, ex_inst;
-	wire [2:0] f3 = instr[14:12];
-	/* verilator lint_on UNUSED */
-//	wire [6:0] f7 = instr[31:25];
+	// Instruction signals
+	wire [`XLEN-1:0] if_inst, id_inst, ex_inst; 
 
-	// Main Control signals
-//	wire MC_Branch;
-//	wire MC_MemRead;
-//	wire MC_MemWrite;
-//	wire MC_MemtoReg;
-//	wire [2:0] MC_ALUOp;
-//	wire [1:0] MC_ALUSrcA;
-//	wire MC_ALUSrcB;
-//	wire MC_RegWrite;
-//	wire [1:0] MC_Jump;
-//	wire MC_PCplus4;
-//	wire MC_CSR_en;
-//	wire MC_Ex;
-`ifdef __RV32_M
-//	wire MC_ALUM_en;
-`endif
-`ifdef __ATOMIC
-//	logic MC_atomic;
-`endif
 
+////////////////////////////////////////////////////
+//----- Instruction Decode Stage(ID) Signals -----//
+////////////////////////////////////////////////////
+	logic [`XLEN-1:0] id_rd1;
+	logic [`XLEN-1:0] id_rd2;
+	logic [`XLEN-1:0] id_imm;
+
+// Main Control signals to each stage. No structs are used because Yosys
+// doesn't support them and I want ARVI to be compatible with riscv-formal.
+	// Main Control 
 	logic id_MC_Branch;
 	logic id_MC_MemRead;
 	logic id_MC_MemWrite;
@@ -124,7 +108,13 @@ module datapath_sc
 	logic id_MC_atomic;
 `endif
 
-	// Main Control signals exiting Execution Stage
+/////////////////////////////////////////
+//----- Execute Stage(EX) Signals -----//
+/////////////////////////////////////////
+	logic [`XLEN-1:0] ex_alures;
+	logic ex_z;
+
+	// Main Control signals exiting Execution Stage.
 	logic ex_MC_Branch;
 	logic ex_MC_MemRead;
 	logic ex_MC_MemWrite;
@@ -134,65 +124,33 @@ module datapath_sc
 	logic ex_MC_PCplus4;
 	logic ex_MC_CSR_en;
 	logic ex_MC_Ex;	
+
+/////////////////////////////////////////
+//----- Memory Stage (EX) Signals -----//
+/////////////////////////////////////////
+	logic [`XLEN-1:0] mem_rddata;
+	logic mem_exception;
+	logic mem_csr_eret;
+	logic [`XLEN-1:0] mem_csr_tvec, mem_csr_epc;
 	
-	// Main Control signals exiting Memory Stage
+	// Main Control signals.
 	logic mem_MC_MemtoReg;
 	logic mem_MC_RegWrite;
 	logic mem_MC_PCplus4;
 
 	// REGISTER_FILE
 	wire [`XLEN-1:0] i_Wd;
-	wire [`XLEN-1:0] Rd1;
-	wire [`XLEN-1:0] Rd2;
 
-	// IMM_GEN
-	wire [`XLEN-1:0] Imm;
-
-	// ALU
-	wire [`XLEN-1:0] Alu_Res;
-
-	// Flag
-	wire Z;
-
-	// BRANCH_CONTROL
-//	wire DoBranch;
-
-	// DATA MEMORY
-	wire [`XLEN-1:0] DM_ReadData;
 
 `ifdef __ATOMIC
 	assign o_DM_f7 = f7;
 `endif
 
-
-	// CSRs
-//	wire [`XLEN-1:0] CSR_Rd; // temporary
-//	wire [`XLEN-1:0] CSR_epc;
-//	/* verilator lint_off UNUSED */
-//	wire [`XLEN-1:0] CSR_tvec; 
-//	wire [`XLEN-1:0] CSR_cause;
-//	/* verilator lint_on UNUSED */
-//	wire CSR_eret;
-//	wire CSR_ex;
-//	wire [`XLEN-1:0] CSR_Wd;
-//	wire [`XLEN-1:0] badaddr;
-
-//	// Exceptions
-//	wire ex_inst_addr;
-//	wire ex_ld_addr;
-//	wire ex_st_addr;
-
-	// Stalls
+	// Stall signals
 	//wire IF_stall;
 	wire IC_stall;
 	wire EX_stall;
-	wire DM_stall;
 	wire MEM_stall;
-	//assign IF_stall = IC_stall;
-	assign MEM_stall = DM_stall;
-
-	// Possible PC's values
-//	reg[`XLEN-1:0] PC_jump;
 
 	// Assigning PC
 	always_ff@(posedge i_clk) begin
@@ -203,8 +161,10 @@ module datapath_sc
 
 	// IM wires
 	wire [`XLEN-1:0] i_DataBlock = i_IM_Instr;
-	
-	// --- Fetch Stage --- //
+
+/////////////////////////////////////	
+//----- Instruction Fetch(IF) -----//
+/////////////////////////////////////
 	// Instruction Memory
 	i_cache #(.BLOCK_SIZE(1),
 			  .ENTRIES   (I_CACHE_ENTRIES)) 
@@ -221,24 +181,25 @@ module datapath_sc
 
 		// CPU interface
 		.i_Addr     (PC),
-		.o_Data 	(instr),
+		.o_Data 	(if_inst),
 		.o_Stall    (IC_stall)
 	);
 
-	// --- Instruction Decode Stage --- //
+//////////////////////////////////////	
+//----- Instruction Decode(ID) -----//
+//////////////////////////////////////
+
 	wire wr_to_rf = mem_MC_RegWrite && !EX_stall && !MEM_stall && !mem_exception;
 	
 	id_stage id_stage
 		(
 			.i_clk      (i_clk),
-			.i_inst     (instr),
-			.i_stall    (IC_stall),
+			.i_inst     (if_inst),
 
-			// Register File
-			.o_rd1      (Rd1),
-			.o_rd2      (Rd2),
-			// Immediate generator
-			.o_imm      (Imm),
+			.o_rd1      (id_rd1), // Register File
+			.o_rd2      (id_rd2),
+			.o_imm      (id_imm), // Immediate 
+
 			// Main Control
 			.o_branch   (id_MC_Branch),
 			.o_memread  (id_MC_MemRead),
@@ -258,32 +219,35 @@ module datapath_sc
 `ifdef __RV32_M
 			.o_m_en     (id_MC_ALUM_en),
 `endif
-			
 			.o_inst     (id_inst),
 			.i_pc      	(PC),
-			.o_pc       (id_pc),		
+			.o_pc       (id_pc),	
 			// Writeback
 			.i_wr_en    (wr_to_rf),
-			.i_wr_data  (i_Wd)
+			.i_wr_data  (i_Wd),
+
+			.i_stall    (IC_stall)
 		);
 
-	// --- Execute Stage --- //
+///////////////////////////	
+//----- Execute(EX) -----//
+///////////////////////////
+
 	logic [`XLEN-1:0] ex_wr_data;
 	ex_stage ex_stage
 		(
-			.i_rs1   (Rd1),
-			.i_rs2   (Rd2),
-			.i_imm   (Imm),
+			.i_rs1   (id_rd1),
+			.i_rs2   (id_rd2),
+			.i_imm   (id_imm),
 			.i_inst  (id_inst),
-			.o_res   (Alu_Res),
-			.o_z     (Z),
+			.o_res   (ex_alures),
+			.o_z     (ex_z),
 
 			.i_pc 	 (id_pc),
 
 `ifdef __RV32_M
 			.i_clk   (i_clk),
 			.i_rst   (i_rst),
-			.i_m_en  (MC_ALUM_en),
 `endif
 
 `ifdef __RV32_M_EXTERNAL
@@ -295,6 +259,8 @@ module datapath_sc
 			.o_f3    (o_EX_f3),
 `endif
 
+		//----- Main Control Signals -----//
+			// Input signals
 			.i_branch	(id_MC_Branch),
 			.i_memread	(id_MC_MemRead),
 			.i_memwrite	(id_MC_MemWrite),
@@ -315,7 +281,7 @@ module datapath_sc
 			.i_m_en		(id_MC_ALUM_en),
 `endif
 			
-	// Output Main Control signals
+			// Output signals
 			.o_branch	(ex_MC_Branch),
 			.o_memread	(ex_MC_MemRead),
 			.o_memwrite	(ex_MC_MemWrite),
@@ -329,38 +295,34 @@ module datapath_sc
 `ifdef __ATOMIC
 			.o_atomic   (o_MEM_atomic),
 `endif
-/* verilator lint_off UNUSED */
+		//----- Forward signals -----//
+			.o_inst     (ex_inst),
 			.o_pc       (ex_pc),
 			.o_pc_jump 	(ex_pc_jump),
-			.o_inst     (ex_inst),
-/* verilator lint_on UNUSED */
 			.o_wr_data  (ex_wr_data),
 
 			.o_stall 	(EX_stall)
 		);
 
-	logic mem_exception;
-	logic mem_csr_eret;
-	logic [`XLEN-1:0] mem_csr_tvec, mem_csr_epc;
-	
+///////////////////////////	
+//----- Memory(MEM) -----//
+///////////////////////////
+
 	mem_stage mem_stage
 	(
 		.i_clk       (i_clk),
 		.i_rst       (i_rst),
 
 		.i_inst      (ex_inst),
-		.i_alu_res   (Alu_Res),
+		.i_alu_res   (ex_alures),
 		.i_wr_data   (ex_wr_data),
 		.i_memwrite  (ex_MC_MemWrite),
 		.i_memread   (ex_MC_MemRead),
-		.o_rd        (DM_ReadData),
+		.o_rd        (mem_rddata),
 		.to_mem      (DM_to_mem),
 
-//		.ex_ld_addr  (ex_ld_addr),
-//		.ex_st_addr  (ex_st_addr),
-
 		.i_branch    (ex_MC_Branch),
-		.i_z         (Z),
+		.i_z         (ex_z),
 
 		.i_jump      (ex_MC_Jump),
 		.i_pc        (ex_pc),
@@ -369,7 +331,7 @@ module datapath_sc
 
 		// CSR signals
 		.i_csr_en  	 (ex_MC_CSR_en),
-		.i_csr_wd  	 (Rd1),
+		.i_csr_wd  	 (id_rd1),
 		.i_ecall   	 (ex_MC_Ex),
 		.o_csr_tvec  (mem_csr_tvec),
 		.o_csr_epc   (mem_csr_epc),
@@ -385,41 +347,12 @@ module datapath_sc
 		.o_mc_regwrite (mem_MC_RegWrite),
 		.o_mc_pcplus4  (mem_MC_PCplus4),
 
-		.o_stall     (DM_stall)
+		.o_stall     (MEM_stall)
 	);
 
-//	assign CSR_Wd = Rd1;
-//	assign badaddr = (ex_ld_addr || ex_st_addr) ? DM_Addr : mem_pc;
-
-/*	
-	// CSR
-	csr #(.HART_ID(HART)
-		) csr (
-		.i_clk 			(i_clk),
-		.i_rst      	(i_rst),
-		.i_CSR_en 		(MC_CSR_en),
-		.i_inst     	(instr),
-		.i_Wd    		(CSR_Wd),
-		.i_PC			(PC),
-		.i_badaddr  	(badaddr),
-
-		.o_Rd    		(CSR_Rd),
-		.o_eret  		(CSR_eret),
-		.o_ex    		(CSR_ex),
-		.o_tvec 		(CSR_tvec),
-		.o_cause 		(CSR_cause),
-		.o_epc  		(CSR_epc),
-
-		// Exceptions
-		.i_Ex    		(MC_Ex),
-		.i_Ex_inst_addr (ex_inst_addr),
-		.i_Ex_ld_addr  	(ex_ld_addr),
-		.i_Ex_st_addr 	(ex_st_addr),
-
-		// Interrupts
-		.i_Int_tip (i_tip)
-	);
-*/	
+///////////////////////////	
+//----- Write(WB) -----//
+///////////////////////////
 
 	/*----- Datapath Muxes -----*/
 	// PC Mux - Chooses PC's next value
@@ -435,18 +368,10 @@ module datapath_sc
 		else
 			PC_next = mem_pc;
 	end
-	
-	// Calculate PC without CSRs interference
-	//assign ex_inst_addr = |mem_pc[1:0];
 
-	// Write Back Mux
-	/*
-	assign i_Wd = MC_PCplus4 ? PC+4 :
-				  MC_MemtoReg ? DM_ReadData :
-				  MC_CSR_en ? CSR_Rd : Alu_Res;
-	*/
 	assign i_Wd = mem_MC_PCplus4 ? PC+4 : 
-				  mem_MC_MemtoReg ? DM_ReadData : Alu_Res;
+				  mem_MC_MemtoReg ? mem_rddata : ex_alures;
+
 
 `ifdef __ARVI_PERFORMANCE_ANALYSIS
 	// ***** Performance Profiler DPI ***** //
@@ -469,7 +394,7 @@ module datapath_sc
 			if(IC_stall || MEM_stall || EX_stall) 
 				inst_cycles <= inst_cycles+1;
 			else begin // Finished instruction execution
-				new_instruction(HART, instr, inst_cycles+1);
+				new_instruction(HART, if_inst, inst_cycles+1);
 				if(inst_stall !== 0) begin
 					cache_miss(HART, inst_stall);
 				end
@@ -480,6 +405,7 @@ module datapath_sc
 	end
 `endif
 
+
 `ifdef RISCV_FORMAL
 	wire stall = IC_stall || EX_stall || MEM_stall;
 	wire is_valid_inst = i_rst && !stall;
@@ -489,18 +415,18 @@ module datapath_sc
 	always_ff@(posedge i_clk) begin
 		rvfi_valid     <= is_valid_inst;
 		rvfi_order     <= i_rst ? rvfi_order + rvfi_valid : 0;
-		rvfi_insn      <= instr;
+		rvfi_insn      <= if_inst;
 		rvfi_trap      <= CSR_ex;
 		rvfi_halt      <= 0; // Permanent 0
 		rvfi_intr      <= 0; // Permanent 0
 		rvfi_mode      <= 3; // M mode only
 		rvfi_ixl       <= 1; // 32 bits only
-		rvfi_rs1_addr  <= instr[19:15]; 
-		rvfi_rs2_addr  <= instr[24:20];
-		rvfi_rs1_rdata <= Rd1;
-		rvfi_rs2_rdata <= Rd2;
-		rvfi_rd_addr   <= (instr[11:7] && wr_to_rf) ? instr[11:7] : 0;
-		rvfi_rd_wdata  <= (instr[11:7] && wr_to_rf) ? i_Wd : 0; // TBD
+		rvfi_rs1_addr  <= if_inst[19:15]; 
+		rvfi_rs2_addr  <= if_inst[24:20];
+		rvfi_rs1_rdata <= id_rd1;
+		rvfi_rs2_rdata <= id_rd2;
+		rvfi_rd_addr   <= (if_inst[11:7] && wr_to_rf) ? if_inst[11:7] : 0;
+		rvfi_rd_wdata  <= (if_inst[11:7] && wr_to_rf) ? i_Wd : 0; // TBD
 		rvfi_pc_rdata  <= PC;
 		rvfi_pc_wdata  <= PC_next;
 
@@ -515,7 +441,7 @@ module datapath_sc
 			rvfi_mem_rdata <= DM_to_mem.DM_ReadData;
 			rvfi_mem_wdata <= DM_to_mem.DM_Wd;
 			
-			case(instr[13:12]) // Case f3
+			case(if_inst[13:12]) // Case f3
 				2'b00 : begin
 					mask[0] = DM_Addr[1:0] == 2'b00;  
 					mask[1] = DM_Addr[1:0] == 2'b01;  
