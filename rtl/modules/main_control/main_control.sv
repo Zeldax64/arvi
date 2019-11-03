@@ -23,7 +23,9 @@
 
 
 module main_control (
+	/* verilator lint_off UNUSED */
     input [`INSTRUCTION_SIZE:0] i_Instr,
+	/* verilator lint_on UNUSED */
     
     output logic o_Branch,
     output logic o_MemRead,
@@ -36,7 +38,7 @@ module main_control (
     output logic [1:0] o_Jump,
     output logic o_PCplus4,
     output logic o_CSR_en,
-    output logic o_Ex,
+    output logic o_Ex_inst_illegal,
 
 `ifdef __ATOMIC
 	output logic o_atomic,
@@ -49,33 +51,33 @@ module main_control (
     );
 	
 	wire [6:0] OPCode = i_Instr[6:0];
-	wire [2:0] f3 = i_Instr[14:12];
+	//wire [2:0] f3 = i_Instr[14:12];
 	/* verilator lint_off UNUSED */
 	wire [6:0] f7 = i_Instr[31:25];
 	/* verilator lint_on UNUSED */
-	wire [11:0] f12 = i_Instr[31:20];
-	wire [4:0] rs1 = i_Instr[19:15];
-	wire [4:0] rd = i_Instr[11:7];
+	//wire [11:0] f12 = i_Instr[31:20];
+	//wire [4:0] rs1 = i_Instr[19:15];
+	//wire [4:0] rd = i_Instr[11:7];
 
 	always_comb begin
-		o_Branch   = 0;
-		o_MemRead  = 0;
-		o_MemWrite = 0;
-		o_MemToReg = 0;
-		o_ALUSrcA  = 0;
-		o_ALUSrcB  = 0;
-		o_RegWrite = 0;
-		o_ALUOp    = 3'b000;
-        o_Jump     = 0;
-		o_PCplus4  = 0;
-		o_CSR_en   = 0;
-	    o_Ex       = 0; // No exception
+		o_Branch          = 0;
+		o_MemRead         = 0;
+		o_MemWrite        = 0;
+		o_MemToReg        = 0;
+		o_ALUSrcA         = 0;
+		o_ALUSrcB         = 0;
+		o_RegWrite        = 0;
+		o_ALUOp           = 3'b000;
+        o_Jump            = 0;
+		o_PCplus4         = 0;
+		o_CSR_en          = 0;
+		o_Ex_inst_illegal = 0; // Illegal instruction signal
 
 `ifdef __ATOMIC
-		o_atomic   = 0; // RV-A
+		o_atomic = 0; // RV-A
 `endif
 `ifdef __RV32_M
-       o_ALUM_en   = 0; // RV-M signal
+       o_ALUM_en = 0; // RV-M signal
 `endif
 
     	if(i_Stall) begin
@@ -158,7 +160,7 @@ module main_control (
 					o_RegWrite = 1;
 					o_ALUOp    = 3'b000;
 	    			o_CSR_en   = 1;
-	    			o_Ex	   = (f3 == 0 && (f12 == 0 || f12 == 1) && rs1 == 0 && rd == 0) ? 1 : 0; // Checking if it was an ECALL or not
+	    			//o_ECALL	   = (f3 == 0 && (f12 == 0 || f12 == 1) && rs1 == 0 && rd == 0) ? 1 : 0; // Checking if it was an ECALL or not
 				end
 
 `ifdef __ATOMIC
@@ -181,10 +183,9 @@ module main_control (
 				end
 `endif
 
-
 				default : begin // Invalid instruction!
-					o_MemToReg = 1'b0; //Don't Care
-	    			o_Ex	   = 1'b1; // Go to mtvec
+					o_MemToReg        = 1'b0; //Don't Care
+	                o_Ex_inst_illegal = 1'b1; // Go to mtvec
 				end
 			endcase
 		end

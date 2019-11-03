@@ -24,7 +24,7 @@ module id_stage (
     output logic [1:0] o_jump,
     output logic o_pc_plus4,
     output logic o_csr_en,
-    output logic o_ex,
+    output logic o_ex_inst_illegal,
 
 `ifdef __ATOMIC
 	output logic o_atomic,
@@ -47,28 +47,27 @@ module id_stage (
 	// Main Control
 	main_control main_control
 	(
-		.o_Branch   (o_branch),
-		.o_MemRead  (o_memread),
-		.o_MemWrite (o_memwrite),
-		.o_MemToReg (o_memtoreg),
-		.o_ALUOp    (o_alu_op),
-		.o_ALUSrcA  (o_alu_srca),
-		.o_ALUSrcB  (o_alu_srcb),
-		.o_RegWrite (o_regwrite),
-		.o_Jump     (o_jump),
-		.o_PCplus4  (o_pc_plus4),
-		.o_CSR_en  	(o_csr_en),
-		.o_Ex 	    (o_ex),
-
+		.o_Branch   		(o_branch),
+		.o_MemRead  		(o_memread),
+		.o_MemWrite 		(o_memwrite),
+		.o_MemToReg 		(o_memtoreg),
+		.o_ALUOp    		(o_alu_op),
+		.o_ALUSrcA  		(o_alu_srca),
+		.o_ALUSrcB  		(o_alu_srcb),
+		.o_RegWrite 		(o_regwrite),
+		.o_Jump     		(o_jump),
+		.o_PCplus4  		(o_pc_plus4),
+		.o_CSR_en  			(o_csr_en),
+    	.o_Ex_inst_illegal  (o_ex_inst_illegal),
 `ifdef __ATOMIC
-		.o_atomic  (o_atomic),
+		.o_atomic  			(o_atomic),
 `endif
 `ifdef __RV32_M
-		.o_ALUM_en (o_m_en),
+		.o_ALUM_en 			(o_m_en),
 `endif
 
-		.i_Instr   (i_inst),
-		.i_Stall   (i_stall)
+		.i_Instr   			(i_inst),
+		.i_Stall   			(i_stall)
 
 	);
 

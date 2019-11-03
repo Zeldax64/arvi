@@ -37,7 +37,7 @@ module ex_stage (
     input [1:0] i_jump,
     input i_pc_plus4,
     input i_csr_en,
-    input i_ex,
+    input i_ex_inst_illegal,
 
 `ifdef __ATOMIC
 	input i_atomic,
@@ -55,7 +55,7 @@ module ex_stage (
     output logic [1:0] o_jump,
     output logic o_pc_plus4,
     output logic o_csr_en,
-    output logic o_ex,
+    output logic o_ex_inst_illegal,
 
 `ifdef __ATOMIC
 	output logic o_atomic,
@@ -158,15 +158,15 @@ module ex_stage (
 
 	/*----- Forwarding Signals -----*/
 	// Main Control
-    assign o_branch   = i_branch;
-    assign o_memread  = i_memread;
-    assign o_memwrite = i_memwrite;
-    assign o_memtoreg = i_memtoreg;
-    assign o_regwrite = i_regwrite;
-    assign o_jump     = i_jump;
-    assign o_pc_plus4 = i_pc_plus4;
-    assign o_csr_en   = i_csr_en;
-    assign o_ex       = i_ex;
+    assign o_branch          = i_branch;
+    assign o_memread         = i_memread;
+    assign o_memwrite        = i_memwrite;
+    assign o_memtoreg        = i_memtoreg;
+    assign o_regwrite        = i_regwrite;
+    assign o_jump            = i_jump;
+    assign o_pc_plus4        = i_pc_plus4;
+    assign o_csr_en          = i_csr_en;
+    assign o_ex_inst_illegal = i_ex_inst_illegal;
 
 `ifdef __ATOMIC
 	assign i_atomic   = i_atomic;

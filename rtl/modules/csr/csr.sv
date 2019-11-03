@@ -23,10 +23,10 @@ module csr(
 	output logic [`XLEN-1:0] o_epc, // Exception Program Counter.
 
 	// Exceptions
-	input i_Ex,
-	input i_Ex_inst_addr,  // Instruction misaligned.
-	input i_Ex_ld_addr,	   // Load misaligned.
-	input i_Ex_st_addr,	   // Store misaligned.
+	input i_Ex_inst_illegal, // Illegal instruction
+	input i_Ex_inst_addr,  	 // Instruction misaligned.
+	input i_Ex_ld_addr,	   	 // Load misaligned.
+	input i_Ex_st_addr,	   	 // Store misaligned.
 
 	// Interrupts
 	input i_Int_tip
@@ -89,9 +89,8 @@ module csr(
 		end
 		else 
 			if(i_CSR_en) begin
-				// Implementing ECALL here. Please notice that i_Ex comes from
-				// Main Control
-				if(f3 == `PRIV) begin
+				// Implementing ECALL here.
+				if(ex_ecall) begin
 						// xRET instruction
 						if(addr == `MRET) begin
 							mie  <= mpie;
@@ -127,7 +126,7 @@ module csr(
 			// Exceptions
 			if(exception) begin
 				mepc <= i_PC;
-				if(i_Ex) begin
+				if(i_Ex_inst_illegal) begin
 					if(!i_CSR_en) begin
 						mcause <= 2; // Illegal Instruction
 						mtval  <= i_inst;
@@ -216,7 +215,11 @@ module csr(
 
 	// Exceptions
 	wire ex_ldst_addr = i_Ex_ld_addr || i_Ex_st_addr;
-	assign exception = i_Ex || i_Ex_inst_addr || ex_ldst_addr || ex_ebreak || ex_ecall;
+	assign exception = i_Ex_inst_illegal || 
+					   i_Ex_inst_addr 	 ||
+					   ex_ldst_addr 	 || 
+					   ex_ebreak 		 || 
+					   ex_ecall;
 
 	// Interrupts
 	assign int_ti = mtie && mtip && mie; // Timer interrupt

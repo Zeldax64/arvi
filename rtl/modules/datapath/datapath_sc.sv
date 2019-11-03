@@ -100,7 +100,7 @@ module datapath_sc
 	logic [1:0] id_MC_Jump;
 	logic id_MC_PCplus4;
 	logic id_MC_CSR_en;
-	logic id_MC_Ex;
+	logic id_MC_Ex_inst_illegal;
 `ifdef __RV32_M
 	logic id_MC_ALUM_en;
 `endif
@@ -124,7 +124,7 @@ module datapath_sc
 	logic [1:0] ex_MC_Jump;
 	logic ex_MC_PCplus4;
 	logic ex_MC_CSR_en;
-	logic ex_MC_Ex;	
+	logic ex_MC_Ex_inst_illegal;
 
 /////////////////////////////////////////
 //----- Memory Stage (MEM) Signals -----//
@@ -133,11 +133,11 @@ module datapath_sc
 	logic mem_exception;
 	logic mem_csr_eret;
 	logic [`XLEN-1:0] mem_csr_tvec, mem_csr_epc;
-	
 	// Main Control signals.
 	logic mem_MC_MemtoReg;
 	logic mem_MC_RegWrite;
 	logic mem_MC_PCplus4;
+	logic mem_MC_Ex_inst_illegal;
 
 /////////////////////////////////////////
 //----- Write Back (WB) Signals -----//
@@ -145,16 +145,26 @@ module datapath_sc
 	logic wb_rf_wr_en;
 	logic [`XLEN-1:0] wb_wrdata;
 
+	// Exceptions
+	/* verilator lint_off UNDRIVEN */
+	logic wb_ex_inst_illegal;
+	logic wb_ex_inst_addr;
+	logic wb_ex_ld_addr;
+	logic wb_ex_st_addr;
+	/* verilator lint_on UNDRIVEN */
 
 `ifdef __ATOMIC
 	assign o_DM_f7 = f7;
 `endif
 
 	// Stall signals
-	//wire IF_stall;
 	wire IC_stall;
 	wire EX_stall;
 	wire MEM_stall;
+
+/////////////////////////////////////	
+//----- Instruction Fetch(IF) -----//
+/////////////////////////////////////
 
 	// Assigning PC
 	always_ff@(posedge i_clk) begin
@@ -166,9 +176,6 @@ module datapath_sc
 	// IM wires
 	wire [`XLEN-1:0] i_DataBlock = i_IM_Instr;
 
-/////////////////////////////////////	
-//----- Instruction Fetch(IF) -----//
-/////////////////////////////////////
 	// Instruction Memory
 	i_cache #(.BLOCK_SIZE	(1),
 			  .ENTRIES   	(I_CACHE_ENTRIES)) 
@@ -194,40 +201,40 @@ module datapath_sc
 //////////////////////////////////////	
 	id_stage id_stage
 		(
-			.i_clk      (i_clk),
-			.i_inst     (if_inst),
+			.i_clk      		(i_clk),
+			.i_inst     		(if_inst),
 
-			.o_rd1      (id_rd1), // Register File
-			.o_rd2      (id_rd2),
-			.o_imm      (id_imm), // Immediate 
+			.o_rd1      		(id_rd1), // Register File
+			.o_rd2      		(id_rd2),
+			.o_imm      		(id_imm), // Immediate 
 
 			// Main Control
-			.o_branch   (id_MC_Branch),
-			.o_memread  (id_MC_MemRead),
-			.o_memwrite (id_MC_MemWrite),
-			.o_memtoreg (id_MC_MemtoReg),
-			.o_alu_op   (id_MC_ALUOp),
-			.o_alu_srca (id_MC_ALUSrcA),
-			.o_alu_srcb (id_MC_ALUSrcB),
-			.o_regwrite (id_MC_RegWrite),
-			.o_jump     (id_MC_Jump),
-			.o_pc_plus4 (id_MC_PCplus4),
-			.o_csr_en   (id_MC_CSR_en),
-			.o_ex       (id_MC_Ex),
+			.o_branch   		(id_MC_Branch),
+			.o_memread  		(id_MC_MemRead),
+			.o_memwrite 		(id_MC_MemWrite),
+			.o_memtoreg 		(id_MC_MemtoReg),
+			.o_alu_op   		(id_MC_ALUOp),
+			.o_alu_srca 		(id_MC_ALUSrcA),
+			.o_alu_srcb 		(id_MC_ALUSrcB),
+			.o_regwrite 		(id_MC_RegWrite),
+			.o_jump     		(id_MC_Jump),
+			.o_pc_plus4 		(id_MC_PCplus4),
+			.o_csr_en   		(id_MC_CSR_en),
+			.o_ex_inst_illegal	(id_MC_Ex_inst_illegal),
 `ifdef __ATOMIC
-			.o_atomic   (id_MC_atomic),
+			.o_atomic   		(id_MC_atomic),
 `endif
 `ifdef __RV32_M
-			.o_m_en     (id_MC_ALUM_en),
+			.o_m_en     		(id_MC_ALUM_en),
 `endif
-			.o_inst     (id_inst),
-			.i_pc      	(PC),
-			.o_pc       (id_pc),	
+			.o_inst     		(id_inst),
+			.i_pc      			(PC),
+			.o_pc       		(id_pc),	
 			// Writeback
-			.i_wr_en    (wb_rf_wr_en),
-			.i_wr_data  (wb_wrdata),
+			.i_wr_en    		(wb_rf_wr_en),
+			.i_wr_data  		(wb_wrdata),
 
-			.i_stall    (IC_stall)
+			.i_stall    		(IC_stall)
 		);
 
 ///////////////////////////	
@@ -261,36 +268,36 @@ module datapath_sc
 
 		//----- Main Control Signals -----//
 			// Input signals
-			.i_branch	(id_MC_Branch),
-			.i_memread	(id_MC_MemRead),
-			.i_memwrite	(id_MC_MemWrite),
-			.i_memtoreg	(id_MC_MemtoReg),
-			.i_alu_op	(id_MC_ALUOp),
-			.i_alu_srca	(id_MC_ALUSrcA),
-			.i_alu_srcb	(id_MC_ALUSrcB),
-			.i_regwrite	(id_MC_RegWrite),
-			.i_jump		(id_MC_Jump),
-			.i_pc_plus4	(id_MC_PCplus4),
-			.i_csr_en	(id_MC_CSR_en),
-			.i_ex		(id_MC_Ex),
+			.i_branch		   (id_MC_Branch),
+			.i_memread		   (id_MC_MemRead),
+			.i_memwrite		   (id_MC_MemWrite),
+			.i_memtoreg		   (id_MC_MemtoReg),
+			.i_alu_op		   (id_MC_ALUOp),
+			.i_alu_srca		   (id_MC_ALUSrcA),
+			.i_alu_srcb		   (id_MC_ALUSrcB),
+			.i_regwrite		   (id_MC_RegWrite),
+			.i_jump			   (id_MC_Jump),
+			.i_pc_plus4		   (id_MC_PCplus4),
+			.i_csr_en		   (id_MC_CSR_en),
+			.i_ex_inst_illegal (id_MC_Ex_inst_illegal),
 
 `ifdef __ATOMIC
-			.i_atomic	(id_MC_atomic),
+			.i_atomic		   (id_MC_atomic),
 `endif
 `ifdef __RV32_M
-			.i_m_en		(id_MC_ALUM_en),
+			.i_m_en			   (id_MC_ALUM_en),
 `endif
 			
 			// Output signals
-			.o_branch	(ex_MC_Branch),
-			.o_memread	(ex_MC_MemRead),
-			.o_memwrite	(ex_MC_MemWrite),
-			.o_memtoreg	(ex_MC_MemtoReg),
-			.o_regwrite	(ex_MC_RegWrite),
-			.o_jump		(ex_MC_Jump),
-			.o_pc_plus4	(ex_MC_PCplus4),
-			.o_csr_en	(ex_MC_CSR_en),
-			.o_ex		(ex_MC_Ex),
+			.o_branch		   (ex_MC_Branch),
+			.o_memread		   (ex_MC_MemRead),
+			.o_memwrite		   (ex_MC_MemWrite),
+			.o_memtoreg		   (ex_MC_MemtoReg),
+			.o_regwrite		   (ex_MC_RegWrite),
+			.o_jump			   (ex_MC_Jump),
+			.o_pc_plus4		   (ex_MC_PCplus4),
+			.o_csr_en		   (ex_MC_CSR_en),
+			.o_ex_inst_illegal (ex_MC_Ex_inst_illegal),
 
 `ifdef __ATOMIC
 			.o_atomic   (o_MEM_atomic),
@@ -333,7 +340,6 @@ module datapath_sc
 		// CSR signals
 		.i_csr_en  	 (ex_MC_CSR_en),
 		.i_csr_wd  	 (id_rd1),
-		.i_ecall   	 (ex_MC_Ex),
 		.o_csr_tvec  (mem_csr_tvec),
 		.o_csr_epc   (mem_csr_epc),
 		.o_csr_eret	 (mem_csr_eret),
@@ -343,12 +349,20 @@ module datapath_sc
 		.i_mc_memtoreg (ex_MC_MemtoReg),
 		.i_mc_regwrite (ex_MC_RegWrite),
 		.i_mc_pcplus4  (ex_MC_PCplus4),
+		.i_mc_ex_inst_illegal (ex_MC_Ex_inst_illegal),
 		// Control signals to next stage
 		.o_mc_memtoreg (mem_MC_MemtoReg),
 		.o_mc_regwrite (mem_MC_RegWrite),
 		.o_mc_pcplus4  (mem_MC_PCplus4),
+		.o_mc_ex_inst_illegal (mem_MC_Ex_inst_illegal),
 
-		.o_stall     (MEM_stall)
+    	// Write-Back Exceptions
+    	.i_ex_inst_illegal 	(wb_ex_inst_illegal),
+    	.i_ex_inst_addr 	(wb_ex_inst_addr),
+    	.i_ex_ld_addr 		(wb_ex_ld_addr),
+    	.i_ex_st_addr 		(wb_ex_st_addr),
+		
+		.o_stall     		(MEM_stall)
 	);
 
 //////////////////////////////	

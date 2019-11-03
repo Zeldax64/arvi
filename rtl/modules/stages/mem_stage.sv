@@ -36,20 +36,28 @@ module mem_stage
     // CSR signals
     input i_csr_en,
     input [`XLEN-1:0] i_csr_wd,
-    input i_ecall,
     output logic o_csr_eret,
 	output logic [`XLEN-1:0] o_csr_tvec,
 	output logic [`XLEN-1:0] o_csr_epc,
-
+    
+    // Unused?
     output logic o_exception,
 
     // Control signals
     input i_mc_memtoreg,
     input i_mc_regwrite,
     input i_mc_pcplus4,
+    input i_mc_ex_inst_illegal,
     output logic o_mc_memtoreg,
     output logic o_mc_regwrite,
     output logic o_mc_pcplus4,
+    output logic o_mc_ex_inst_illegal,
+
+	// Write-Back Exceptions
+    input i_ex_inst_illegal,
+    input i_ex_inst_addr,
+    input i_ex_ld_addr,
+    input i_ex_st_addr,
 
 	output logic o_stall
 	);
@@ -66,8 +74,8 @@ module mem_stage
 	logic [`XLEN-1:0] csr_tvec, csr_epc; 
 	
 	// Exceptions
-	logic ex_inst_addr, ex_ld_addr, ex_st_addr;
-
+	logic ex_ld_addr, ex_st_addr;
+	//logic ex_inst_addr;
 	assign o_stall = DM_stall;
 
 	assign f3 = i_inst[14:12];
@@ -81,7 +89,8 @@ module mem_stage
 	assign o_exception = csr_ex;
 
 	// Calculate PC without CSRs interference
-	assign ex_inst_addr = |pc_jump[1:0];
+	// Unused
+	//assign ex_inst_addr = |pc_jump[1:0];
 
 	// CSR
 	csr #(.HART_ID(HART_ID) 
@@ -101,10 +110,10 @@ module mem_stage
 		.o_epc  		(csr_epc),
 
 		// Exceptions
-		.i_Ex    		(i_ecall),
-		.i_Ex_inst_addr (ex_inst_addr),
-		.i_Ex_ld_addr  	(ex_ld_addr),
-		.i_Ex_st_addr 	(ex_st_addr),
+		.i_Ex_inst_illegal 	(i_ex_inst_illegal),
+		.i_Ex_inst_addr 	(i_ex_inst_addr),
+		.i_Ex_ld_addr  		(i_ex_ld_addr),
+		.i_Ex_st_addr 		(i_ex_st_addr),
 
 		// Interrupts
 		.i_Int_tip (1'b0)
@@ -155,8 +164,8 @@ module mem_stage
 	assign o_rd = i_csr_en ? csr_rd : dmem_rd;
 
 	// Passing control signals forward.
-    assign o_mc_memtoreg = i_mc_memtoreg;
-    assign o_mc_regwrite = i_mc_regwrite;
-    assign o_mc_pcplus4  = i_mc_pcplus4;   
-
+    assign o_mc_memtoreg        = i_mc_memtoreg;
+    assign o_mc_regwrite        = i_mc_regwrite;
+    assign o_mc_pcplus4         = i_mc_pcplus4;   
+    assign o_mc_ex_inst_illegal = i_mc_ex_inst_illegal;
 endmodule
