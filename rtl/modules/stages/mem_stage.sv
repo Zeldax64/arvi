@@ -11,15 +11,17 @@ module mem_stage
 	(
 	input i_clk,
 	input i_rst,
+
 	input [31:0] i_inst,
 	input [`XLEN-1:0] i_alu_res,
 	input [`XLEN-1:0] i_wr_data,
-	//input i_wr_en,
-	//input i_rd_en,
 	input i_memwrite,
 	input i_memread,
 
 	output logic [`XLEN-1:0] o_rd,
+	// Data Memory generated exceptions.
+	output logic o_ex_ld_addr,
+	output logic o_ex_st_addr,
 
 	// CPU <-> Memory interface
     dmem_if.master to_mem,
@@ -39,9 +41,8 @@ module mem_stage
     output logic o_csr_eret,
 	output logic [`XLEN-1:0] o_csr_tvec,
 	output logic [`XLEN-1:0] o_csr_epc,
-    
-    // Unused?
-    output logic o_exception,
+    output logic o_ex_ecall,
+    output logic o_ex_ebreak,
 
     // Control signals
     input i_mc_memtoreg,
@@ -58,6 +59,9 @@ module mem_stage
     input i_ex_inst_addr,
     input i_ex_ld_addr,
     input i_ex_st_addr,
+    input i_ex_ecall,
+    input i_ex_ebreak,
+    input [`XLEN-1:0] i_badaddr,
 
 	output logic o_stall
 	);
@@ -67,30 +71,25 @@ module mem_stage
 	logic [2:0] f3;
 	logic [`XLEN-1:0] dmem_rd, csr_rd;
 	logic [`XLEN-1:0] pc_jump;
-	logic [`XLEN-1:0] badaddr;
 	
 	// CSR Signals
-	logic csr_ex, csr_eret; 
+	logic csr_eret; 
 	logic [`XLEN-1:0] csr_tvec, csr_epc; 
 	
-	// Exceptions
-	logic ex_ld_addr, ex_st_addr;
 	//logic ex_inst_addr;
 	assign o_stall = DM_stall;
 
 	assign f3 = i_inst[14:12];
 
 	assign o_pc = pc_jump; 
-	assign badaddr = (ex_ld_addr || ex_st_addr) ? i_alu_res : pc_jump;
+	// TODO: Fix badaddr
+	//assign badaddr = pc_jump;//(ex_ld_addr || ex_st_addr) ? i_alu_res : pc_jump;
 
 	assign o_csr_tvec  = csr_tvec;
 	assign o_csr_epc   = csr_epc;
 	assign o_csr_eret  = csr_eret;
-	assign o_exception = csr_ex;
 
 	// Calculate PC without CSRs interference
-	// Unused
-	//assign ex_inst_addr = |pc_jump[1:0];
 
 	// CSR
 	csr #(.HART_ID(HART_ID) 
@@ -101,20 +100,22 @@ module mem_stage
 		.i_inst     	(i_inst),
 		.i_Wd    		(i_csr_wd),
 		.i_PC			(i_pc),
-		.i_badaddr  	(badaddr),
+		.i_badaddr  	(i_badaddr),
 
 		.o_Rd    		(csr_rd),
 		.o_eret  		(csr_eret),
-		.o_ex    		(csr_ex),
 		.o_tvec 		(csr_tvec),
 		.o_epc  		(csr_epc),
-
+		.o_ecall        (o_ex_ecall),
+		.o_ebreak       (o_ex_ebreak),
+		
 		// Exceptions
 		.i_Ex_inst_illegal 	(i_ex_inst_illegal),
 		.i_Ex_inst_addr 	(i_ex_inst_addr),
 		.i_Ex_ld_addr  		(i_ex_ld_addr),
 		.i_Ex_st_addr 		(i_ex_st_addr),
-
+		.i_Ex_ecall         (i_ex_ecall),
+		.i_Ex_ebreak        (i_ex_ebreak),
 		// Interrupts
 		.i_Int_tip (1'b0)
 	);
@@ -154,8 +155,8 @@ module mem_stage
 			.i_rd_en         (i_memread),
 			.o_Rd            (dmem_rd),
 			.o_stall       	 (DM_stall),
-			.o_ex_ld       	 (ex_ld_addr),
-			.o_ex_st       	 (ex_st_addr),
+			.o_ex_ld       	 (o_ex_ld_addr),
+			.o_ex_st       	 (o_ex_st_addr),
 
 			// CPU <-> Memory
 			.to_mem   		 (to_mem)

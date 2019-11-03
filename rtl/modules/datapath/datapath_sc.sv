@@ -130,9 +130,12 @@ module datapath_sc
 //----- Memory Stage (MEM) Signals -----//
 /////////////////////////////////////////
 	logic [`XLEN-1:0] mem_rddata;
-	logic mem_exception;
 	logic mem_csr_eret;
 	logic [`XLEN-1:0] mem_csr_tvec, mem_csr_epc;
+	logic mem_ex_ld_addr, mem_ex_st_addr;
+	logic mem_ex_ecall;
+	logic mem_ex_ebreak;
+
 	// Main Control signals.
 	logic mem_MC_MemtoReg;
 	logic mem_MC_RegWrite;
@@ -146,12 +149,13 @@ module datapath_sc
 	logic [`XLEN-1:0] wb_wrdata;
 
 	// Exceptions
-	/* verilator lint_off UNDRIVEN */
 	logic wb_ex_inst_illegal;
 	logic wb_ex_inst_addr;
 	logic wb_ex_ld_addr;
 	logic wb_ex_st_addr;
-	/* verilator lint_on UNDRIVEN */
+	logic wb_ex_ecall;
+	logic wb_ex_ebreak;
+	logic [`XLEN-1:0] wb_badaddr;
 
 `ifdef __ATOMIC
 	assign o_DM_f7 = f7;
@@ -321,14 +325,20 @@ module datapath_sc
 		.i_clk       (i_clk),
 		.i_rst       (i_rst),
 
+
 		.i_inst      (ex_inst),
 		.i_alu_res   (ex_alures),
 		.i_wr_data   (ex_wr_data),
 		.i_memwrite  (ex_MC_MemWrite),
 		.i_memread   (ex_MC_MemRead),
 		.o_rd        (mem_rddata),
+		// Data Memory generated exceptions.
+		.o_ex_ld_addr (mem_ex_ld_addr),
+		.o_ex_st_addr (mem_ex_st_addr),
+		// CPU <-> Memory interface
 		.to_mem      (DM_to_mem),
-
+   	
+   		// Branch Control
 		.i_branch    (ex_MC_Branch),
 		.i_z         (ex_z),
 
@@ -339,12 +349,13 @@ module datapath_sc
 
 		// CSR signals
 		.i_csr_en  	 (ex_MC_CSR_en),
+		//TODO: ALU Patch here to bypass rd1
 		.i_csr_wd  	 (id_rd1),
 		.o_csr_tvec  (mem_csr_tvec),
 		.o_csr_epc   (mem_csr_epc),
 		.o_csr_eret	 (mem_csr_eret),
-		.o_exception (mem_exception),
-
+		.o_ex_ecall 	(mem_ex_ecall),
+		.o_ex_ebreak   	(mem_ex_ebreak),
 		// Input control signals
 		.i_mc_memtoreg (ex_MC_MemtoReg),
 		.i_mc_regwrite (ex_MC_RegWrite),
@@ -361,7 +372,10 @@ module datapath_sc
     	.i_ex_inst_addr 	(wb_ex_inst_addr),
     	.i_ex_ld_addr 		(wb_ex_ld_addr),
     	.i_ex_st_addr 		(wb_ex_st_addr),
-		
+		.i_ex_ecall			(wb_ex_ecall),
+		.i_ex_ebreak        (wb_ex_ebreak),
+		.i_badaddr          (wb_badaddr),
+
 		.o_stall     		(MEM_stall)
 	);
 
@@ -371,8 +385,9 @@ module datapath_sc
 
 	/*----- Write Back Mux -----*/
 	// PC Mux - Chooses PC's next value
+	logic wb_ex;
 	always_comb begin
-		if(mem_exception) begin // Illegal instruction or MC_Ex(ECALL)
+		if(wb_ex) begin // Illegal instruction or MC_Ex(ECALL)
 			PC_next = mem_csr_tvec;
 		end
 
@@ -386,8 +401,22 @@ module datapath_sc
 	assign wb_wrdata = mem_MC_PCplus4 ? PC+4 : 
 				  mem_MC_MemtoReg ? mem_rddata : ex_alures;
 
-	assign wb_rf_wr_en = mem_MC_RegWrite && !EX_stall && !MEM_stall && !mem_exception;
+	assign wb_rf_wr_en = mem_MC_RegWrite && !EX_stall && !MEM_stall && !wb_ex;
 
+	// Assigining exceptions
+	assign wb_ex_inst_illegal = mem_MC_Ex_inst_illegal;
+	assign wb_ex_inst_addr    = |mem_pc[1:0];
+	assign wb_ex_st_addr      = mem_ex_st_addr;
+	assign wb_ex_ld_addr      = mem_ex_ld_addr;
+	assign wb_ex_ecall        = mem_ex_ecall;
+	assign wb_ex_ebreak		  = mem_ex_ebreak;
+	assign wb_ex = wb_ex_inst_illegal |
+				   wb_ex_inst_addr	  |
+				   wb_ex_st_addr 	  |
+				   wb_ex_ld_addr 	  |
+				   wb_ex_ecall 		  |
+				   wb_ex_ebreak;
+	assign wb_badaddr = (mem_ex_ld_addr || mem_ex_st_addr) ? ex_alures : mem_pc;
 
 `ifdef __ARVI_PERFORMANCE_ANALYSIS
 	// ***** Performance Profiler DPI ***** //

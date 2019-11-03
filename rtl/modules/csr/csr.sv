@@ -18,27 +18,37 @@ module csr(
 	output logic [`XLEN-1:0] o_Rd,
 
 	output logic o_eret,
-	output logic o_ex,
 	output logic [`XLEN-1:0] o_tvec, // Trap-Vector Base Address Register.
 	output logic [`XLEN-1:0] o_epc, // Exception Program Counter.
-
+	output logic o_ecall,
+	output logic o_ebreak,
 	// Exceptions
 	input i_Ex_inst_illegal, // Illegal instruction
 	input i_Ex_inst_addr,  	 // Instruction misaligned.
 	input i_Ex_ld_addr,	   	 // Load misaligned.
 	input i_Ex_st_addr,	   	 // Store misaligned.
+	input i_Ex_ecall,		 // Ecall occurred
+	input i_Ex_ebreak,
 
 	// Interrupts
 	input i_Int_tip
 	);
 	parameter HART_ID = 0;
 
+	// Auxiliary signals
 	// Instruction slicing
 	wire [2:0] f3; 
 	wire [11:0] addr; ;
 
 	assign f3 = i_inst[14:12];
 	assign addr = i_inst[31:20];
+	
+	// Events
+	logic ex_ecall, ex_ebreak;
+	logic push_mstatus;
+
+	assign o_ecall  = ex_ecall;
+	assign o_ebreak = ex_ebreak;
 	
 	// Machine Trap Setup
 	// mstatus
@@ -64,7 +74,7 @@ module csr(
 	wire exception;
 	wire interrupt, int_ti;
 
-	// Getting value to write according to instruction's f3
+	// Get value to write according to instruction's f3
 	logic [`XLEN-1:0] write_data;
 	logic [`XLEN-1:0] zimm;
 	logic [`XLEN-1:0] wr_data;
@@ -89,8 +99,7 @@ module csr(
 		end
 		else 
 			if(i_CSR_en) begin
-				// Implementing ECALL here.
-				if(ex_ecall) begin
+				if(i_Ex_ecall) begin
 						// xRET instruction
 						if(addr == `MRET) begin
 							mie  <= mpie;
@@ -127,22 +136,16 @@ module csr(
 			if(exception) begin
 				mepc <= i_PC;
 				if(i_Ex_inst_illegal) begin
-					if(!i_CSR_en) begin
-						mcause <= 2; // Illegal Instruction
-						mtval  <= i_inst;
-					end
-					else begin
-						if(f3 == `PRIV) begin
-							if(addr == 12'b0) begin 
-								mcause <= 11; // Environment call from M-mode
-								mtval <= 0;
-							end
-							if(addr == 12'h001) begin // Ebreak exception
-								mcause <= 3;
-								mtval <= i_PC;
-							end
-						end
-					end
+					mcause <= 2; // Illegal Instruction
+					mtval  <= i_inst;
+				end
+				if(i_Ex_ecall) begin
+					mcause <= 11; // Environment call from M-mode
+					mtval <= 0;
+				end
+				if(addr == 12'h001) begin // Ebreak exception
+					mcause <= 3;
+					mtval <= i_PC;
 				end
 				if(i_Ex_inst_addr) begin
 					mtval  <= i_badaddr;
@@ -168,14 +171,13 @@ module csr(
 		end
 
 		// If trap, then push mstatus stack
-		if(o_ex) begin
+		if(push_mstatus) begin
 			mie <= 0;
 			mpie <= mie;
 		end
 
 	end
 
-	reg ex_ecall, ex_ebreak;
 	always_comb begin
 		o_epc = 0;
 		o_Rd = 0;
@@ -214,17 +216,16 @@ module csr(
 	end
 
 	// Exceptions
-	wire ex_ldst_addr = i_Ex_ld_addr || i_Ex_st_addr;
 	assign exception = i_Ex_inst_illegal || 
 					   i_Ex_inst_addr 	 ||
-					   ex_ldst_addr 	 || 
-					   ex_ebreak 		 || 
-					   ex_ecall;
+					   i_Ex_ld_addr		 ||
+					   i_Ex_st_addr 	 ||
+					   i_Ex_ebreak 		 || 
+					   i_Ex_ecall;
 
 	// Interrupts
 	assign int_ti = mtie && mtip && mie; // Timer interrupt
 	assign interrupt = int_ti;
 
-	assign o_ex = exception || interrupt;
-
+	assign push_mstatus = exception || interrupt;
 endmodule
