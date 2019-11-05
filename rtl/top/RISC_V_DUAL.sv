@@ -55,75 +55,47 @@ module RISC_V(
 	wire MC_id;	
 `endif
 
-/*
-	genvar i;
-	generate
-		for(i = 0; i < HARTS; i = i+1) begin
-			hart #(
-					.PC_RESET(PC_RESET),
-					.HART(i)
-				) hart(
-				.i_clk(i_clk),
-				.i_rst(i_rst),
-				
-				// Instruction Memory connections
-				.i_IM_Instr(IM_instr[i]),
-				.i_IC_MemReady(IM_mem_ready[i]),
-				.o_IM_Addr(IM_addr[i]),
-				.o_IC_DataReq (IM_data_req[i]),
+	hart #(
+			.PC_RESET(PC_RESET),
+			.HART(0)
+		) hart0(
+			.i_clk(i_clk),
+			.i_rst(i_rst),
+			
+			// Instruction Memory connections
+			.i_IM_Instr(IM_instr[0]),
+			.i_IC_MemReady(IM_mem_ready[0]),
+			.o_IM_Addr(IM_addr[0]),
+			.o_IC_DataReq (IM_data_req[0]),
 
-				// Data Memory connections
-				.DM_to_mem    (DM_to_mem[i].master),
+			// Data Memory connections
+			.DM_to_mem    (DM_to_mem0.master),
 
-				// Interrupt connections
-				//.i_tip(tip)
-				.i_tip(1'b0)
-			);
+			// Interrupt connections
+			//.i_tip(tip)
+			.i_tip(1'b0)
+	);
 
-		end
-	endgenerate
-*/
-			hart #(
-					.PC_RESET(PC_RESET),
-					.HART(0)
-				) hart0(
-				.i_clk(i_clk),
-				.i_rst(i_rst),
-				
-				// Instruction Memory connections
-				.i_IM_Instr(IM_instr[0]),
-				.i_IC_MemReady(IM_mem_ready[0]),
-				.o_IM_Addr(IM_addr[0]),
-				.o_IC_DataReq (IM_data_req[0]),
+	hart #(
+		.PC_RESET(PC_RESET),
+		.HART(1)
+		) hart1(
+			.i_clk(i_clk),
+			.i_rst(i_rst),
+			
+			// Instruction Memory connections
+			.i_IM_Instr(IM_instr[1]),
+			.i_IC_MemReady(IM_mem_ready[1]),
+			.o_IM_Addr(IM_addr[1]),
+			.o_IC_DataReq (IM_data_req[1]),
 
-				// Data Memory connections
-				.DM_to_mem    (DM_to_mem0.master),
+			// Data Memory connections
+			.DM_to_mem    (DM_to_mem1.master),
 
-				// Interrupt connections
-				//.i_tip(tip)
-				.i_tip(1'b0)
-			);
-
-				hart #(
-					.PC_RESET(PC_RESET),
-					.HART(1)
-				) hart1(
-				.i_clk(i_clk),
-				.i_rst(i_rst),
-				
-				// Instruction Memory connections
-				.i_IM_Instr(IM_instr[1]),
-				.i_IC_MemReady(IM_mem_ready[1]),
-				.o_IM_Addr(IM_addr[1]),
-				.o_IC_DataReq (IM_data_req[1]),
-
-				// Data Memory connections
-				.DM_to_mem    (DM_to_mem1.master),
-
-				// Interrupt connections
-				//.i_tip(tip)
-				.i_tip(1'b0)
-			);
+			// Interrupt connections
+			//.i_tip(tip)
+			.i_tip(1'b0)
+	);
 
 	bus bus_hart0
 		(
@@ -155,6 +127,7 @@ module RISC_V(
 			// Bus signals
 			.bus_m         	(bus_m1.master)
 		);
+		
 	arbiter_2x1 arbiter_2x1
 		(
 			.i_clk      	(i_clk),

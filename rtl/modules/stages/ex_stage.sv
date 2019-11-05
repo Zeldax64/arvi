@@ -38,14 +38,10 @@ module ex_stage (
     input i_pc_plus4,
     input i_csr_en,
     input i_ex_inst_illegal,
-
 `ifdef __ATOMIC
 	input i_atomic,
 `endif
-`ifdef __RV32_M
-	input i_m_en,
-`endif
-	
+
 	// Output signals
     output logic o_branch,
     output logic o_memread,
@@ -56,7 +52,6 @@ module ex_stage (
     output logic o_pc_plus4,
     output logic o_csr_en,
     output logic o_ex_inst_illegal,
-
 `ifdef __ATOMIC
 	output logic o_atomic,
 `endif
