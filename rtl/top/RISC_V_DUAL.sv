@@ -35,10 +35,12 @@ module RISC_V(
 	wire [`XLEN-1:0] IM_addr [HARTS-1:0];
 	
 	// Data Memory
-	dmem_if DM_to_mem[2]();
+	dmem_if DM_to_mem0();
+	dmem_if DM_to_mem1();
 
 	// Bus signals
-	bus_if bus_m[2]();
+	bus_if bus_m0();
+	bus_if bus_m1();
 
 	// Bus <-> Memory Controller
 	wire MC_ack, MC_wr_en, MC_bus_en;
@@ -53,6 +55,7 @@ module RISC_V(
 	wire MC_id;	
 `endif
 
+/*
 	genvar i;
 	generate
 		for(i = 0; i < HARTS; i = i+1) begin
@@ -77,36 +80,91 @@ module RISC_V(
 				.i_tip(1'b0)
 			);
 
-			bus bus
-				(
-					.i_clk           (i_clk),
-					.i_rst           (i_rst),
-
-					// Instruction Memory
-					.i_IM_data_req   (IM_data_req[i]),
-					.i_IM_addr       (IM_addr[i]),
-					.o_IM_mem_ready  (IM_mem_ready[i]),
-					.o_IM_Instr      (IM_instr[i]),
-					
-					// Data Memory
-					.dmem          	(DM_to_mem[i].slave),
-					
-					// Bus signals
-					.bus_m         	(bus_m[i].master)
-				);
 		end
 	endgenerate
+*/
+			hart #(
+					.PC_RESET(PC_RESET),
+					.HART(0)
+				) hart0(
+				.i_clk(i_clk),
+				.i_rst(i_rst),
+				
+				// Instruction Memory connections
+				.i_IM_Instr(IM_instr[0]),
+				.i_IC_MemReady(IM_mem_ready[0]),
+				.o_IM_Addr(IM_addr[0]),
+				.o_IC_DataReq (IM_data_req[0]),
 
+				// Data Memory connections
+				.DM_to_mem    (DM_to_mem0.master),
+
+				// Interrupt connections
+				//.i_tip(tip)
+				.i_tip(1'b0)
+			);
+
+				hart #(
+					.PC_RESET(PC_RESET),
+					.HART(1)
+				) hart1(
+				.i_clk(i_clk),
+				.i_rst(i_rst),
+				
+				// Instruction Memory connections
+				.i_IM_Instr(IM_instr[1]),
+				.i_IC_MemReady(IM_mem_ready[1]),
+				.o_IM_Addr(IM_addr[1]),
+				.o_IC_DataReq (IM_data_req[1]),
+
+				// Data Memory connections
+				.DM_to_mem    (DM_to_mem1.master),
+
+				// Interrupt connections
+				//.i_tip(tip)
+				.i_tip(1'b0)
+			);
+
+	bus bus_hart0
+		(
+			.i_clk           (i_clk),
+			.i_rst           (i_rst),
+			// Instruction Memory
+			.i_IM_data_req   (IM_data_req[0]),
+			.i_IM_addr       (IM_addr[0]),
+			.o_IM_mem_ready  (IM_mem_ready[0]),
+			.o_IM_Instr      (IM_instr[0]),
+			// Data Memory
+			.dmem          	(DM_to_mem0.slave),
+			// Bus signals
+			.bus_m         	(bus_m0.master)
+		);
+
+
+	bus bus_hart1
+		(
+			.i_clk           (i_clk),
+			.i_rst           (i_rst),
+			// Instruction Memory
+			.i_IM_data_req   (IM_data_req[1]),
+			.i_IM_addr       (IM_addr[1]),
+			.o_IM_mem_ready  (IM_mem_ready[1]),
+			.o_IM_Instr      (IM_instr[1]),
+			// Data Memory
+			.dmem          	(DM_to_mem1.slave),
+			// Bus signals
+			.bus_m         	(bus_m1.master)
+		);
 	arbiter_2x1 arbiter_2x1
 		(
 			.i_clk      	(i_clk),
 			.i_rst      	(i_rst),
 			
 			// Bus 1
-			.bus0       	(bus_m[0].slave),
+			.bus0       	(bus_m0.slave),
 			
 			// Bus 2
-			.bus1       	(bus_m[1].slave),
+			.bus1       	(bus_m1.slave),
 			// To Bus
 			.i_ack      	(MC_ack),
 			.i_rd_data  	(MC_rd_data),
