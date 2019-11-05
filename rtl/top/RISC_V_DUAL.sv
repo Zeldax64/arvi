@@ -35,25 +35,10 @@ module RISC_V(
 	wire [`XLEN-1:0] IM_addr [HARTS-1:0];
 	
 	// Data Memory
-	wire [HARTS-1:0] DM_mem_ready;
-	wire [HARTS-1:0] DM_ren, DM_wen;
-	wire [3:0] DM_byte_en [HARTS-1:0]; 
-	wire [`XLEN-1:0] DM_rd [HARTS-1:0];
-	wire [`XLEN-1:0] DM_wd [HARTS-1:0]; 
-	wire [`XLEN-1:0] DM_addr[HARTS-1:0];
+	dmem_if DM_to_mem[2]();
 
 	// Bus signals
-	wire [HARTS-1:0] ack, wr_en, bus_en;
-	wire [3:0] byte_en [HARTS-1:0];
-	wire [`XLEN-1:0] rd_data [HARTS-1:0];
-	wire [`XLEN-1:0] wr_data[HARTS-1:0]; 
-	wire [`XLEN-1:0] addr [HARTS-1:0];
-
-`ifdef __ATOMIC 
-	wire [HARTS-1:0] MEM_atomic;	
-	//wire [$clog2(HARTS)-1:0] id;	
-	wire [6:0] MEM_operation [HARTS-1:0];
-`endif
+	bus_if bus_m[2]();
 
 	// Bus <-> Memory Controller
 	wire MC_ack, MC_wr_en, MC_bus_en;
@@ -85,18 +70,8 @@ module RISC_V(
 				.o_IC_DataReq (IM_data_req[i]),
 
 				// Data Memory connections
-				.i_DM_data_ready(DM_mem_ready[i]),
-				.i_DM_ReadData(DM_rd[i]),
-				.o_DM_Wd(DM_wd[i]),
-				.o_DM_Addr(DM_addr[i]),
-				.o_DM_Wen(DM_wen[i]),
-				.o_DM_MemRead(DM_ren[i]),
-				.o_DM_byte_en(DM_byte_en[i]),
+				.DM_to_mem    (DM_to_mem[i].master),
 
-`ifdef __ATOMIC 
-				.o_MEM_atomic   (MEM_atomic[i]),
-				.o_DM_f7        (MEM_operation[i]),		
-`endif
 				// Interrupt connections
 				//.i_tip(tip)
 				.i_tip(1'b0)
@@ -114,22 +89,10 @@ module RISC_V(
 					.o_IM_Instr      (IM_instr[i]),
 					
 					// Data Memory
-					.o_DM_data_ready (DM_mem_ready[i]),
-					.o_DM_ReadData   (DM_rd[i]),
-					.i_DM_Wd         (DM_wd[i]),
-					.i_DM_Addr       (DM_addr[i]),
-					.i_DM_byte_en    (DM_byte_en[i]),
-					.i_DM_Wen        (DM_wen[i]),
-					.i_DM_MemRead    (DM_ren[i]),
+					.dmem          	(DM_to_mem[i].slave),
 					
 					// Bus signals
-					.i_ack           (ack[i]),
-					.i_rd_data       (rd_data[i]),
-					.o_bus_en        (bus_en[i]),
-					.o_wr_en         (wr_en[i]),
-					.o_wr_data       (wr_data[i]),
-					.o_addr          (addr[i]),
-					.o_byte_en       (byte_en[i])
+					.bus_m         	(bus_m[i].master)
 				);
 		end
 	endgenerate
@@ -140,27 +103,10 @@ module RISC_V(
 			.i_rst      	(i_rst),
 			
 			// Bus 1
-			.i_bus_en1  	(bus_en[0]),
-			.i_wr_rd1   	(wr_en[0]),
-			.i_wr_data1 	(wr_data[0]),
-			.i_addr1    	(addr[0]),
-			.i_byte_en1 	(byte_en[0]),
-			.o_ack1     	(ack[0]),
-			.o_rd_data1 	(rd_data[0]),
-			.i_atomic1  	(MEM_atomic[0]),
-			.i_operation1 	(MEM_operation[0]),
+			.bus0       	(bus_m[0].slave),
 			
 			// Bus 2
-			.i_bus_en2  	(bus_en[1]),
-			.i_wr_rd2   	(wr_en[1]),
-			.i_wr_data2 	(wr_data[1]),
-			.i_addr2    	(addr[1]),
-			.i_byte_en2 	(byte_en[1]),
-			.o_ack2     	(ack[1]),
-			.o_rd_data2 	(rd_data[1]),
-			.i_atomic2  	(MEM_atomic[1]),			
-			.i_operation2	(MEM_operation[1]),
-			
+			.bus1       	(bus_m[1].slave),
 			// To Bus
 			.i_ack      	(MC_ack),
 			.i_rd_data  	(MC_rd_data),

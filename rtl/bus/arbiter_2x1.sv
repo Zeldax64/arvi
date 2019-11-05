@@ -4,28 +4,10 @@ module arbiter_2x1(
 	input i_clk,
 	input i_rst,
 
-	// Bus 1
-	input  i_bus_en1,
-	input  i_wr_rd1,
-	input  [31:0] i_wr_data1,
-	input  [31:0] i_addr1,
-	input  [3:0] i_byte_en1,
-	input  i_atomic1,
-	input  [6:0] i_operation1,
-	output logic o_ack1,
-	output logic [31:0] o_rd_data1,
-	
-	// Bus 2
-	input  i_bus_en2,
-	input  i_wr_rd2,
-	input  [31:0] i_wr_data2,
-	input  [31:0] i_addr2,
-	input  [3:0] i_byte_en2,
-	input  i_atomic2,
-	input  [6:0] i_operation2,
-	output logic  o_ack2,
-	output logic  [31:0] o_rd_data2,
-
+	// Hart 0 bus
+	bus_if.slave bus0,
+	// Hart 1 bus
+	bus_if.slave bus1,
 
 	// To Bus
 	input  i_ack,
@@ -118,6 +100,7 @@ module arbiter_2x1(
 		wr_data   = 0;
 		addr      = 0;
 		byte_en   = 0;
+		atomic    = 0;
 		operation = 0;
 
 		ack1      = 0;
@@ -149,5 +132,47 @@ module arbiter_2x1(
 			operation = i_operation2;
 		end
 	end
+
+	// Unpacking hart 0 bus.
+	logic i_bus_en1;
+	logic i_wr_rd1;
+	logic [31:0] i_wr_data1;
+	logic [31:0] i_addr1;
+	logic [3:0] i_byte_en1;
+	logic i_atomic1;
+	logic [6:0] i_operation1;
+	logic o_ack1;
+	logic [31:0] o_rd_data1;
+
+	assign i_bus_en1    = bus0.bus_en;
+	assign i_wr_rd1     = bus0.wr_en;
+	assign i_wr_data1   = bus0.wr_data;
+	assign i_addr1      = bus0.addr;
+	assign i_byte_en1   = bus0.byte_en;
+	assign i_atomic1    = bus0.atomic;
+	assign i_operation1 = bus0.operation;
+	assign bus0.ack     = o_ack1;
+	assign bus0.rd_data = o_rd_data1;
+
+	// Unpacking hart 1 bus.
+	logic i_bus_en2;
+	logic i_wr_rd2;
+	logic [31:0] i_wr_data2;
+	logic [31:0] i_addr2;
+	logic [3:0] i_byte_en2;
+	logic i_atomic2;
+	logic [6:0] i_operation2;
+	logic o_ack2;
+	logic [31:0] o_rd_data2;
+
+	assign i_bus_en2    = bus1.bus_en;
+	assign i_wr_rd2     = bus1.wr_en;
+	assign i_wr_data2   = bus1.wr_data;
+	assign i_addr2      = bus1.addr;
+	assign i_byte_en2   = bus1.byte_en;
+	assign i_atomic2    = bus1.atomic;
+	assign i_operation2 = bus1.operation;
+	assign bus1.ack     = o_ack2;
+	assign bus1.rd_data = o_rd_data2;
 
 endmodule

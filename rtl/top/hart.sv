@@ -21,11 +21,6 @@ module hart
 	// Data Memory Access
 	dmem_if.master DM_to_mem,
 
-`ifdef __ATOMIC // Atomic extension signal for atomic operations
-	output o_MEM_atomic,
-	output [6:0] o_DM_f7,
-`endif
-
 `ifdef __RV32_M_EXTERNAL
 	output o_EX_en, 
 	output [`XLEN-1:0] o_EX_rs1, 
@@ -59,11 +54,6 @@ module hart
 
 		// Data Memory connections
 		.DM_to_mem     (DM_to_mem),
-
-`ifdef __ATOMIC
-		.o_MEM_atomic(o_MEM_atomic),
-		.o_DM_f7     (o_DM_f7),
-`endif
 
 `ifdef __RV32_M_EXTERNAL
 		.o_EX_en        (o_EX_en),

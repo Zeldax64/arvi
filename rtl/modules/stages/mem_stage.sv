@@ -44,11 +44,15 @@ module mem_stage
     output logic o_ex_ecall,
     output logic o_ex_ebreak,
 
-    // Control signals
+    // Main Control signals
     input i_mc_memtoreg,
     input i_mc_regwrite,
     input i_mc_pcplus4,
     input i_mc_ex_inst_illegal,
+`ifdef __ATOMIC
+	input i_mc_atomic,
+`endif
+
     output logic o_mc_memtoreg,
     output logic o_mc_regwrite,
     output logic o_mc_pcplus4,
@@ -147,6 +151,11 @@ module mem_stage
 			.i_f3            (f3),
 			.i_wr_en         (i_memwrite),
 			.i_rd_en         (i_memread),
+`ifdef __ATOMIC
+			.i_atomic   	 (i_mc_atomic),
+			.i_operation	 (i_inst[31:25]),
+`endif
+
 			.o_Rd            (dmem_rd),
 			.o_stall       	 (DM_stall),
 			.o_ex_ld       	 (o_ex_ld_addr),

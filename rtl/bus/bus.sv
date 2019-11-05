@@ -1,8 +1,5 @@
 /*
 	Converts signals from the datapath to simple a bus format.
-	Please notice that when an input signal is asserted and the bus is
-	requested, the request signal should remains asserted until the end
-	of transaction.
 */
 
 `timescale 1ns / 1ps
@@ -44,12 +41,16 @@ module bus (
 	always_ff@(posedge i_clk) begin
 		if(!i_rst) state <= IDLE;
 		else begin
-			state       <= next_state;
-			bus_m.wr_en   <= wr_en;
-			bus_m.wr_data <= dmem.DM_Wd;
-			bus_m.addr    <= addr;
-			bus_m.byte_en <= dmem.DM_byte_en;
-			bus_m.bus_en  <= bus_req;
+			state           <= next_state;
+			bus_m.wr_en     <= wr_en;
+			bus_m.wr_data   <= dmem.DM_Wd;
+			bus_m.addr      <= addr;
+			bus_m.byte_en   <= dmem.DM_byte_en;
+			bus_m.bus_en    <= bus_req;
+`ifdef __ATOMIC
+			bus_m.atomic    <= dmem.DM_atomic;
+			bus_m.operation <= dmem.DM_operation;
+`endif
 		end
 	end
 	

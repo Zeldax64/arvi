@@ -16,6 +16,10 @@ module d_mem(
     input  [2:0] i_f3,
     input  i_wr_en,
     input  i_rd_en,
+`ifdef __ATOMIC
+	input i_atomic,
+	input [6:0] i_operation,
+`endif
     output logic [`XLEN-1:0] o_Rd,
     output logic o_stall,
     output logic o_ex_ld,
@@ -33,6 +37,7 @@ module d_mem(
 	logic o_DM_Wen;
 	logic o_DM_MemRead;
 
+	// Assign dmem interface signals.
 	assign i_DM_data_ready = to_mem.DM_data_ready;
 	assign i_DM_ReadData = to_mem.DM_ReadData;
 	assign to_mem.DM_Wd = o_DM_Wd;
@@ -40,6 +45,10 @@ module d_mem(
 	assign to_mem.DM_byte_en = o_DM_byte_en;
 	assign to_mem.DM_Wen = o_DM_Wen;
 	assign to_mem.DM_MemRead = o_DM_MemRead; 
+`ifdef __ATOMIC
+	assign to_mem.DM_atomic    = i_atomic;
+	assign to_mem.DM_operation = i_operation;
+`endif
 
 	reg [`XLEN-1:0] read_data, shifted_rd, wr_data;
 	reg ex_ld_addr, ex_st_addr;
@@ -59,8 +68,6 @@ module d_mem(
 	assign o_DM_Wen     = i_wr_en && !ex_st_addr;
 	assign o_DM_MemRead = i_rd_en && !ex_ld_addr;
 	assign o_DM_byte_en = byte_en;
-	
-	//reg [3:0] rmask;
 	
 	always_comb begin
 		ex_ld_addr = 0;

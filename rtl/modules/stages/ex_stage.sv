@@ -71,6 +71,9 @@ module ex_stage (
 	output o_stall
 	);
 
+	logic [2:0] f3 = i_inst[14:12];
+	logic [6:0] f7 = i_inst[31:25];
+
 	logic [3:0] alu_control_lines;
 	logic [`XLEN-1:0] alu_res;
 
@@ -80,9 +83,6 @@ module ex_stage (
 		.i_ALUOp           (i_alu_op),
 		.o_ALUControlLines (alu_control_lines)
 	);
-
-	logic [2:0] f3 = i_inst[14:12];
-	logic [6:0] f7 = i_inst[31:25];
 
 	// ALU input A Mux
 	logic [`XLEN-1:0] A, B;
@@ -169,7 +169,6 @@ module ex_stage (
     assign o_ex_inst_illegal = i_ex_inst_illegal;
 
 `ifdef __ATOMIC
-	assign i_atomic   = i_atomic;
 	assign o_atomic   = i_atomic;
 `endif
 

@@ -21,12 +21,7 @@ module datapath_sc
 
 	// Data Memory interface
 	dmem_if.master DM_to_mem,
-
-`ifdef __ATOMIC // Atomic extension signals for atomic operations
-	output o_MEM_atomic,
-	output [6:0] o_DM_f7,
-`endif
-
+	
 	// External RV32-M implementation
 `ifdef __RV32_M_EXTERNAL
 	output o_EX_en, 
@@ -125,6 +120,9 @@ module datapath_sc
 	logic ex_MC_PCplus4;
 	logic ex_MC_CSR_en;
 	logic ex_MC_Ex_inst_illegal;
+`ifdef __ATOMIC
+	logic ex_MC_atomic;
+`endif
 
 /////////////////////////////////////////
 //----- Memory Stage (MEM) Signals -----//
@@ -156,10 +154,6 @@ module datapath_sc
 	logic wb_ex_ecall;
 	logic wb_ex_ebreak;
 	logic [`XLEN-1:0] wb_badaddr;
-
-`ifdef __ATOMIC
-	assign o_DM_f7 = f7;
-`endif
 
 	// Stall signals
 	wire IC_stall;
@@ -304,7 +298,7 @@ module datapath_sc
 			.o_ex_inst_illegal (ex_MC_Ex_inst_illegal),
 
 `ifdef __ATOMIC
-			.o_atomic   (o_MEM_atomic),
+			.o_atomic   (ex_MC_atomic),
 `endif
 		//----- Forward signals -----//
 			.o_inst     (ex_inst),
@@ -360,6 +354,9 @@ module datapath_sc
 		.i_mc_regwrite (ex_MC_RegWrite),
 		.i_mc_pcplus4  (ex_MC_PCplus4),
 		.i_mc_ex_inst_illegal (ex_MC_Ex_inst_illegal),
+`ifdef __ATOMIC
+		.i_mc_atomic         (ex_MC_atomic),
+`endif		
 		// Control signals to next stage
 		.o_mc_memtoreg (mem_MC_MemtoReg),
 		.o_mc_regwrite (mem_MC_RegWrite),

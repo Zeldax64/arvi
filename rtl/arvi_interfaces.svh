@@ -39,27 +39,6 @@ interface bus_if;
 	);
 
 endinterface
-/*
-//Worked
-interface bus_if_m(
-	input logic ack, 				
-	input logic [31:0] rd_data, 	
-	output  logic bus_en, 			
-	output  logic wr_en, 			
-	output  logic [31:0] wr_data,	
-	output  logic [31:0] addr, 		
-	output  logic [3:0]  byte_en
-		
-`ifdef __ATOMIC 						
-	,output  logic [6:0] operation,
-	output  logic atomic
-`endif
-);
-
-endinterface
-*/
-
-/* verilator lint_on DECLFILENAME */
 
 `define BUS_M 					\
 	input  i_ack, 				\
@@ -74,7 +53,6 @@ endinterface
 	output [6:0] o_operation, 	\
 	output o_atomic 			\
 `endif 
-
 
 `define RV32_M_IF 					\
 	output reg o_en, 				\
@@ -94,14 +72,24 @@ interface dmem_if;
 	logic [3:0] DM_byte_en;
 	logic DM_Wen;
 	logic DM_MemRead;
+`ifdef __ATOMIC
+	logic DM_atomic;
+	logic [6:0] DM_operation; 
+`endif
 
 modport master(
 	input DM_data_ready, DM_ReadData,
+`ifdef __ATOMIC
+	output DM_atomic, DM_operation,
+`endif
 	output DM_Wd, DM_Addr, DM_byte_en, DM_Wen, DM_MemRead
 	);
 
 modport slave(
 	input  DM_Wd, DM_Addr, DM_byte_en, DM_Wen, DM_MemRead,
+`ifdef __ATOMIC
+	input DM_atomic, DM_operation,
+`endif
 	output DM_data_ready, DM_ReadData
 	);
 
@@ -135,3 +123,5 @@ endinterface
 	input  i_DM_MemRead					
 
 `endif
+
+/* verilator lint_on DECLFILENAME */
