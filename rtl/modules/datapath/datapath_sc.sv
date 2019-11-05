@@ -349,8 +349,7 @@ module datapath_sc
 
 		// CSR signals
 		.i_csr_en  	 (ex_MC_CSR_en),
-		//TODO: ALU Patch here to bypass rd1
-		.i_csr_wd  	 (id_rd1),
+		.i_csr_wd  	 (ex_alures),
 		.o_csr_tvec  (mem_csr_tvec),
 		.o_csr_epc   (mem_csr_epc),
 		.o_csr_eret	 (mem_csr_eret),
@@ -386,6 +385,7 @@ module datapath_sc
 	/*----- Write Back Mux -----*/
 	// PC Mux - Chooses PC's next value
 	logic wb_ex;
+	
 	always_comb begin
 		if(wb_ex) begin // Illegal instruction or MC_Ex(ECALL)
 			PC_next = mem_csr_tvec;
@@ -399,7 +399,7 @@ module datapath_sc
 	end
 
 	assign wb_wrdata = mem_MC_PCplus4 ? PC+4 : 
-				  mem_MC_MemtoReg ? mem_rddata : ex_alures;
+				  	   mem_MC_MemtoReg ? mem_rddata : ex_alures;
 
 	assign wb_rf_wr_en = mem_MC_RegWrite && !EX_stall && !MEM_stall && !wb_ex;
 
@@ -461,7 +461,8 @@ module datapath_sc
 		rvfi_valid     <= is_valid_inst;
 		rvfi_order     <= i_rst ? rvfi_order + rvfi_valid : 0;
 		rvfi_insn      <= if_inst;
-		rvfi_trap      <= CSR_ex;
+		rvfi_trap      <= wb_ex_inst_addr | wb_ex_inst_illegal |
+						  wb_ex_ld_addr | wb_ex_st_addr;
 		rvfi_halt      <= 0; // Permanent 0
 		rvfi_intr      <= 0; // Permanent 0
 		rvfi_mode      <= 3; // M mode only
@@ -481,35 +482,16 @@ module datapath_sc
 		rvfi_mem_rdata <= 0; 
 		rvfi_mem_wdata <= 0; 
 
-		if(DM_to_mem.DM_Wen || DM_to_mem.DM_MemRead) begin
+		if((DM_to_mem.DM_Wen || DM_to_mem.DM_MemRead) && !(mem_ex_ld_addr || mem_ex_st_addr)) begin
 			rvfi_mem_addr  <= DM_to_mem.DM_Addr; // 
-			rvfi_mem_rdata <= DM_to_mem.DM_ReadData;
-			rvfi_mem_wdata <= DM_to_mem.DM_Wd;
-			
-			case(if_inst[13:12]) // Case f3
-				2'b00 : begin
-					mask[0] = DM_Addr[1:0] == 2'b00;  
-					mask[1] = DM_Addr[1:0] == 2'b01;  
-					mask[2] = DM_Addr[1:0] == 2'b10;  
-					mask[3] = DM_Addr[1:0] == 2'b11;  
-				end
-				2'b01 : begin
-					mask[1:0] = (DM_Addr[1] == 1'b0) ? 2'b11 : 2'b00;
-					mask[3:2] = (DM_Addr[1] == 1'b1) ? 2'b11 : 2'b00;
-				end
-				2'b10 : begin
-					mask = 4'b1111;
-				end
-				default: mask = 4'b0000;
-			endcase
-
 			if(DM_to_mem.DM_MemRead) begin
-				rvfi_mem_rmask <= mask;
+				rvfi_mem_rmask <= DM_to_mem.DM_byte_en;
+				rvfi_mem_rdata <= DM_to_mem.DM_ReadData;
 			end
 			if(DM_to_mem.DM_Wen) begin
-				rvfi_mem_wmask <= mask;
+				rvfi_mem_wmask <= DM_to_mem.DM_byte_en;
+				rvfi_mem_wdata <= DM_to_mem.DM_Wd;
 			end
-
 		end
 	end
 	`endif

@@ -76,15 +76,9 @@ module mem_stage
 	logic csr_eret; 
 	logic [`XLEN-1:0] csr_tvec, csr_epc; 
 	
-	//logic ex_inst_addr;
 	assign o_stall = DM_stall;
-
 	assign f3 = i_inst[14:12];
-
 	assign o_pc = pc_jump; 
-	// TODO: Fix badaddr
-	//assign badaddr = pc_jump;//(ex_ld_addr || ex_st_addr) ? i_alu_res : pc_jump;
-
 	assign o_csr_tvec  = csr_tvec;
 	assign o_csr_epc   = csr_epc;
 	assign o_csr_eret  = csr_eret;
@@ -162,6 +156,7 @@ module mem_stage
 			.to_mem   		 (to_mem)
 		);
 
+	// Which data should be outputted?
 	assign o_rd = i_csr_en ? csr_rd : dmem_rd;
 
 	// Passing control signals forward.

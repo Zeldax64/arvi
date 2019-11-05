@@ -158,9 +158,8 @@ module main_control (
 					o_ALUSrcA  = 2'b0;
 					o_ALUSrcB  = 1'b0;
 					o_RegWrite = 1;
-					o_ALUOp    = 3'b000;
+					o_ALUOp    = 3'b101; // Bypass Rd1 through ALU.
 	    			o_CSR_en   = 1;
-	    			//o_ECALL	   = (f3 == 0 && (f12 == 0 || f12 == 1) && rs1 == 0 && rd == 0) ? 1 : 0; // Checking if it was an ECALL or not
 				end
 
 `ifdef __ATOMIC

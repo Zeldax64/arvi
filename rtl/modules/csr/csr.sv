@@ -38,7 +38,7 @@ module csr(
 	// Auxiliary signals
 	// Instruction slicing
 	wire [2:0] f3; 
-	wire [11:0] addr; ;
+	wire [11:0] addr;
 
 	assign f3 = i_inst[14:12];
 	assign addr = i_inst[31:20];
