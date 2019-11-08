@@ -2,7 +2,7 @@ VL := verilator
 TOP_MODULE := RISC_V
 # Shared defines between Verilog and C++ code
 DEFINES := -D__ARVI_PERFORMANCE_ANALYSIS
-CFLAGS := -CFLAGS "-std=c++0x -Wall -O1 $(DEFINES)"
+CFLAGS := -CFLAGS "-std=c++0x -Wall -O1 $(DEFINES) -g"
 LDFLAGS := -LDFLAGS "-lfesvr"
 VLFLAGS := -Wall --cc --trace -I./rtl --exe --top-module $(TOP_MODULE) $(CFLAGS) $(LDFLAGS) $(DEFINES)
 
@@ -13,9 +13,13 @@ VL_SRCS += $(wildcard sim/verilator/profiler/*.cpp)
 subdirs = $(filter-out $1,$(sort $(dir $(wildcard $1*/))))
 rfind = $(wildcard $1$2) $(foreach d,$(call subdirs,$1),$(call rfind,$d,$2))
 ######################################
+
 SRC_DIR := ./rtl
 SOURCES := $(call rfind,$(SRC_DIR)/,*.sv)
 HEADERS := $(call rfind,$(SRC_DIR)/,*.vh)
+
+modules := $(basename $(call rfind,$(SRC_DIR)/modules,*.sv))
+mods := $(patsubst %, %.mod, $(modules))
 
 SCRIPTS_DIR := ./sim/scripts
 run: all
@@ -58,6 +62,16 @@ performance:
 	python3 $(SCRIPTS_DIR)/performance.py $(reports)
 
 # Please notice that vivado is necessary to synthesize the design.
-synthesis: all
-	mkdir synth
+synthesis:
+	mkdir -p synth
 	vivado -mode tcl -source fpga/scripts/vivado_synth.tcl 
+
+synthesis-cost:
+	mkdir -p synth
+	$(foreach module, $(modules), vivado -mode tcl -source fpga/scripts/synth_cost.tcl -nojournal -nolog -tclargs $(module);)
+
+b:
+	echo $(patsubst %, %.mod, $(modules))
+
+%.mod: 
+	vivado -mode tcl -source fpga/scripts/synth_cost.tcl -nojournal -nolog -tclargs $*	

@@ -1,5 +1,6 @@
-# Verilator generated directory
+# Generated directories
 obj_dir/ 
+synth/
 
 # gtkwave related files
 *.vcd
