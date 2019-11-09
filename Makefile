@@ -1,5 +1,6 @@
 VL := verilator
 TOP_MODULE := RISC_V
+
 # Shared defines between Verilog and C++ code
 DEFINES := -D__ARVI_PERFORMANCE_ANALYSIS
 CFLAGS := -CFLAGS "-std=c++0x -Wall -O1 $(DEFINES) -g"
@@ -19,7 +20,7 @@ SOURCES := $(call rfind,$(SRC_DIR)/,*.sv)
 HEADERS := $(call rfind,$(SRC_DIR)/,*.vh)
 
 modules := $(basename $(call rfind,$(SRC_DIR)/modules,*.sv))
-mods := $(patsubst %, %.mod, $(modules))
+mods := $(patsubst %, %.mod, $(notdir $(modules)))
 
 SCRIPTS_DIR := ./sim/scripts
 run: all
@@ -41,16 +42,11 @@ JUNK += $(call rfind, ./sim/,*.performance_report)
 
 clean:
 	rm -rf obj_dir
-	rm -f *.vcd *.lxt2 $(JUNK)
+	rm -rf *.vcd *.lxt2 $(JUNK)
 	rm -rf synth .Xil
 	rm -f *.log *.jou
 
-
-reports = $(wildcard sim/tests/benchmark/*.performance_report)
-reports2 = sim/tests/benchmark/*.performance_report
-
-help:
-	echo $(reports2)
+performance_reports = $(wildcard sim/tests/benchmark/*.performance_report)
 
 regression-tests: all
 	python3 $(SCRIPTS_DIR)/regression.py --isa --compliance --benchmark
@@ -58,20 +54,18 @@ regression-tests: all
 benchmark: all
 	python3 $(SCRIPTS_DIR)/regression.py --benchmark
 
-performance:
-	python3 $(SCRIPTS_DIR)/performance.py $(reports)
+performance: 
+	python3 $(SCRIPTS_DIR)/performance.py $(performance_reports)
 
+# Synthesis related rules.
 # Please notice that vivado is necessary to synthesize the design.
 synthesis:
 	mkdir -p synth
 	vivado -mode tcl -source fpga/scripts/vivado_synth.tcl 
 
-synthesis-cost:
-	mkdir -p synth
-	$(foreach module, $(modules), vivado -mode tcl -source fpga/scripts/synth_cost.tcl -nojournal -nolog -tclargs $(module);)
-
-b:
-	echo $(patsubst %, %.mod, $(modules))
+synthesis-cost: $(mods)
+	./fpga/scripts/collect_synth.sh > synth.csv
 
 %.mod: 
-	vivado -mode tcl -source fpga/scripts/synth_cost.tcl -nojournal -nolog -tclargs $*	
+	mkdir -p synth
+	vivado -nojournal -nolog -mode tcl -source fpga/scripts/synth_cost.tcl -tclargs $*	
