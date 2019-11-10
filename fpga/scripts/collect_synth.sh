@@ -10,7 +10,7 @@ do
 	entry=$(
 	grep -E "Slice LUTs|Register as Flip Flop" synth/$proj/report/ultilization.rpt | # Filter data. 
 	awk -F '|' '{print $3}' | # Get "Used" column in Vivado report.
-	tr '\n' ',' | sed '$s/ $/\n/') # Change new line to '|' and create an entry.
+	tr '\n' ',' | sed '$s/.$/\n/') # Change new line to ',' and create an entry.
 	
 	echo "$proj,$entry" # Print {<module_name>|$entry}.
 done

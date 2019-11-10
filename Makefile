@@ -3,7 +3,7 @@ TOP_MODULE := RISC_V
 
 # Shared defines between Verilog and C++ code
 DEFINES := -D__ARVI_PERFORMANCE_ANALYSIS
-CFLAGS := -CFLAGS "-std=c++0x -Wall -O1 $(DEFINES) -g"
+CFLAGS := -CFLAGS "-std=c++0x -Wall -O1 $(DEFINES)"
 LDFLAGS := -LDFLAGS "-lfesvr"
 VLFLAGS := -Wall --cc --trace -I./rtl --exe --top-module $(TOP_MODULE) $(CFLAGS) $(LDFLAGS) $(DEFINES)
 
@@ -18,11 +18,11 @@ rfind = $(wildcard $1$2) $(foreach d,$(call subdirs,$1),$(call rfind,$d,$2))
 SRC_DIR := ./rtl
 SOURCES := $(call rfind,$(SRC_DIR)/,*.sv)
 HEADERS := $(call rfind,$(SRC_DIR)/,*.vh)
+SCRIPTS_DIR := ./sim/scripts
 
-modules := $(basename $(call rfind,$(SRC_DIR)/modules,*.sv))
+modules := $(basename $(call rfind,$(SRC_DIR)/,*.sv))
 mods := $(patsubst %, %.mod, $(notdir $(modules)))
 
-SCRIPTS_DIR := ./sim/scripts
 run: all
 	@echo "--- Running ---"
 	obj_dir/VRISC_V +loadmem=rv32ui-p-add -v
@@ -59,13 +59,13 @@ performance:
 
 # Synthesis related rules.
 # Please notice that vivado is necessary to synthesize the design.
-synthesis:
+synthesis-arvi:
 	mkdir -p synth
-	vivado -mode tcl -source fpga/scripts/vivado_synth.tcl 
+	vivado -nojournal -nolog -mode tcl -source fpga/scripts/vivado_synth.tcl -tclargs $(TOP_MODULE)
 
-synthesis-cost: $(mods)
+synthesis-cost: $(mods) synthesis-arvi 
 	./fpga/scripts/collect_synth.sh > synth.csv
 
 %.mod: 
 	mkdir -p synth
-	vivado -nojournal -nolog -mode tcl -source fpga/scripts/synth_cost.tcl -tclargs $*	
+	vivado -nojournal -nolog -mode tcl -source fpga/scripts/vivado_synth.tcl -tclargs $*	
