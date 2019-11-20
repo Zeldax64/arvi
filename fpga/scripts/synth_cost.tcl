@@ -23,8 +23,6 @@ set_property top $design [get_filesets sources_1]
 
 synth_design -top $design -part $partname
 
-create_clock -name i_clk -period 10.000
 report_utilization -file $reportdir/ultilization.rpt
-report_timing > $reportdir/timing.rpt
 
 exit

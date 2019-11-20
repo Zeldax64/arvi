@@ -1,0 +1,11 @@
+# Generated directories
+obj_dir/ 
+synth/
+
+# gtkwave related files
+*.vcd
+*.gtkw
+
+# Simulation outputs
+*.signature_output
+*.performance_report
