@@ -64,3 +64,6 @@ Elf file to be loaded. This parameter must be passed.
 
 #### --report-output=
 Specifies a path to the performance report. This flag must be used with the -r flag. 
+
+#### --no-print
+The simulator will not print any message.

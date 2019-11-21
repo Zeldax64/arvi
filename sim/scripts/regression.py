@@ -24,7 +24,7 @@ benchmark_tests = False
 
 def launch_sim(prog):
 	test_prog = "+loadmem="+prog
-	failure = subprocess.call([sim_path, test_prog])
+	failure = subprocess.call([sim_path, test_prog, '--no-print'])
 	if failure:
 		print("Testing: "+prog+ " FAILED")
 		return True

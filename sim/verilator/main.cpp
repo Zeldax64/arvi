@@ -25,6 +25,7 @@ int main(int argc, char** argv) {
 	uint64_t MAX_CYCLES = 2000000;
 	bool trace= false;
 	bool performance_profiler = false;
+	bool no_print = false;
 	Profiler* prof = NULL;		
 	char* report_output = NULL;
 
@@ -46,6 +47,9 @@ int main(int argc, char** argv) {
 		}
 		else if(arg.substr(0, 16) == "--report-output="){
 			report_output = argv[i]+16;
+		}
+		else if(arg.substr(0, 10) == "--no-print"){
+			no_print = true;
 		}
 	}
 	
@@ -79,17 +83,22 @@ int main(int argc, char** argv) {
 		cycles++;
 	}
 	
-	//std::cout << "*** " << mem_path << " ***" << std::endl;
 	if(dut->success()) {
-		//std::cout << "*** PASSED ***" << std::endl;
+		if(!no_print) 
+			std::cout << "*** PASSED ***" << std::endl;
 		fail = false;
 	}
 	else {
-		//std::cout << "*** FAILED ***" << std::endl;
+		if(!no_print)
+			std::cout << "*** FAILED ***" << std::endl;
 		fail = true;
 	}
-	//std::cout << "Cycles: " << cycles << std::endl;
 
+	if(!no_print) {
+		std::cout << "Elf: " << mem_path << std::endl;
+		std::cout << "Cycles: " << cycles << std::endl;
+	}
+	
 	if(prof != NULL) {
 		prof->save_report();
 	}
