@@ -66,6 +66,11 @@ synthesis-arvi:
 synthesis-cost: $(mods) synthesis-arvi 
 	./fpga/scripts/collect_synth.sh > synth.csv
 
+basys3:
+	mkdir -p synth
+	vivado -nojournal -nolog -mode tcl -source fpga/scripts/basys3.tcl
+
+
 %.mod: 
 	mkdir -p synth
 	vivado -nojournal -nolog -mode tcl -source fpga/scripts/vivado_synth.tcl -tclargs $*	
