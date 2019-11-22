@@ -6,6 +6,8 @@ module basys(
 	
 	localparam PC_RESET = 32'h8000_0000;
 	
+	reg [1:0] clk_div;
+	wire clk;
 	wire rst = ~i_rst;
 	reg [31:0] to_host;
 
@@ -13,10 +15,19 @@ module basys(
 	wire [3:0] byte_en;
 	wire [31:0] rd_data, wr_data, addr;
 
+	always@(posedge i_clk) begin
+		if(!i_rst)
+			clk_div <= 0;
+		else 
+			clk_div <= clk_div+1;
+	end
+
+	assign clk = clk_div[1];
+
 	RISC_V #(
 			.PC_RESET(PC_RESET)
 		) inst_RISC_V (
-			.i_clk     (i_clk),
+			.i_clk     (clk),
 			.i_rst     (rst),
 			.i_ack     (ack),
 			.i_rd_data (rd_data),
@@ -32,7 +43,7 @@ module basys(
 			.BYTES(4),
 			.OUT_REGS(0)
 		) inst_sp_ram (
-			.i_clk     (i_clk),
+			.i_clk     (clk),
 			.i_rst     (rst),
 			.i_cs      (bus_en),
 			.i_wr_en   (wr_en),
@@ -43,7 +54,7 @@ module basys(
 			.o_rd_data (rd_data)
 		);
 
-	always@(posedge i_clk) begin
+	always@(posedge clk) begin
 		if(!rst) begin
 			to_host <= 0;
 		end
