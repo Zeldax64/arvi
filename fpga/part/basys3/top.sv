@@ -6,7 +6,7 @@ module top(
 	
 	localparam PC_RESET = 32'h8000_0000;
 	
-	reg [1:0] clk_div;
+	reg [1:0] clk_div = 0;
 	wire clk;
 	wire rst = ~i_rst;
 	reg [31:0] to_host;
@@ -16,10 +16,7 @@ module top(
 	wire [31:0] rd_data, wr_data, addr;
 
 	always@(posedge i_clk) begin
-		if(!i_rst)
-			clk_div <= 0;
-		else 
-			clk_div <= clk_div+1;
+		clk_div <= clk_div+1;
 	end
 
 	assign clk = clk_div[1];
@@ -39,7 +36,7 @@ module top(
 		);
 
 	sp_ram #(
-			.MEM_DEPTH(4096),
+			.MEM_DEPTH(2*4096),
 			.BYTES(4),
 			.OUT_REGS(0)
 		) inst_sp_ram (
@@ -65,4 +62,4 @@ module top(
 
 	assign led = to_host[15:0];
 
-endmodule // basys
+endmodule
