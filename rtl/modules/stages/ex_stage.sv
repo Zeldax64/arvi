@@ -66,12 +66,15 @@ module ex_stage (
 	output o_stall
 	);
 
-	logic [2:0] f3 = i_inst[14:12];
-	logic [6:0] f7 = i_inst[31:25];
+	logic [2:0] f3;
+	logic [6:0] f7;
 
 	logic [3:0] alu_control_lines;
 	logic [`XLEN-1:0] alu_res;
 
+	assign f3 = i_inst[14:12];
+	assign f7 = i_inst[31:25];
+	
 	alu_control alu_control (
 		.i_Funct7          (f7),
 		.i_Funct3          (f3),
