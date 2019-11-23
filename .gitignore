@@ -9,3 +9,5 @@ synth/
 # Simulation outputs
 *.signature_output
 *.performance_report
+
+*.csv
