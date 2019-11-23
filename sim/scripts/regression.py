@@ -21,10 +21,11 @@ tests_folder = "sim/tests"
 isa_tests = False 
 compliance_tests = False
 benchmark_tests = False
+generate_reports = ''
 
 def launch_sim(prog):
 	test_prog = "+loadmem="+prog
-	failure = subprocess.call([sim_path, test_prog, '--no-print'])
+	failure = subprocess.call([sim_path, test_prog, '--no-print', generate_reports])
 	if failure:
 		print("Testing: "+prog+ " FAILED")
 		return True
@@ -133,12 +134,13 @@ def arg_parse():
 	global isa_tests  
 	global compliance_tests 
 	global benchmark_tests
+	global generate_reports
 
 	args = sys.argv
 	run = False
 
 	if "-h" in args:
-		print("Regression tests script. This script runs tests in sim/tests folder")
+		print("Regression tests script. This script runs tests in sim/tests folder.")
 		run = False
 	if "--isa" in args:
 		isa_tests = True
@@ -148,6 +150,9 @@ def arg_parse():
 		run = True
 	if "--benchmark" in args:
 		benchmark_tests = True	
+		run = True
+	if "-r" in args:
+		generate_reports = '-r'
 		run = True
 
 	return run

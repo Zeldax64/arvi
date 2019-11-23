@@ -52,7 +52,7 @@ regression-tests: all
 	python3 $(SCRIPTS_DIR)/regression.py --isa --compliance --benchmark
 
 benchmark: all
-	python3 $(SCRIPTS_DIR)/regression.py --benchmark
+	python3 $(SCRIPTS_DIR)/regression.py -r --benchmark
 
 performance: 
 	python3 $(SCRIPTS_DIR)/performance.py $(performance_reports)

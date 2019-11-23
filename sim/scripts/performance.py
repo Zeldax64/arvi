@@ -90,6 +90,11 @@ def main():
 	global entries, prog, cycles
 	df = None
 	report_files = arg_parse()
+
+	if not report_files:
+		print("No performance_report file given!")
+		return 0
+
 	for report in report_files:
 		report_df = read_report(report)
 
@@ -101,5 +106,7 @@ def main():
 		prog = []
 		cycles = []
 	df.to_csv("dataframe.csv")
+
+	print("Reports data succesfully colected.")
 
 main()
