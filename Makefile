@@ -59,18 +59,27 @@ performance:
 
 # Synthesis related rules.
 # Please notice that vivado is necessary to synthesize the design.
+
+# Synthetize ARVI top module and generate reports.
 synthesis-arvi:
 	mkdir -p synth
 	vivado -nojournal -nolog -mode tcl -source fpga/scripts/vivado_synth.tcl -tclargs $(TOP_MODULE)
 
+# Synthetize all modules in rtl folder and generate a CSV
+# file with the report collected data. Please notice that
+# some modules will fail to synthetize depending on the 
+# active defines in "arvi-defines.svh".
+# This rule is thread safe and you can call it using 
+# 'make synthesis-cost -j$(nproc)' for faster synthesis.
 synthesis-cost: $(mods) synthesis-arvi 
 	./fpga/scripts/collect_synth.sh > synth.csv
-
-basys3:
-	mkdir -p synth
-	vivado -nojournal -nolog -mode tcl -source fpga/scripts/basys3.tcl
-
 
 %.mod: 
 	mkdir -p synth
 	vivado -nojournal -nolog -mode tcl -source fpga/scripts/vivado_synth.tcl -tclargs $*	
+
+# Generate and download bitstream using fpga/part/basys3 files.
+basys3:
+	mkdir -p synth
+	vivado -nojournal -nolog -mode tcl -source fpga/scripts/basys3.tcl
+	vivado -nojournal -nolog -mode tcl -source fpga/scripts/download.tcl -tclargs synth/basys3/basys3.bit

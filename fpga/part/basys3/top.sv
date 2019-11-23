@@ -36,7 +36,7 @@ module top(
 		);
 
 	sp_ram #(
-			.MEM_DEPTH(2*4096),
+			.MEM_DEPTH(10000),
 			.BYTES(4),
 			.OUT_REGS(0)
 		) inst_sp_ram (
