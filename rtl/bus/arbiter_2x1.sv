@@ -1,5 +1,7 @@
 `timescale 1ns / 1ps
 
+`include "arvi_defines.svh"
+
 module arbiter_2x1(
 	input i_clk,
 	input i_rst,
@@ -10,19 +12,20 @@ module arbiter_2x1(
 	bus_if.slave bus1,
 
 	// To Bus
-	input  i_ack,
-	input  [31:0] i_rd_data,
-	output logic o_atomic,
-	output logic o_id,
 	output logic o_bus_en,
 	output logic o_wr_en,
 	output logic [31:0] o_wr_data,
 	output logic [31:0] o_addr,
+	output logic [3:0] o_byte_en,
+	output logic o_id,
+`ifdef __ATOMIC
+	output logic o_atomic,
 	output logic [6:0] o_operation,
-	output logic [3:0] o_byte_en
+`endif
+	input  i_ack,
+	input  [31:0] i_rd_data
 	);
 	
-	logic id;
 	logic bus_en;
 	logic wr_en;
 	logic [31:0] wr_data;
@@ -30,8 +33,11 @@ module arbiter_2x1(
 	logic [3:0] byte_en;
 	logic ack1, ack2;
 	logic [31:0] rd_data1, rd_data2;
+	logic id;
+`ifdef __ATOMIC
 	logic atomic;
 	logic [6:0] operation;
+`endif
 	
 	logic bus1_req, bus2_req;
 
@@ -56,7 +62,7 @@ module arbiter_2x1(
 	// To output
 	always@(*) begin
 		o_id        = id;
-		o_bus_en    = bus_en && !i_ack; // TODO: Fix this!!!
+		o_bus_en    = bus_en && !i_ack;
 		o_wr_en     = wr_en;
 		o_wr_data   = wr_data;
 		o_addr      = addr;
@@ -65,8 +71,10 @@ module arbiter_2x1(
 		o_rd_data1  = rd_data1;
 		o_ack2      = ack2;
 		o_rd_data2  = rd_data2;
+	`ifdef __ATOMIC
 		o_atomic    = atomic;     
 		o_operation = operation;
+	`endif
 	end
 
 	always@(*) begin
@@ -81,15 +89,11 @@ module arbiter_2x1(
 		if(state == BUS1) begin
 			if(i_ack)
 				next_state = IDLE;
-			//if(bus2_req && i_ack)
-			//	next_state = BUS2;
 		end
 
 		if(state == BUS2) begin
 			if(i_ack)
 				next_state = IDLE;
-			//if(bus1_req && i_ack);
-			//	next_state = BUS1;
 		end
 	end
 
@@ -100,8 +104,10 @@ module arbiter_2x1(
 		wr_data   = 0;
 		addr      = 0;
 		byte_en   = 0;
+	`ifdef __ATOMIC
 		atomic    = 0;
 		operation = 0;
+	`endif
 
 		ack1      = 0;
 		rd_data1  = 0;
@@ -116,8 +122,10 @@ module arbiter_2x1(
 			byte_en   = i_byte_en1;
 			ack1      = i_ack;
 			rd_data1  = i_rd_data;
+		`ifdef __ATOMIC
 			atomic    = i_atomic1;
 			operation = i_operation1;
+		`endif
 		end
 		if(state == BUS2) begin
 			id        = 1;
@@ -128,8 +136,10 @@ module arbiter_2x1(
 			byte_en   = i_byte_en2;
 			ack2      = i_ack;
 			rd_data2  = i_rd_data;
+		`ifdef __ATOMIC
 			atomic    = i_atomic2;
 			operation = i_operation2;
+		`endif
 		end
 	end
 
@@ -139,8 +149,10 @@ module arbiter_2x1(
 	logic [31:0] i_wr_data1;
 	logic [31:0] i_addr1;
 	logic [3:0] i_byte_en1;
+`ifdef __ATOMIC
 	logic i_atomic1;
 	logic [6:0] i_operation1;
+`endif
 	logic o_ack1;
 	logic [31:0] o_rd_data1;
 
@@ -149,8 +161,10 @@ module arbiter_2x1(
 	assign i_wr_data1   = bus0.wr_data;
 	assign i_addr1      = bus0.addr;
 	assign i_byte_en1   = bus0.byte_en;
+`ifdef __ATOMIC
 	assign i_atomic1    = bus0.atomic;
 	assign i_operation1 = bus0.operation;
+`endif
 	assign bus0.ack     = o_ack1;
 	assign bus0.rd_data = o_rd_data1;
 
@@ -160,8 +174,10 @@ module arbiter_2x1(
 	logic [31:0] i_wr_data2;
 	logic [31:0] i_addr2;
 	logic [3:0] i_byte_en2;
+`ifdef __ATOMIC
 	logic i_atomic2;
 	logic [6:0] i_operation2;
+`endif
 	logic o_ack2;
 	logic [31:0] o_rd_data2;
 
@@ -170,8 +186,10 @@ module arbiter_2x1(
 	assign i_wr_data2   = bus1.wr_data;
 	assign i_addr2      = bus1.addr;
 	assign i_byte_en2   = bus1.byte_en;
+`ifdef __ATOMIC
 	assign i_atomic2    = bus1.atomic;
 	assign i_operation2 = bus1.operation;
+`endif
 	assign bus1.ack     = o_ack2;
 	assign bus1.rd_data = o_rd_data2;
 

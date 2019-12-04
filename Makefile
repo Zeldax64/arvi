@@ -20,7 +20,10 @@ SOURCES := $(call rfind,$(SRC_DIR)/,*.sv)
 HEADERS := $(call rfind,$(SRC_DIR)/,*.vh)
 SCRIPTS_DIR := ./sim/scripts
 
-modules := $(basename $(call rfind,$(SRC_DIR)/,*.sv))
+#modules := $(basename $(call rfind,$(SRC_DIR)/,*.sv))
+modules += $(basename $(call rfind,$(SRC_DIR)/modules,*.sv))
+modules += $(basename $(call rfind,$(SRC_DIR)/extensions,*.sv))
+#modules += $(basename $(call rfind,$(SRC_DIR)/,*.sv))
 mods := $(patsubst %, %.mod, $(notdir $(modules)))
 
 run: all

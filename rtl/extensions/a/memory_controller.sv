@@ -5,7 +5,7 @@
 
 module memory_controller
 	#(
-		parameter N_IDS = 1
+		parameter N_IDS = 2 // N_IDS > 1!
 	)
 	(
 	input i_clk,

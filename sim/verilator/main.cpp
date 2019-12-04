@@ -18,6 +18,8 @@
 #include "arvi_dpi.h"
 #include "profiler/Profiler.h"
 
+#include <fesvr/memif.h>
+
 int main(int argc, char** argv) {
 	bool fail;
 	uint64_t mtick = 0;
