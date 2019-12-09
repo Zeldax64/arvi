@@ -49,7 +49,7 @@ module mem_stage
     input i_mc_regwrite,
     input i_mc_pcplus4,
     input i_mc_ex_inst_illegal,
-`ifdef __ATOMIC
+`ifdef __RVA
 	input i_mc_atomic,
 `endif
 
@@ -151,7 +151,7 @@ module mem_stage
 			.i_f3            (f3),
 			.i_wr_en         (i_memwrite),
 			.i_rd_en         (i_memread),
-`ifdef __ATOMIC
+`ifdef __RVA
 			.i_atomic   	 (i_mc_atomic),
 			.i_operation	 (i_inst[31:25]),
 `endif

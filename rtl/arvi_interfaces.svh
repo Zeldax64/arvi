@@ -17,7 +17,7 @@ interface bus_if;
 	logic [31:0] addr; 		
 	logic [3:0]  byte_en;
 		
-`ifdef __ATOMIC 						
+`ifdef __RVA 						
 	logic [6:0] operation;
 	logic atomic;	
 `endif 
@@ -25,7 +25,7 @@ interface bus_if;
 	modport master(
 		input ack, rd_data,
 		output bus_en, wr_en, wr_data, addr, byte_en
-	`ifdef __ATOMIC
+	`ifdef __RVA
 		, operation, atomic
 	`endif
 	);
@@ -33,7 +33,7 @@ interface bus_if;
 	modport slave(
 		output ack, rd_data,
 		input bus_en, wr_en, wr_data, addr, byte_en
-	`ifdef __ATOMIC
+	`ifdef __RVA
 		, operation, atomic
 	`endif
 	);
@@ -48,7 +48,7 @@ endinterface
 	output [31:0] o_wr_data,	\
 	output [31:0] o_addr, 		\
 	output [3:0]  o_byte_en 	\
-`ifdef __ATOMIC 				\
+`ifdef __RVA 				\
 	,							\
 	output [6:0] o_operation, 	\
 	output o_atomic 			\
@@ -72,14 +72,14 @@ interface dmem_if;
 	logic [3:0] DM_byte_en;
 	logic DM_Wen;
 	logic DM_MemRead;
-`ifdef __ATOMIC
+`ifdef __RVA
 	logic DM_atomic;
 	logic [6:0] DM_operation; 
 `endif
 
 modport master(
 	input DM_data_ready, DM_ReadData,
-`ifdef __ATOMIC
+`ifdef __RVA
 	output DM_atomic, DM_operation,
 `endif
 	output DM_Wd, DM_Addr, DM_byte_en, DM_Wen, DM_MemRead
@@ -87,7 +87,7 @@ modport master(
 
 modport slave(
 	input  DM_Wd, DM_Addr, DM_byte_en, DM_Wen, DM_MemRead,
-`ifdef __ATOMIC
+`ifdef __RVA
 	input DM_atomic, DM_operation,
 `endif
 	output DM_data_ready, DM_ReadData

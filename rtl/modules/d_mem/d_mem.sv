@@ -16,7 +16,7 @@ module d_mem(
     input  [2:0] i_f3,
     input  i_wr_en,
     input  i_rd_en,
-`ifdef __ATOMIC
+`ifdef __RVA
 	input i_atomic,
 	input [6:0] i_operation,
 `endif
@@ -45,7 +45,7 @@ module d_mem(
 	assign to_mem.DM_byte_en = o_DM_byte_en;
 	assign to_mem.DM_Wen = o_DM_Wen;
 	assign to_mem.DM_MemRead = o_DM_MemRead; 
-`ifdef __ATOMIC
+`ifdef __RVA
 	assign to_mem.DM_atomic    = i_atomic;
 	assign to_mem.DM_operation = i_operation;
 `endif

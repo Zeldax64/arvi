@@ -18,7 +18,7 @@ module arbiter_2x1(
 	output logic [31:0] o_addr,
 	output logic [3:0] o_byte_en,
 	output logic o_id,
-`ifdef __ATOMIC
+`ifdef __RVA
 	output logic o_atomic,
 	output logic [6:0] o_operation,
 `endif
@@ -34,7 +34,7 @@ module arbiter_2x1(
 	logic ack1, ack2;
 	logic [31:0] rd_data1, rd_data2;
 	logic id;
-`ifdef __ATOMIC
+`ifdef __RVA
 	logic atomic;
 	logic [6:0] operation;
 `endif
@@ -71,7 +71,7 @@ module arbiter_2x1(
 		o_rd_data1  = rd_data1;
 		o_ack2      = ack2;
 		o_rd_data2  = rd_data2;
-	`ifdef __ATOMIC
+	`ifdef __RVA
 		o_atomic    = atomic;     
 		o_operation = operation;
 	`endif
@@ -104,7 +104,7 @@ module arbiter_2x1(
 		wr_data   = 0;
 		addr      = 0;
 		byte_en   = 0;
-	`ifdef __ATOMIC
+	`ifdef __RVA
 		atomic    = 0;
 		operation = 0;
 	`endif
@@ -122,7 +122,7 @@ module arbiter_2x1(
 			byte_en   = i_byte_en1;
 			ack1      = i_ack;
 			rd_data1  = i_rd_data;
-		`ifdef __ATOMIC
+		`ifdef __RVA
 			atomic    = i_atomic1;
 			operation = i_operation1;
 		`endif
@@ -136,7 +136,7 @@ module arbiter_2x1(
 			byte_en   = i_byte_en2;
 			ack2      = i_ack;
 			rd_data2  = i_rd_data;
-		`ifdef __ATOMIC
+		`ifdef __RVA
 			atomic    = i_atomic2;
 			operation = i_operation2;
 		`endif
@@ -149,7 +149,7 @@ module arbiter_2x1(
 	logic [31:0] i_wr_data1;
 	logic [31:0] i_addr1;
 	logic [3:0] i_byte_en1;
-`ifdef __ATOMIC
+`ifdef __RVA
 	logic i_atomic1;
 	logic [6:0] i_operation1;
 `endif
@@ -161,7 +161,7 @@ module arbiter_2x1(
 	assign i_wr_data1   = bus0.wr_data;
 	assign i_addr1      = bus0.addr;
 	assign i_byte_en1   = bus0.byte_en;
-`ifdef __ATOMIC
+`ifdef __RVA
 	assign i_atomic1    = bus0.atomic;
 	assign i_operation1 = bus0.operation;
 `endif
@@ -174,7 +174,7 @@ module arbiter_2x1(
 	logic [31:0] i_wr_data2;
 	logic [31:0] i_addr2;
 	logic [3:0] i_byte_en2;
-`ifdef __ATOMIC
+`ifdef __RVA
 	logic i_atomic2;
 	logic [6:0] i_operation2;
 `endif
@@ -186,7 +186,7 @@ module arbiter_2x1(
 	assign i_wr_data2   = bus1.wr_data;
 	assign i_addr2      = bus1.addr;
 	assign i_byte_en2   = bus1.byte_en;
-`ifdef __ATOMIC
+`ifdef __RVA
 	assign i_atomic2    = bus1.atomic;
 	assign i_operation2 = bus1.operation;
 `endif

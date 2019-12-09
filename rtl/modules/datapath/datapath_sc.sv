@@ -23,7 +23,7 @@ module datapath_sc
 	dmem_if.master DM_to_mem,
 	
 	// External RV32-M implementation
-`ifdef __RV32_M_EXTERNAL
+`ifdef __RVM_EXTERNAL
 	output o_EX_en, 
 	output [`XLEN-1:0] o_EX_rs1, 
 	output [`XLEN-1:0] o_EX_rs2, 
@@ -96,10 +96,10 @@ module datapath_sc
 	logic id_MC_PCplus4;
 	logic id_MC_CSR_en;
 	logic id_MC_Ex_inst_illegal;
-`ifdef __RV32_M
+`ifdef __RVM
 	logic id_MC_ALUM_en;
 `endif
-`ifdef __ATOMIC
+`ifdef __RVA
 	logic id_MC_atomic;
 `endif
 
@@ -120,7 +120,7 @@ module datapath_sc
 	logic ex_MC_PCplus4;
 	logic ex_MC_CSR_en;
 	logic ex_MC_Ex_inst_illegal;
-`ifdef __ATOMIC
+`ifdef __RVA
 	logic ex_MC_atomic;
 `endif
 
@@ -219,10 +219,10 @@ module datapath_sc
 			.o_pc_plus4 		(id_MC_PCplus4),
 			.o_csr_en   		(id_MC_CSR_en),
 			.o_ex_inst_illegal	(id_MC_Ex_inst_illegal),
-`ifdef __ATOMIC
+`ifdef __RVA
 			.o_atomic   		(id_MC_atomic),
 `endif
-`ifdef __RV32_M
+`ifdef __RVM
 			.o_m_en     		(id_MC_ALUM_en),
 `endif
 			.o_inst     		(id_inst),
@@ -250,12 +250,12 @@ module datapath_sc
 
 			.i_pc 	 (id_pc),
 
-`ifdef __RV32_M
+`ifdef __RVM
 			.i_clk   (i_clk),
 			.i_rst   (i_rst),
 `endif
 
-`ifdef __RV32_M_EXTERNAL
+`ifdef __RVM_EXTERNAL
 			.i_res   (i_EX_res),
 			.i_ack   (i_EX_ack),
 			.o_en    (o_EX_en),
@@ -279,10 +279,10 @@ module datapath_sc
 			.i_csr_en		   (id_MC_CSR_en),
 			.i_ex_inst_illegal (id_MC_Ex_inst_illegal),
 
-`ifdef __ATOMIC
+`ifdef __RVA
 			.i_atomic		   (id_MC_atomic),
 `endif
-`ifdef __RV32_M
+`ifdef __RVM
 			.i_m_en			   (id_MC_ALUM_en),
 `endif
 			
@@ -297,7 +297,7 @@ module datapath_sc
 			.o_csr_en		   (ex_MC_CSR_en),
 			.o_ex_inst_illegal (ex_MC_Ex_inst_illegal),
 
-`ifdef __ATOMIC
+`ifdef __RVA
 			.o_atomic   (ex_MC_atomic),
 `endif
 		//----- Forward signals -----//
@@ -354,7 +354,7 @@ module datapath_sc
 		.i_mc_regwrite (ex_MC_RegWrite),
 		.i_mc_pcplus4  (ex_MC_PCplus4),
 		.i_mc_ex_inst_illegal (ex_MC_Ex_inst_illegal),
-`ifdef __ATOMIC
+`ifdef __RVA
 		.i_mc_atomic         (ex_MC_atomic),
 `endif		
 		// Control signals to next stage

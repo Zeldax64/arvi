@@ -26,10 +26,10 @@ module id_stage (
     output logic o_csr_en,
     output logic o_ex_inst_illegal,
 
-`ifdef __ATOMIC
+`ifdef __RVA
 	output logic o_atomic,
 `endif
-`ifdef __RV32_M
+`ifdef __RVM
 	output logic o_m_en,
 `endif
 	
@@ -59,10 +59,10 @@ module id_stage (
 		.o_PCplus4  		(o_pc_plus4),
 		.o_CSR_en  			(o_csr_en),
     	.o_Ex_inst_illegal  (o_ex_inst_illegal),
-`ifdef __ATOMIC
+`ifdef __RVA
 		.o_atomic  			(o_atomic),
 `endif
-`ifdef __RV32_M
+`ifdef __RVM
 		.o_ALUM_en 			(o_m_en),
 `endif
 

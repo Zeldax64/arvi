@@ -12,11 +12,11 @@ module ex_stage (
 	output [`XLEN-1:0] o_res,
 	output o_z,
 
-`ifdef __RV32_M
+`ifdef __RVM
 	input i_clk,
 	input i_rst,
 	input i_m_en,
-	`ifdef __RV32_M_EXTERNAL
+	`ifdef __RVM_EXTERNAL
 		`RV32_M_IF,
 	`endif
 `endif	
@@ -38,7 +38,7 @@ module ex_stage (
     input i_pc_plus4,
     input i_csr_en,
     input i_ex_inst_illegal,
-`ifdef __ATOMIC
+`ifdef __RVA
 	input i_atomic,
 `endif
 
@@ -52,7 +52,7 @@ module ex_stage (
     output logic o_pc_plus4,
     output logic o_csr_en,
     output logic o_ex_inst_illegal,
-`ifdef __ATOMIC
+`ifdef __RVA
 	output logic o_atomic,
 `endif
 
@@ -99,10 +99,10 @@ module ex_stage (
 	);
 
 
-`ifdef __RV32_M
+`ifdef __RVM
 	wire [`XLEN-1:0] rv_m_res;
 
-	`ifndef __RV32_M_EXTERNAL
+	`ifndef __RVM_EXTERNAL
 		// Code for internal RV32M.
 
 		rv32_m rv32_m
@@ -166,7 +166,7 @@ module ex_stage (
     assign o_csr_en          = i_csr_en;
     assign o_ex_inst_illegal = i_ex_inst_illegal;
 
-`ifdef __ATOMIC
+`ifdef __RVA
 	assign o_atomic   = i_atomic;
 `endif
 

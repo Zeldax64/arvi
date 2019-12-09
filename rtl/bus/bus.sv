@@ -47,7 +47,7 @@ module bus (
 			bus_m.addr      <= addr;
 			bus_m.byte_en   <= dmem.DM_byte_en;
 			bus_m.bus_en    <= bus_req;
-`ifdef __ATOMIC
+`ifdef __RVA
 			bus_m.atomic    <= dmem.DM_atomic;
 			bus_m.operation <= dmem.DM_operation;
 `endif

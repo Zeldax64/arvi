@@ -16,7 +16,7 @@
 `define OP_SYSTEM_TYPE	7'b1110011
 `define OP_FENCE		7'b0001111
 
-`ifdef __ATOMIC
+`ifdef __RVA
 // RV-A
 `define OP_ATOMIC 		7'b0101111
 `endif
@@ -40,10 +40,10 @@ module main_control (
     output logic o_CSR_en,
     output logic o_Ex_inst_illegal,
 
-`ifdef __ATOMIC
+`ifdef __RVA
 	output logic o_atomic,
 `endif
-`ifdef __RV32_M
+`ifdef __RVM
 	output logic o_ALUM_en,
 `endif
 
@@ -73,10 +73,10 @@ module main_control (
 		o_CSR_en          = 0;
 		o_Ex_inst_illegal = 0; // Illegal instruction signal
 
-`ifdef __ATOMIC
+`ifdef __RVA
 		o_atomic = 0; // RV-A
 `endif
-`ifdef __RV32_M
+`ifdef __RVM
        o_ALUM_en = 0; // RV-M signal
 `endif
 
@@ -87,7 +87,7 @@ module main_control (
 				`OP_R_TYPE : begin
 					o_RegWrite = 1;
 					o_ALUOp    = 3'b010;
-`ifdef __RV32_M
+`ifdef __RVM
 					if(f7[0]) begin
 						//o_ALUOp    = 3'b000; // Don't care
 						o_ALUM_en  = 1;
@@ -162,7 +162,7 @@ module main_control (
 	    			o_CSR_en   = 1;
 				end
 
-`ifdef __ATOMIC
+`ifdef __RVA
 				`OP_ATOMIC : begin
 					o_ALUSrcA  = 2'b0;
 					o_ALUSrcB  = 1'b0;

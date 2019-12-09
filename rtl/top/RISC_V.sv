@@ -18,7 +18,7 @@ module RISC_V_
 	input i_clk,
 	input i_rst,
 
-`ifdef __RV32_M_EXTERNAL
+`ifdef __RVM_EXTERNAL
 	output o_EX_en, 
 	output [`XLEN-1:0] o_EX_rs1, 
 	output [`XLEN-1:0] o_EX_rs2, 
@@ -43,7 +43,7 @@ module RISC_V_
 	
 	// Data Memory
 
-`ifdef __ATOMIC
+`ifdef __RVA
 	wire [6:0] MEM_operation;
 	wire MEM_atomic;
 	assign o_operation = MEM_operation;
@@ -68,13 +68,13 @@ module RISC_V_
 		// Data Memory connections
 		.DM_to_mem    (DM_to_mem.master),
 
-`ifdef __ATOMIC
+`ifdef __RVA
 		.o_DM_f7        (MEM_operation),
 		.o_MEM_atomic   (MEM_atomic),
 `endif
 
 
-`ifdef __RV32_M_EXTERNAL
+`ifdef __RVM_EXTERNAL
 		.o_EX_en        (o_EX_en),
 		.o_EX_rs1       (o_EX_rs1),
 		.o_EX_rs2       (o_EX_rs2),

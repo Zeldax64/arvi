@@ -49,7 +49,7 @@ module RISC_V(
 	wire [`XLEN-1:0] MC_wr_data; 
 	wire [`XLEN-1:0] MC_addr;
 
-`ifdef __ATOMIC 
+`ifdef __RVA 
 	wire [6:0] MC_operation;
 	wire MC_atomic;	
 	wire MC_id;	
