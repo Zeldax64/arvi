@@ -1,10 +1,10 @@
 # ARVI
-A simple single cycle RISC-V implementation in Verilog.
+A simple single cycle RISC-V implementation in SystemVerilog.
 
 ## Project now
-The project is a single-cycle processor implementing RV32I[M][A] instruction set. It also has some support to RISC-V's machine mode. The project also has a dual core mode (RV32A is necessary). Check rtl/arvi_defines.vh to see all different parameters ARVI can receive.
+The project is a single-cycle processor implementing RV32I[M][A] instruction set and it also has partial support to RISC-V's machine mode. The project also has a dual core mode (RV32A is necessary). Check rtl/arvi_defines.vh to see all different parameters ARVI can receive.
 
-This project contains a Performance Profiler to profile each executed program and retrieve information like how many instructions were issued, cache hits, and misses.
+Besides the processor, the project contains a Performance Profiler to profile each executed program in simulation and retrieve information like how many instructions were issued, cache hits, and misses.
 
 #### Features
 
@@ -12,11 +12,11 @@ This project contains a Performance Profiler to profile each executed program an
 2. Instruction cache.
 3. Machine mode privilege level support.
 4. Performance Profiler.
+5. FPGA Synthesis Script.
 
 ## Next steps
 1. Build pipeline.
 2. Implement a bus like Wishbone or AXI to communicate with other devices. At the moment only a simple bus is used.
-3. Create FPGA synthesis scripts.
 
 ## Project dependencies
 1. verilator
@@ -28,7 +28,7 @@ This project contains a Performance Profiler to profile each executed program an
 
 #### all
     $make all
-Compile necessary files using to create an executable program.
+Compile necessary files to create an executable Verilator program.
 
 #### regression-tests
     $make regression-tests
@@ -43,8 +43,7 @@ Run all benchmarks in tb/tests. All benchmarks are from [riscv-tests](https://gi
 #### performance
 	$make performance
 
-Retrieve all information in all ".performance_report" files in the project and put them into a file called dataframe.csv. You can use this file to check performance parameters when of a executed program.
-
+Retrieve all information in all ".performance_report" files in the project and put them into a file named dataframe.csv. You can use this file to check performance parameters of an executed program.
 
 ## Command line arguments
 
